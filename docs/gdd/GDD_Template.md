@@ -70,15 +70,28 @@ The intention is for players to feel both like a rising champion and a disposabl
 
 ### **Screens**
 
-1. Title Screen
-    1. Options
-2. Level Select
-3. Game
-    1. Inventory
-    2. Assessment / Next Level
-4. End Credits
+TITLE SCREEN:
+Start Game Button
+Option Button
+Exit Button
+Background of the Colosseum
 
-_(example)_
+OPTIONS:
+Master Volume
+Music On/Off
+
+LEVEL SELECT:
+The levels advance as you complete them (automatically)
+
+GAME SCREEN:
+Health bar in the top left corner
+Fame bar in the bottom corner
+Number of remaining enemies in the top right corner
+
+INVENTORY:
+
+
+
 
 ### **Controls**
 
