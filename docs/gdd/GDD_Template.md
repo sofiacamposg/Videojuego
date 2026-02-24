@@ -1,4 +1,4 @@
-# **Game Name Here**
+# **Gladiator**
 
 ## _Game Design Document_
 
@@ -46,15 +46,23 @@
 
 ### **Summary**
 
-Sum up your game idea in 2 sentences. A kind of elevator pitch. Keep it simple!
+Gladiator is a roguelite set in the Roman Colosseum where the player fights through three historical events while managing their growing fame. Each power gained from the crowd increases the risk of imperial punishment, forcing the player to balance glory and survival.
 
 ### **Gameplay**
 
-What should the gameplay be like? What is the goal of the game, and what kind of obstacles are in the way? What tactics should the player use to overcome them?
+The game is a three-level roguelite arena combat experience inspired by real Roman Colosseum events. The player chooses one of three gladiator archetypes and survives waves of enemies while selecting from a limited deck of 15 cards that provide either powerful advantages or imperial setbacks.
+
+The main goal is to survive all three levels. Obstacles include increasingly difficult enemies, environmental variations such as moving platforms or changing arena floors, and “Imperial Decree” cards that introduce disadvantages as the player’s Fame increases.
+
+To overcome these challenges, players must carefully manage their Fame, choose strategic card combinations, adapt to randomized arena conditions, and decide whether to pursue greater glory or maintain caution. Success depends on tactical positioning and risk control.
 
 ### **Mindset**
 
-What kind of mindset do you want to provoke in the player? Do you want them to feel powerful, or weak? Adventurous, or nervous? Hurried, or calm? How do you intend to provoke those emotions?
+The game is designed to provoke tension and calculated ambition. Players should feel powerful in combat but constantly aware that success makes them more vulnerable.
+
+The balance between empowerment and threat creates a mindset of strategic caution: the player is tempted by glory but fears the consequences of becoming too popular. Environmental unpredictability and imperial interference generate nervous anticipation, while victories in combat create short bursts of triumph.
+
+The intention is for players to feel both like a rising champion and a disposable pawn within the Roman spectacle.
 
 ## _Technical_
 
