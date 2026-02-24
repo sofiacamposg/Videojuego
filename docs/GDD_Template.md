@@ -1,4 +1,4 @@
-# **Gladiator**
+# **Game Name Here**
 
 ## _Game Design Document_
 
