@@ -75,40 +75,102 @@ Start Game Button
 Option Button
 Exit Button
 Background of the Colosseum
+Crown ambience audio
 
 OPTIONS:
-Master Volume
-Music On/Off
+Master Volume slider
+Music On/Off toggle
 
 LEVEL SELECT:
-The levels advance as you complete them (automatically)
+Levels advance automatically as you complete them
+Only 3 levels, played in sequence (but with variations) within one run
 
 GAME SCREEN:
-Health bar in the top left corner
-Fame bar in the bottom corner
-Number of remaining enemies in the top right corner
+Health bar (top left corner)
+Fame bar (top center)
+Level timer (top center, next to the fame bar)
+Number of remaining enemies (top right corner)
+Card selection (Player's Deck)(bottom right corner)
 
-INVENTORY:
+PAUSE MENU:
+Game pauses
+Back button (player keeps playing)
+Exit Button (leads to "title screen" (GAME OVER))
+Confirm exit (GAME OVER) alert
+Exit level button (leads to the beginning of the current level (counts as if the player had lost 1 life, and all the power ups in the "player's deck" the player had used))
 
+CARD SELECTION SCREEN (PLAYER´S DECK):
+Game pauses
+Current player's card are shown facing up
+Player selects one
+Confirm / Back button 
 
+CARD SELECTION SCREEN (RANDOM DECK):
+Game pauses
+Three cards appear face down
+Player selects one
+Card description is shown before confirming
+Confirm buttom to keep playing
 
+FINISHED LEVEL SCREEN:
+Game pauses
+Current fame, health, power-ups (player's deck) and odds (random deck) window are whown, the switched for the new ones
 
 ### **Controls**
 
-How will the player interact with the game? Will they be able to choose the controls? What kind of in-game events are they going to be able to trigger, and how? (e.g. pressing buttons, opening doors, etc.)
+The game is a 2D side-scrolling arena (left <-> right)
+KEYBOARD:
+A / Left Arrow → Move left
+D / Right Arrow → Move right
+Space → Jump
+J → Basic attack
+K → Secondary ability (if the power-up effect has not yet ended and a card is drawn from the random deck (is not permitted to use a powerup from the player's deck if a power-up/punishment from the random deck is in effect))
+Esc → Pause menu
 
 ### **Mechanics**
 
-Are there any interesting mechanics? If so, how are you going to accomplish them? Physics, algorithms, etc.
+LIVES SYSTEM:
+Player starts with 5 lives per run.
+Death resets current level (with variaitions) but keeps "player's deck" powerups until used at desired time and level.
+When lives reach 0 → Game Over → full reset.
+
+FAME SYSTEM:
+Fame increases if the level is completed before the target time.
+Higher Fame increases probability of punishment cards appearing.
+    -Famous (completed the level under target time): 
+        +2 permanent powerups added to run
+        +2 punishment cards added to deck pool
+    Not-Famous (completed the level over target time): 
+        +1 permanent powerup
+        +1 punishment card added to deck pool
+Higher Fame also increases score.
+
+RANDOM DECK EVENT:
+At random moment during a level:
+Game pauses.
+3 cards are shown.
+Player selects one.
+Level 1 guarantees:
+    2 powerups
+    1 punishment
+Levels 2 and 3:
+    Ratio depends on deck composition.
+
+LEVEL VARIANTS:
+Floor type (sand / rock)
+Platform motion (none / horizontal / vertical)
+Enemy quantity modifier
+Emperor visual variant
+NPC color palette
 
 ## _Level Design_
-
+------------PENDIENTE----------
 ---
 
 _(Note : These sections can safely be skipped if they&#39;re not relevant, or you&#39;d rather go about it another way. For most games, at least one of them should be useful. But I&#39;ll understand if you don&#39;t want to use them. It&#39;ll only hurt my feelings a little bit.)_
 
 ### **Themes**
-
+--------PENDIENTE--------------
 1. Forest
     1. Mood
         1. Dark, calm, foreboding
@@ -138,22 +200,22 @@ _(example)_
 
 ### **Game Flow**
 
-1. Player starts in forest
-2. Pond to the left, must move right
-3. To the right is a hill, player jumps to traverse it (&quot;jump&quot; taught)
-4. Player encounters castle - door&#39;s shut and locked
-5. There&#39;s a window within jump height, and a rock on the ground
-6. Player picks up rock and throws at glass (&quot;throw&quot; taught)
-7. … etc.
+1. Player selects charcater
+2. Level I begins
+3. Random deck event occurs during level
+4. Level completed -> Time and score evaluated -> Reward applies
+5. Repeat step 4 for level II and III
+6. Victory screen
+7. Score calculated
+8. Game over resets everything if lives reack 0
 
-_(example)_
-
+-(example)-
 ## _Development_
 
 ---
 
 ### **Abstract Classes / Components**
-
+---------------PENDIENTE-------------
 1. BasePhysics
     1. BasePlayer
     2. BaseEnemy
@@ -233,6 +295,25 @@ Well-designed feedback, both good (e.g. leveling up) and bad (e.g. being hit), a
 
 _(example)_
 
+//No quise borrar los ejemplos entonces escribi aquí abajo
+1. Characters...
+2. Environment
+    1. Sand floor tiles
+    2. Rock floor tiles
+    3. Moving platform
+    4. Imperial throne
+    5. Crowd background
+    6. Gates
+3. UI
+    1. Health bar
+    2. Fame state
+    3. Life icons
+    4. Card frame (power-up)
+    5. Card-frame (punishment)
+    6. Pause menu
+    7. Victory screen
+    8. Game over screen 
+
 
 ## _Sounds/Music_
 
@@ -240,27 +321,33 @@ _(example)_
 
 ### **Style Attributes**
 
-Again, consistency is key. Define that consistency here. What kind of instruments do you want to use in your music? Any particular tempo, key? Influences, genre? Mood?
+Music: Orchestral /Roman-inspired percussion, heavy drums and a more dramatic theme to build tension on level 3
+SFX: Realistic metal crashes, crowd cheering and booing, and this audio feedback is louder than ambient music to esure clarity
 
-Stylistically, what kind of sound effects are you looking for? Do you want to exaggerate actions with lengthy, cartoony sounds (e.g. mario&#39;s jump), or use just enough to let the player know something happened (e.g. mega man&#39;s landing)? Going for realism? You can use the music style as a bit of a reference too.
 
- Remember, auditory feedback should stand out from the music and other sound effects so the player hears it well. Volume, panning, and frequency/pitch are all important aspects to consider in both music _and_ sounds - so plan accordingly!
 
 ### **Sounds Needed**
 
 1. Effects
-    1. Soft Footsteps (dirt floor)
-    2. Sharper Footsteps (stone floor)
-    3. Soft Landing (low vertical velocity)
-    4. Hard Landing (high vertical velocity)
-    5. Glass Breaking
-    6. Chest Opening
-    7. Door Opening
+    Sword swing
+    Sword hit
+    Shield block
+    Animal roar
+    Crowd cheer
+    Crowd boo
+    Platform movement
+    Card selection flip
+    Powerup activation
+    Punishment activation
+    Landing
+    Gate opening
+
 2. Feedback
-    1. Relieved &quot;Ahhhh!&quot; (health)
-    2. Shocked &quot;Ooomph!&quot; (attacked)
-    3. Happy chime (extra life)
-    4. Sad chime (died)
+    Extra life gained
+    Life lost
+    Fame increase
+    Game Over sound
+    Victory sound
 
 _(example)_
 
@@ -310,3 +397,28 @@ _(define the main activities and the expected dates when they should be finished
 7. design music
 
 _(example)_
+
+//No quise borrar los ejemplos entonces 
+WEEK 4
+    Finish GDD
+    Begin with the pitch presentation
+    Begin with the DB
+WEEK 5
+    Implement base movement
+    Implement character and enemy base class
+WEEK 6
+    Implement Level I
+    Implement deck sstem
+    Implement lives system
+WEEK 7
+    Implement Level II
+    Add level variants
+    Implement fame logic
+WEEK 8 
+    Implement Level III
+    Add score system
+    DB integration
+WEEK 9 
+    Polish visuals
+    Add sounf and music
+    Playtesting and balancing (user view)
