@@ -1,68 +1,41 @@
-/*
- * First script to draw some figures on the Canvas
- * https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
- *
- * Gilberto Echeverria
- * 2025-02-18
- */
-
 "use strict";
 
 // Global variables
-const canvasWidth = 800;
+const canvasWidth = 1000;
 const canvasHeight = 600;
 const boxSize = 200;
 
-let backgroundImage = new Image();
-backgroundImage.src = "Coliseo.png"; // ajusta la ruta si está en carpeta
+let backgroundImage = new Image(); //función donde ajustamos nuestra imagen al canvas
+backgroundImage.src = "Coliseo.png"; //referencia al fondo
 
-// Context of the Canvas
 let ctx; //referencia al objeto con las animmaciones que vamos a usar
 
+
 function main() {
-    // Get a reference to the object with id 'canvas' in the page
-    const canvas = document.getElementById('canvas');
+    const canvas = document.getElementById('canvas'); // Get a reference to the object with id 'canvas' in the page
     // Resize the element
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
-    // Get the context for drawing in 2D
-    ctx = canvas.getContext('2d');
-
+    ctx = canvas.getContext('2d');  // Get the context for drawing in 2D
+    
     draw(); //función definida abajo
 }
 
 function draw() {
 
-    // Limpiar el canvas en cada frame
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    // TÍTULO
+  ctx.fillStyle = "white";
+  ctx.font = "bold 56px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("GLADIATOR", canvasWidth / 2, 140);
 
-    // Dibujar la imagen de fondo
-    ctx.drawImage(backgroundImage, 0, 0, canvasWidth, canvasHeight);
-    // Draw a square
-    ctx.fillStyle = "red";
-    ctx.fillRect(canvasWidth / 2, canvasHeight / 2, boxSize, boxSize);
+  //FONDO
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);  // Limpiar el canvas en cada frame
+  ctx.drawImage(backgroundImage, 0, 0, canvasWidth, canvasHeight); // Dibujar la imagen de fondo
+  // Draw a square
+  ctx.fillStyle = "red";
+  ctx.fillRect(canvasWidth / 2, canvasHeight / 2, boxSize, boxSize);
 
-    // Draw an ellipse
-    ctx.beginPath();
-    ctx.fillStyle = "yellow";
-    ctx.strokeStyle = "green";
-    ctx.ellipse(400, 300, 60, 30, Math.PI/4, 0, Math.PI * 2, false);
-    ctx.fill();
-    ctx.stroke();
-
-    // Draw a circle
-    ctx.beginPath();
-    ctx.fillStyle = "pink";
-    ctx.strokeStyle = "black";
-    ctx.ellipse(100, 400, 30, 30, 0, 0, Math.PI * 1.5, false);
-    ctx.fill();
-    ctx.stroke();
-
-    // TODO: Make different shapes using the canvas 2d functions
-    Gladiator();
-    requestAnimationFrame(draw);
-function Gladiator(){
-
-}
+  requestAnimationFrame(draw);
 }
 
