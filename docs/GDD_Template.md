@@ -2,6 +2,12 @@
 
 ## _Game Design Document_
 
+Team 6:
+ - Daniela Angulo - A01028153
+ - Sofia Campos - A01277013
+ - Ariel Pulver - A01786822
+
+
 ---
 
 ##### **Copyright notice / author information / boring legal stuff nobody likes**
@@ -64,77 +70,77 @@ The balance between empowerment and threat creates a mindset of strategic cautio
 
 The intention is for players to feel both like a rising champion and a disposable pawn within the Roman spectacle.
 
-## _Technical_
+## Technical
 
 ---
 
-### **Screens**
+### *Screens*
 
-TITLE SCREEN:
+-> TITLE SCREEN:
 Start Game Button
 Option Button
 Exit Button
 Background of the Colosseum
 Crown ambience audio
 
-OPTIONS:
+-> OPTIONS:
 Master Volume slider
 Music On/Off toggle
 
-LEVEL SELECT:
+-> LEVEL SELECT:
 Levels advance automatically as you complete them
 Only 3 levels, played in sequence (but with variations) within one run
 
-GAME SCREEN:
+-> GAME SCREEN:
 Health bar (top left corner)
 Fame bar (top center)
 Level timer (top center, next to the fame bar)
 Number of remaining enemies (top right corner)
 Card selection (Player's Deck)(bottom right corner)
 
-PAUSE MENU:
+-> PAUSE MENU:
 Game pauses
 Back button (player keeps playing)
 Exit Button (leads to "title screen" (GAME OVER))
 Confirm exit (GAME OVER) alert
 Exit level button (leads to the beginning of the current level (counts as if the player had lost 1 life, and all the power ups in the "player's deck" the player had used))
 
-CARD SELECTION SCREEN (PLAYER´S DECK):
+-> CARD SELECTION SCREEN (PLAYER´S DECK):
 Game pauses
 Current player's card are shown facing up
 Player selects one
 Confirm / Back button 
 
-CARD SELECTION SCREEN (RANDOM DECK):
+-> CARD SELECTION SCREEN (RANDOM DECK):
 Game pauses
 Three cards appear face down
 Player selects one
 Card description is shown before confirming
 Confirm buttom to keep playing
 
-FINISHED LEVEL SCREEN:
+-> FINISHED LEVEL SCREEN:
 Game pauses
 Current fame, health, power-ups (player's deck) and odds (random deck) window are whown, the switched for the new ones
 
-### **Controls**
+### *Controls*
 
 The game is a 2D side-scrolling arena (left <-> right)
 KEYBOARD:
-A / Left Arrow → Move left
-D / Right Arrow → Move right
-Space → Jump
-J → Basic attack
-K → Secondary ability (if the power-up effect has not yet ended and a card is drawn from the random deck (is not permitted to use a powerup from the player's deck if a power-up/punishment from the random deck is in effect))
-Esc → Pause menu
+ - A / Left Arrow → Move left
+ - D / Right Arrow → Move right
+ - Space → Jump
+ - J → Basic attack
+ - K → Secondary ability (if the power-up effect has not yet ended and a card is drawn from the random deck (is not permitted to use a powerup from the player's deck if a power-up/punishment from the random deck is in effect))
+ - Esc → Pause/menu
 
-### **Mechanics**
+### *Mechanics*
 
-LIVES SYSTEM:
+-> LIVES SYSTEM:
 Player starts with 5 lives per run.
 Death resets current level (with variaitions) but keeps "player's deck" powerups until used at desired time and level.
 When lives reach 0 → Game Over → full reset.
 
-FAME SYSTEM:
+-> FAME SYSTEM:
 Fame increases if the level is completed before the target time.
 Higher Fame increases probability of punishment cards appearing.
     -Famous (completed the level under target time): 
@@ -145,7 +151,7 @@ Higher Fame increases probability of punishment cards appearing.
         +1 punishment card added to deck pool
 Higher Fame also increases score.
 
-RANDOM DECK EVENT:
+-> RANDOM DECK EVENT:
 At random moment during a level:
 Game pauses.
 3 cards are shown.
@@ -156,12 +162,30 @@ Level 1 guarantees:
 Levels 2 and 3:
     Ratio depends on deck composition.
 
-LEVEL VARIANTS:
+-> LEVEL VARIANTS:
 Floor type (sand / rock)
 Platform motion (none / horizontal / vertical)
 Enemy quantity modifier
 Emperor visual variant
 NPC color palette
+
+## Database Statistics
+The game will collect the following metrics to analyse player behaviour and balance the experience:
+
+| Statistic                | Description                                      |
+|--------------------------|--------------------------------------------------|
+| Match ID                 | Unique identifier for each run                   |
+| Date & Time              | When the run started                             |
+| Chosen Archetype         | Type of gladiator selected                       |
+| Total Duration           | Total playtime of the run                        |
+| Level Reached            | 1, 2, 3, or "Victory"                            |
+| Final Fame               | Fame value at the end of the run                 |
+| Punishment Cards Applied | Number of imperial setbacks received             |
+| Power‑up Cards Selected  | Number of advantages obtained                    |
+| Remaining Health         | Combat performance summary                       |
+| Total Runs Played        | Accumulated per player                           |
+| Total Victories          | Successful runs                                  |
+| Total Defeats            | Failed runs                                      |
 
 ## _Level Design_
 ------------PENDIENTE----------
