@@ -1,9 +1,9 @@
-.pixelText{
-      font-family: 'VT323', monospace;
-      font-weight:900;
-      text-shadow: 2px 2px 0px white;
-
+.pixelText {
+    font-family: 'VT323', monospace;
+    font-weight: 900;
+    text-shadow: 2px 2px 0px white;
 }
+
 body {
     margin: 0;
     background-color: black;
@@ -18,5 +18,5 @@ body {
 
 canvas {
     display: block;
-    border: 3px solid rgb(255, 187, 86); 
+    border: 3px solid rgb(255, 187, 86);
 }
