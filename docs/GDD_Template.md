@@ -77,9 +77,12 @@ Exit Button
 Background of the Colosseum
 Crown ambience audio
 
-OPTIONS:
+SETTINGS:
 Master Volume slider
 Music On/Off toggle
+
+LOG IN SCREEN:
+
 
 LEVEL SELECT:
 Levels advance automatically as you complete them
