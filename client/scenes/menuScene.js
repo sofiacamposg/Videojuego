@@ -36,7 +36,7 @@ function draw(ctx, canvas) {
 }
 
 function drawButton(ctx, button) {
-    ctx.font = "25px 'VT223'";
+    ctx.font = "25px 'VT323'";
     ctx.textAlign = "center";
 
     const textWidth = ctx.measureText(button.text).width;

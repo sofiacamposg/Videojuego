@@ -1,7 +1,7 @@
 import { draw, handleMouseMove } from "./scenes/menuScene.js";
 
-const canvasWidth = 2000;
-const canvasHeight = 1000;
+const canvasWidth = 1000;
+const canvasHeight = 600;
 
 let canvas;
 let ctx;

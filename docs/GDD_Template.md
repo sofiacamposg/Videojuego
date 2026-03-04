@@ -72,7 +72,7 @@ The intention is for players to feel both like a rising champion and a disposabl
 
 TITLE SCREEN:
 Start Game Button
-Option Button
+Settings Button
 Exit Button
 Background of the Colosseum
 Crown ambience audio
