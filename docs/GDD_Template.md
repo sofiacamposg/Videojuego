@@ -1,4 +1,4 @@
-# **Gladiator**
+¿# **Gladiator**
 
 ## _Game Design Document_
 
@@ -241,13 +241,17 @@ _(example)_
 ### **Abstract Classes / Components**
 ---------------PENDIENTE-------------
 1. BasePhysics
-    1. BasePlayer
-    2. BaseEnemy
-    3. BaseObject
+    1. BasePlayer: Base class for the player-controlled gladiator. Handles movement, health system, and interactions with enemies and cards
+    2. BaseEnemy: Base class for all enemy types in the arena. Handles enemy movement, attacks, and damage interaction with the player
+    3. BaseObject: Represents general objects that exist in the arena environment and may interact with entities
 2. BaseObstacle
+    1. ArenaBarrier: Static barriers or structures that prevent the player from passing
+    2. ArenaColumn: Decorative or structural columns inside the colosseum that can act as obstacles during combat
 3. BaseInteractable
+    1. PowerUpCards: Cards that provide positive effects or abilities granted by the crowd
+    2. PunishmentCard: Cards that apply negative effects imposed by the emperor when fame becomes too high
 
-_(example)_
+
 
 ### **Derived Classes / Component Compositions**
 
