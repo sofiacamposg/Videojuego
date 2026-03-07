@@ -1,4 +1,4 @@
-¿# **Gladiator**
+ **Gladiator**
 
 ## _Game Design Document_
 
@@ -188,95 +188,123 @@ The game will collect the following metrics to analyse player behaviour and bala
 | Total Defeats            | Failed runs                                      |
 
 ## _Level Design_
-------------PENDIENTE----------
----
-
-_(Note : These sections can safely be skipped if they&#39;re not relevant, or you&#39;d rather go about it another way. For most games, at least one of them should be useful. But I&#39;ll understand if you don&#39;t want to use them. It&#39;ll only hurt my feelings a little bit.)_
 
 ### **Themes**
---------PENDIENTE--------------
-1. Forest
-    1. Mood
-        1. Dark, calm, foreboding
-    2. Objects
-        1. _Ambient_
-            1. Fireflies
-            2. Beams of moonlight
-            3. Tall grass
-        2. _Interactive_
-            1. Wolves
-            2. Goblins
-            3. Rocks
-2. Castle
-    1. Mood
-        1. Dangerous, tense, active
-    2. Objects
-        1. _Ambient_
-            1. Rodents
-            2. Torches
-            3. Suits of armor
-        2. _Interactive_
-            1. Guards
-            2. Giant rats
-            3. Chests
-
-_(example)_
+1. Level 1 — The Hunt
+        i. Mood: Loud, chaotic, festive. 
+        ii. Objects:
+            A. Ambient:
+                a. Roaring crowd in the stands.
+                b. Light-colored sand floor.
+                c. Torches on the Colosseum walls.
+            B. Interactive:
+                a. Lion.
+                b. Wounded Lion.
+                c. Stone platforms with randomized positions.
+2. Level 2 — The Peak of the Colosseum
+        i. Mood: Tense, glorious. The Colosseum at its peak. 
+        ii. Objects:
+            A. Ambient:
+                a. Roman flags and banners decorating the Colosseum.
+                b. Polished rock floor marked from previous combats.
+                c. Larger and louder crowd than in Level 1
+            B. Interactive:
+                a. Enemy warrior
+                b. Wounded Warrior 
+                c. Stone platforms with randomized positions
+3. Level 3 — The Collapse of the Empire
+        i. Mood: Dark, desperate, apocalyptic. The crowd is scarce and hostile. 
+        ii. Objects:
+            A. Ambient:
+                a. Broken columns and rubble across the arena
+                b. Cracked floor 
+                c. Blue fire torches 
+            B. Interactive:
+                a. Germanic Barbarian
+                b. Looter 
+                c. Stone platforms with randomized positions
 
 ### **Game Flow**
 
-1. Player selects charcater
-2. Level I begins
-3. Random deck event occurs during level
-4. Level completed -> Time and score evaluated -> Reward applies
-5. Repeat step 4 for level II and III
-6. Victory screen
-7. Score calculated
-8. Game over resets everything if lives reack 0
+1. Player enters the title screen and selects Start Game
+2. Player selects one of the 3 archetypes (Guerrero, Lancero, Pesado)
+3. Level 1 — The Hunt begins
+    3.1. Enemy waves from Level 1 start spawning
+    3.2. At the halfway point of the level's estimated duration, the game pauses and the Random Deck Event triggers
+        i. 3 cards are shown face down
+        ii. Player selects one and reads its description before confirming
+        iii. Level 1 guarantees 2 powerups and 1 punishment among the 3 options
+    3.3 Player eliminates all enemies to complete the level
+    3.4 Time is evaluated:
+        i. Famous (finished before the target time): +2 permanent powerups added to player deck, +2 punishment cards added to the pool
+        ii. Not Famous (finished after the target time): +1 powerup added to player deck, +1 punishment card added to the pool
+4. Level Completed screen shows current fame, health, active cards and new rewards
+5. Level 2 — Munus begins
+    i. Same structure as Level 1
+    ii. Powerup to punishment ratio in the Random Deck Event depends on the player's current deck composition
+6. Level Completed screen
+7. Level 3 — The Fall begins
+    i. Same structure, higher difficulty
+    ii. Higher probability of punishment cards in the Random Deck Event if the player's Fame is high
+8. If the player completes Level 3 → Victory Screen with final score calculated
+9. At any point, if lives reach 0 → Game Over → full run reset
 
--(example)-
 ## _Development_
 
 ---
 
-### **Abstract Classes / Components**
----------------PENDIENTE-------------
+### **Abstract classes / Components**
+
 1. BasePhysics
-    1. BasePlayer: Base class for the player-controlled gladiator. Handles movement, health system, and interactions with enemies and cards
-    2. BaseEnemy: Base class for all enemy types in the arena. Handles enemy movement, attacks, and damage interaction with the player
-    3. BaseObject: Represents general objects that exist in the arena environment and may interact with entities
+    i. BasePlayer: Base class for the player-controlled gladiator. Handles movement, health system, and interactions with enemies and cards
+    ii. BaseEnemy: Base class for all enemy types in the arena. Handles enemy movement, attacks, and damage interaction with the player
+    iii. BaseObject: Represents general objects that exist in the arena environment and may interact with entities
+
 2. BaseObstacle
-    1. ArenaBarrier: Static barriers or structures that prevent the player from passing
-    2. ArenaColumn: Decorative or structural columns inside the colosseum that can act as obstacles during combat
+    i. ArenaBarrier: Static barriers or structures that prevent the player from passing
+    ii. ArenaColumn: Decorative or structural columns inside the colosseum that can act as obstacles during combat
+
 3. BaseInteractable
-    1. PowerUpCards: Cards that provide positive effects or abilities granted by the crowd
-    2. PunishmentCard: Cards that apply negative effects imposed by the emperor when fame becomes too high
-
-
+    i. PowerUpCards: Cards that provide positive effects or abilities granted by the crowd
+    ii. PunishmentCard: Cards that apply negative effects imposed by the emperor when fame becomes too high
 
 ### **Derived Classes / Component Compositions**
 
 1. BasePlayer
-    1. PlayerMain
-    2. PlayerUnlockable
+    i. PlayerGuerrero: Balanced archetype. Sword and shield. HP: 120, Attack: 20, Speed: 5. 
+    ii. PlayerLancero: Aggressive archetype. Spear. HP: 100, Attack: 25, Speed: 6. 
+    iii. PlayerPesado: Tank archetype. Full armor. HP: 150, Attack: 15, Speed: 3. 
 2. BaseEnemy
-    1. EnemyWolf
-    2. EnemyGoblin
-    3. EnemyGuard (may drop key)
-    4. EnemyGiantRat
-    5. EnemyPrisoner
-3. BaseObject
-    1. ObjectRock (pick-up-able, throwable)
-    2. ObjectChest (pick-up-able, throwable, spits gold coins with key)
-    3. ObjectGoldCoin (cha-ching!)
-    4. ObjectKey (pick-up-able, throwable)
+    i. EnemyLion: Level 1 main enemy. Fast movement speed, moderate damage.
+    ii. EnemyWoundedLion: Level 1 variant. Slower than the standard lion
+    iii. Enemy_EnemyWarrior: Level 2 main enemy. Attacks from distance. Keeps distance if the player approaches.
+    iv. Enemy_WoundedWarrior: Level 2 variant. Attacks from nearer distance than the eney warrior.
+    v. EnemyBarbarian: Level 3 main enemy. Large and slow. Delivers a single powerful strike that deals high damage. 
+    vi. EnemyLooter: Level 3 variant. Fast, difficult to hit consistently
+3. BaseProjectile
+    i. ProjectileSword: Launched by Enemy Warrior and Wounded Warrior.
 4. BaseObstacle
-    1. ObstacleWindow (destroyed with rock)
-    2. ObstacleWall
-    3. ObstacleGate (watches to see if certain buttons are pressed)
+    i. ArenaPlatformSmall: Small stone platform. Fits 1 character.
+    ii. ArenaPlatformMedium: Medium stone platform. Fits 2 characters.
+    iii. ArenaPlatformLarge: Large stone platform. Fits 3 or more characters. 
 5. BaseInteractable
-    1. InteractableButton
-
-_(example)_
+- Power Up Cards:
+    i. CardFavorDelPueblo: +20% movement speed for the duration of the level.
+    ii. CardFiloDeMarte: +30% damage on basic attacks for the duration of the level.
+    iii. CardBendicionDeVenus: Instantly recovers 1 heart of health.
+    iv. CardRugidoDelLeon: All current enemies are slowed for 5 seconds.
+    v. CardEscudoDivino: Absorbs the next hit received with no damage taken.
+    vi. CardSangreDeGladiador: Each enemy kill recovers a small amount of HP
+    vii. CardFuriaDelColiseo: Basic attack gains 30% more area 
+    viii. CardOjoDelEmperador: Reveals the type of cards in the random deck before selection.
+- Punishment cards:
+    ix. CardDecretoImperial: Spawns 2 additional enemies immediately.
+    x. CardCadenasDelCesar: Disables jumping for 10 seconds.
+    xi. CardHambreDeLaPlebe: Using any card from the player's deck costs ½ heart of health.
+    xii. CardIraDeJupiter: Reduces player fame 5%
+    xiii. CardNieblaDelAnfiteatro: Partially darkens the screen for 12 seconds.
+    xiv. CardTraicionDelLanista: Reduces player damage by 40% for 15 seconds.
+    xv. CardJuicioDelSenado: If the player dies during this level, 2 lives are lost instead of 1.
 
 ## _Graphics_
 
@@ -284,64 +312,67 @@ _(example)_
 
 ### **Style Attributes**
 
-What kinds of colors will you be using? Do you have a limited palette to work with? A post-processed HSV map/image? Consistency is key for immersion.
+The game uses a pixel art style, thick dark outlines, and limited shading per tile. Characters are rendered with high contrast against backgrounds to maintain readability during fast-paced combat. 
 
-What kind of graphic style are you going for? Cartoony? Pixel-y? Cute? How, specifically? Solid, thick outlines with flat hues? Non-black outlines with limited tints/shades? Emphasize smooth curvatures over sharp angles? Describe a set of general rules depicting your style here.
+-> Color Palette
+The palette shifts across levels to reflect the narrative arc of Rome:
+- Level 1 & 2 use warm tones — sandy yellows, burnt oranges, deep reds and golden highlights
+- Level 3 shifts to cold, desaturated tones — dark greys, muted purples and dim greens — reflecting the decay and collapse of the Empire.
 
-Well-designed feedback, both good (e.g. leveling up) and bad (e.g. being hit), are great for teaching the player how to play through trial and error, instead of scripting a lengthy tutorial. What kind of visual feedback are you going to use to let the player know they&#39;re interacting with something? That they \*can\* interact with something?
+UI elements use a consistent dark background with gold, red and white text to maintain thematic cohesion across all screens.
 
-### **Graphics Needed**
+-> Visual Feedback
+1. Taking damage: sprite flashes red briefly and is knocked back
+2. Dealing damage: hit spark effect appears on the enemy at point of contact
+3. Low health: health bar turns red and pulses slowly
+4. Fame increasing: gold particle burst above the fame bar
+5. Card selected: brief screen freeze + card glow effect before resuming gameplay
+6. Punishment card active: a subtle red vignette around the screen edges persists for the duration of the effect
+7. Enemy death: sprite plays death animation and fades out
+8. Level completed: screen dims briefly, then the level completed UI slides in
+
+
+### *Graphics Needed*
 
 1. Characters
-    1. Human-like
-        1. Goblin (idle, walking, throwing)
-        2. Guard (idle, walking, stabbing)
-        3. Prisoner (walking, running)
-    2. Other
-        1. Wolf (idle, walking, running)
-        2. Giant Rat (idle, scurrying)
-2. Blocks
-    1. Dirt
-    2. Dirt/Grass
-    3. Stone Block
-    4. Stone Bricks
-    5. Tiled Floor
-    6. Weathered Stone Block
-    7. Weathered Stone Bricks
-3. Ambient
-    1. Tall Grass
-    2. Rodent (idle, scurrying)
-    3. Torch
-    4. Armored Suit
-    5. Chains (matching Weathered Stone Bricks)
-    6. Blood stains (matching Weathered Stone Bricks)
-4. Other
-    1. Chest
-    2. Door (matching Stone Bricks)
-    3. Gate
-    4. Button (matching Weathered Stone Bricks)
+    i. Player Archetypes (idle, walk, basic attack, secondary attack, hurt, death)
+        a.Guerrero — sword and shield
+        b. Lancero — spear
+        c. Pesado — full armor
+    ii. Enemies
+        A. Level 1 
+            a. Lion — main type (idle, walk, charge, hurt, death) 
+            b. Wounded Lion — variant (idle, limp walk, burst attack, death)
 
-_(example)_
+        B. Level 2 
+            a. Enemy warrior — main type (idle, walk, net throw, trident attack, hurt, death)
+            b. Wounded Warrior — variant (idle, walk, combo attack, hurt, death)
 
-//No quise borrar los ejemplos entonces escribi aquí abajo
-1. Characters...
-2. Environment
-    1. Sand floor tiles
-    2. Rock floor tiles
-    3. Moving platform
-    4. Imperial throne
-    5. Crowd background
-    6. Gates
-3. UI
-    1. Health bar
-    2. Fame state
-    3. Life icons
-    4. Card frame (power-up)
-    5. Card-frame (punishment)
-    6. Pause menu
-    7. Victory screen
-    8. Game over screen 
+        C. Level 3
+            a. Germanic Barbarian — main type (idle, walk, heavy strike, hurt, death) 
+            b. Looter — variant (idle, fast walk, hit and run, hurt, death)
 
+2. Backgrounds
+    i. Level 1: warm sandy Colosseum arena with crowded stands 
+    ii. Level 2: same arena with Roman banners, Emperor's box visible 
+    iii. Level 3 : dark decayed Colosseum, broken columns, fire in stands 
+
+3. UI Elements
+    i. Health bar 
+    ii. Fame bar 
+    iii. Card front design (powerup and punishment variants)
+    iv. Pause menu screen
+    v. Level completed screen
+    vi. Game over screen
+    vii. Victory screen
+
+4. Ambient 
+    i. Sand floor tiles
+    ii. Rock floor tiles
+    iii. Moving platform
+    iv. Imperial throne
+    v. Crowd background
+    vi. Gates
 
 ## _Sounds/Music_
 
@@ -349,10 +380,8 @@ _(example)_
 
 ### **Style Attributes**
 
-Music: Orchestral /Roman-inspired percussion, heavy drums and a more dramatic theme to build tension on level 3
-SFX: Realistic metal crashes, crowd cheering and booing, and this audio feedback is louder than ambient music to esure clarity
-
-
+Music: Orchestral /Roman-inspired percussion, heavy drums and a more dramatic theme to build tension on level 3.
+SFX: Realistic metal crashes, crowd cheering and booing, and this audio feedback is louder than ambient music to esure clarity.
 
 ### **Sounds Needed**
 
@@ -377,7 +406,6 @@ SFX: Realistic metal crashes, crowd cheering and booing, and this audio feedback
     Game Over sound
     Victory sound
 
-_(example)_
 
 ### **Music Needed**
 
@@ -387,66 +415,33 @@ _(example)_
 4. Happy ending credits track
 5. Rick Astley&#39;s hit #1 single &quot;Never Gonna Give You Up&quot;
 
-_(example)_
-
 
 ## _Schedule_
 
 ---
 
-_(define the main activities and the expected dates when they should be finished. This is only a reference, and can change as the project is developed)_
+Main activities and the expected dates when they should be finished. This is only a reference, and can change as the project is developed.
 
-1. develop base classes
-    1. base entity
-        1. base player
-        2. base enemy
-        3. base block
-  2. base app state
-        1. game world
-        2. menu world
-2. develop player and basic block classes
-    1. physics / collisions
-3. find some smooth controls/physics
-4. develop other derived classes
-    1. blocks
-        1. moving
-        2. falling
-        3. breaking
-        4. cloud
-    2. enemies
-        1. soldier
-        2. rat
-        3. etc.
-5. design levels
-    1. introduce motion/jumping
-    2. introduce throwing
-    3. mind the pacing, let the player play between lessons
-6. design sounds
-7. design music
-
-_(example)_
-
-//No quise borrar los ejemplos entonces 
-WEEK 4
-    Finish GDD
-    Begin with the pitch presentation
-    Begin with the DB
-WEEK 5
-    Implement base movement
-    Implement character and enemy base class
-WEEK 6
-    Implement Level I
-    Implement deck sstem
-    Implement lives system
-WEEK 7
-    Implement Level II
-    Add level variants
-    Implement fame logic
-WEEK 8 
-    Implement Level III
-    Add score system
-    DB integration
-WEEK 9 
-    Polish visuals
-    Add sounf and music
-    Playtesting and balancing (user view)
+1. WEEK 4
+    i. Finish GDD
+    ii. Begin with the pitch presentation
+    iii. Begin with the DB
+2. WEEK 5
+    i. Implement base movement
+    ii. Implement character and enemy base class
+3. WEEK 6
+    i. Implement Level I
+    ii. Implement deck system
+    iii. Implement lives system
+4. WEEK 7
+    i. Implement Level II
+    ii. Add level variants
+    iii. Implement fame logic
+5. WEEK 8 
+    i. Implement Level III
+    ii. Add score system
+    iii. DB integration
+6. WEEK 9 
+    i. Polish visuals
+    ii. Add sound and music
+    iii. Playtesting and balancing (user view)
