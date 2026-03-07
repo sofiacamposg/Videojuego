@@ -191,38 +191,38 @@ The game will collect the following metrics to analyse player behaviour and bala
 
 ### **Themes**
 1. Level 1 — The Hunt
-        i. Mood: Loud, chaotic, festive. 
-        ii. Objects:
-            A. Ambient:
-                a. Roaring crowd in the stands.
-                b. Light-colored sand floor.
-                c. Torches on the Colosseum walls.
-            B. Interactive:
-                a. Lion.
-                b. Wounded Lion.
-                c. Stone platforms with randomized positions.
+        - Mood: Loud, chaotic, festive. 
+        - Objects:
+            - Ambient:
+                - Roaring crowd in the stands.
+                - Light-colored sand floor.
+                - Torches on the Colosseum walls.
+            - Interactive:
+                - Lion.
+                - Wounded Lion.
+                - Stone platforms with randomized positions.
 2. Level 2 — The Peak of the Colosseum
-        i. Mood: Tense, glorious. The Colosseum at its peak. 
-        ii. Objects:
-            A. Ambient:
-                a. Roman flags and banners decorating the Colosseum.
-                b. Polished rock floor marked from previous combats.
-                c. Larger and louder crowd than in Level 1
-            B. Interactive:
-                a. Enemy warrior
-                b. Wounded Warrior 
-                c. Stone platforms with randomized positions
+        - Mood: Tense, glorious. The Colosseum at its peak. 
+        - Objects:
+            - Ambient:
+                - Roman flags and banners decorating the Colosseum.
+                - Polished rock floor marked from previous combats.
+                - Larger and louder crowd than in Level 1
+            - Interactive:
+                - Enemy warrior
+                - Wounded Warrior 
+                - Stone platforms with randomized positions
 3. Level 3 — The Collapse of the Empire
-        i. Mood: Dark, desperate, apocalyptic. The crowd is scarce and hostile. 
-        ii. Objects:
-            A. Ambient:
-                a. Broken columns and rubble across the arena
-                b. Cracked floor 
-                c. Blue fire torches 
-            B. Interactive:
-                a. Germanic Barbarian
-                b. Looter 
-                c. Stone platforms with randomized positions
+        - Mood: Dark, desperate, apocalypti- The crowd is scarce and hostile. 
+        - Objects:
+            - Ambient:
+                - Broken columns and rubble across the arena
+                - Cracked floor 
+                - Blue fire torches 
+            - Interactive:
+                - Germanic Barbarian
+                - Looter 
+                - Stone platforms with randomized positions
 
 ### **Game Flow**
 
@@ -231,21 +231,21 @@ The game will collect the following metrics to analyse player behaviour and bala
 3. Level 1 — The Hunt begins
     3.1. Enemy waves from Level 1 start spawning
     3.2. At the halfway point of the level's estimated duration, the game pauses and the Random Deck Event triggers
-        i. 3 cards are shown face down
-        ii. Player selects one and reads its description before confirming
-        iii. Level 1 guarantees 2 powerups and 1 punishment among the 3 options
+        - 3 cards are shown face down
+        - Player selects one and reads its description before confirming
+        - Level 1 guarantees 2 powerups and 1 punishment among the 3 options
     3.3 Player eliminates all enemies to complete the level
     3.4 Time is evaluated:
-        i. Famous (finished before the target time): +2 permanent powerups added to player deck, +2 punishment cards added to the pool
-        ii. Not Famous (finished after the target time): +1 powerup added to player deck, +1 punishment card added to the pool
+        - Famous (finished before the target time): +2 permanent powerups added to player deck, +2 punishment cards added to the pool
+        - Not Famous (finished after the target time): +1 powerup added to player deck, +1 punishment card added to the pool
 4. Level Completed screen shows current fame, health, active cards and new rewards
 5. Level 2 — Munus begins
-    i. Same structure as Level 1
-    ii. Powerup to punishment ratio in the Random Deck Event depends on the player's current deck composition
+    - Same structure as Level 1
+    - Powerup to punishment ratio in the Random Deck Event depends on the player's current deck composition
 6. Level Completed screen
 7. Level 3 — The Fall begins
-    i. Same structure, higher difficulty
-    ii. Higher probability of punishment cards in the Random Deck Event if the player's Fame is high
+    - Same structure, higher difficulty
+    - Higher probability of punishment cards in the Random Deck Event if the player's Fame is high
 8. If the player completes Level 3 → Victory Screen with final score calculated
 9. At any point, if lives reach 0 → Game Over → full run reset
 
@@ -256,55 +256,55 @@ The game will collect the following metrics to analyse player behaviour and bala
 ### **Abstract classes / Components**
 
 1. BasePhysics
-    i. BasePlayer: Base class for the player-controlled gladiator. Handles movement, health system, and interactions with enemies and cards
-    ii. BaseEnemy: Base class for all enemy types in the arena. Handles enemy movement, attacks, and damage interaction with the player
-    iii. BaseObject: Represents general objects that exist in the arena environment and may interact with entities
+    - BasePlayer: Base class for the player-controlled gladiator. Handles movement, health system, and interactions with enemies and cards
+    - BaseEnemy: Base class for all enemy types in the aren- Handles enemy movement, attacks, and damage interaction with the player
+    - BaseObject: Represents general objects that exist in the arena environment and may interact with entities
 
 2. BaseObstacle
-    i. ArenaBarrier: Static barriers or structures that prevent the player from passing
-    ii. ArenaColumn: Decorative or structural columns inside the colosseum that can act as obstacles during combat
+    - ArenaBarrier: Static barriers or structures that prevent the player from passing
+    - ArenaColumn: Decorative or structural columns inside the colosseum that can act as obstacles during combat
 
 3. BaseInteractable
-    i. PowerUpCards: Cards that provide positive effects or abilities granted by the crowd
-    ii. PunishmentCard: Cards that apply negative effects imposed by the emperor when fame becomes too high
+    - PowerUpCards: Cards that provide positive effects or abilities granted by the crowd
+    - PunishmentCard: Cards that apply negative effects imposed by the emperor when fame becomes too high
 
 ### **Derived Classes / Component Compositions**
 
 1. BasePlayer
-    i. PlayerGuerrero: Balanced archetype. Sword and shield. HP: 120, Attack: 20, Speed: 5. 
-    ii. PlayerLancero: Aggressive archetype. Spear. HP: 100, Attack: 25, Speed: 6. 
-    iii. PlayerPesado: Tank archetype. Full armor. HP: 150, Attack: 15, Speed: 3. 
+    - PlayerGuerrero: Balanced archetype. Sword and shield. HP: 120, Attack: 20, Speed: 5. 
+    - PlayerLancero: Aggressive archetype. Spear. HP: 100, Attack: 25, Speed: 6. 
+    - PlayerPesado: Tank archetype. Full armor. HP: 150, Attack: 15, Speed: 3. 
 2. BaseEnemy
-    i. EnemyLion: Level 1 main enemy. Fast movement speed, moderate damage.
-    ii. EnemyWoundedLion: Level 1 variant. Slower than the standard lion
-    iii. Enemy_EnemyWarrior: Level 2 main enemy. Attacks from distance. Keeps distance if the player approaches.
-    iv. Enemy_WoundedWarrior: Level 2 variant. Attacks from nearer distance than the eney warrior.
-    v. EnemyBarbarian: Level 3 main enemy. Large and slow. Delivers a single powerful strike that deals high damage. 
-    vi. EnemyLooter: Level 3 variant. Fast, difficult to hit consistently
+    - EnemyLion: Level 1 main enemy. Fast movement speed, moderate damage.
+    - EnemyWoundedLion: Level 1 variant. Slower than the standard lion
+    - Enemy_EnemyWarrior: Level 2 main enemy. Attacks from distance. Keeps distance if the player approaches.
+    - Enemy_WoundedWarrior: Level 2 variant. Attacks from nearer distance than the eney warrior.
+    - EnemyBarbarian: Level 3 main enemy. Large and slow. Delivers a single powerful strike that deals high damage. 
+    -. EnemyLooter: Level 3 variant. Fast, difficult to hit consistently
 3. BaseProjectile
-    i. ProjectileSword: Launched by Enemy Warrior and Wounded Warrior.
+    - ProjectileSword: Launched by Enemy Warrior and Wounded Warrior.
 4. BaseObstacle
-    i. ArenaPlatformSmall: Small stone platform. Fits 1 character.
-    ii. ArenaPlatformMedium: Medium stone platform. Fits 2 characters.
-    iii. ArenaPlatformLarge: Large stone platform. Fits 3 or more characters. 
+    - ArenaPlatformSmall: Small stone platform. Fits 1 character.
+    - ArenaPlatformMedium: Medium stone platform. Fits 2 characters.
+    - ArenaPlatformLarge: Large stone platform. Fits 3 or more characters. 
 5. BaseInteractable
 - Power Up Cards:
-    i. CardFavorDelPueblo: +20% movement speed for the duration of the level.
-    ii. CardFiloDeMarte: +30% damage on basic attacks for the duration of the level.
-    iii. CardBendicionDeVenus: Instantly recovers 1 heart of health.
-    iv. CardRugidoDelLeon: All current enemies are slowed for 5 seconds.
-    v. CardEscudoDivino: Absorbs the next hit received with no damage taken.
-    vi. CardSangreDeGladiador: Each enemy kill recovers a small amount of HP
-    vii. CardFuriaDelColiseo: Basic attack gains 30% more area 
-    viii. CardOjoDelEmperador: Reveals the type of cards in the random deck before selection.
-- Punishment cards:
-    ix. CardDecretoImperial: Spawns 2 additional enemies immediately.
-    x. CardCadenasDelCesar: Disables jumping for 10 seconds.
-    xi. CardHambreDeLaPlebe: Using any card from the player's deck costs ½ heart of health.
-    xii. CardIraDeJupiter: Reduces player fame 5%
-    xiii. CardNieblaDelAnfiteatro: Partially darkens the screen for 12 seconds.
-    xiv. CardTraicionDelLanista: Reduces player damage by 40% for 15 seconds.
-    xv. CardJuicioDelSenado: If the player dies during this level, 2 lives are lost instead of 1.
+    - CardFavorDelPueblo: +20% movement speed for the duration of the level.
+    - CardFiloDeMarte: +30% damage on basic attacks for the duration of the level.
+    - CardBendicionDeVenus: Instantly recovers 1 heart of health.
+    - CardRugidoDelLeon: All current enemies are slowed for 5 seconds.
+    - CardEscudoDivino: Absorbs the next hit received with no damage taken.
+    -. CardSangreDeGladiador: Each enemy kill recovers a small amount of HP
+    - CardFuriaDelColiseo: Basic attack gains 30% more area 
+    - CardOjoDelEmperador: Reveals the type of cards in the random deck before selection.
+    - Punishment cards:
+    - CardDecretoImperial: Spawns 2 additional enemies immediately.
+    - CardCadenasDelCesar: Disables jumping for 10 seconds.
+    - CardHambreDeLaPlebe: Using any card from the player's deck costs ½ heart of health.
+    - CardIraDeJupiter: Reduces player fame 5%
+    - CardNieblaDelAnfiteatro: Partially darkens the screen for 12 seconds.
+    - CardTraicionDelLanista: Reduces player damage by 40% for 15 seconds.
+    - CardJuicioDelSenado: If the player dies during this level, 2 lives are lost instead of 1.
 
 ## _Graphics_
 
@@ -335,44 +335,42 @@ UI elements use a consistent dark background with gold, red and white text to ma
 ### *Graphics Needed*
 
 1. Characters
-    i. Player Archetypes (idle, walk, basic attack, secondary attack, hurt, death)
-        a.Guerrero — sword and shield
-        b. Lancero — spear
-        c. Pesado — full armor
-    ii. Enemies
-        A. Level 1 
-            a. Lion — main type (idle, walk, charge, hurt, death) 
-            b. Wounded Lion — variant (idle, limp walk, burst attack, death)
-
-        B. Level 2 
-            a. Enemy warrior — main type (idle, walk, net throw, trident attack, hurt, death)
-            b. Wounded Warrior — variant (idle, walk, combo attack, hurt, death)
-
-        C. Level 3
-            a. Germanic Barbarian — main type (idle, walk, heavy strike, hurt, death) 
-            b. Looter — variant (idle, fast walk, hit and run, hurt, death)
+    - Player Archetypes (idle, walk, basic attack, secondary attack, hurt, death)
+        - Guerrero — sword and shield
+        - Lancero — spear
+        - Pesado — full armor
+    - Enemies
+        - Level 1 
+            - Lion — main type (idle, walk, charge, hurt, death) 
+            - Wounded Lion — variant (idle, limp walk, burst attack, death)
+        - Level 2 
+            - Enemy warrior — main type (idle, walk, net throw, trident attack, hurt, death)
+            - Wounded Warrior — variant (idle, walk, combo attack, hurt, death)
+        - Level 3
+            - Germanic Barbarian — main type (idle, walk, heavy strike, hurt, death) 
+            - Looter — variant (idle, fast walk, hit and run, hurt, death)
 
 2. Backgrounds
-    i. Level 1: warm sandy Colosseum arena with crowded stands 
-    ii. Level 2: same arena with Roman banners, Emperor's box visible 
-    iii. Level 3 : dark decayed Colosseum, broken columns, fire in stands 
+    - Level 1: warm sandy Colosseum arena with crowded stands 
+    - Level 2: same arena with Roman banners, Emperor's box visible 
+    - Level 3 : dark decayed Colosseum, broken columns, fire in stands 
 
 3. UI Elements
-    i. Health bar 
-    ii. Fame bar 
-    iii. Card front design (powerup and punishment variants)
-    iv. Pause menu screen
-    v. Level completed screen
-    vi. Game over screen
-    vii. Victory screen
+    - Health bar 
+    - Fame bar 
+    - Card front design (powerup and punishment variants)
+    - Pause menu screen
+    - Level completed screen
+    -. Game over screen
+    - Victory screen
 
 4. Ambient 
-    i. Sand floor tiles
-    ii. Rock floor tiles
-    iii. Moving platform
-    iv. Imperial throne
-    v. Crowd background
-    vi. Gates
+    - Sand floor tiles
+    - Rock floor tiles
+    - Moving platform
+    - Imperial throne
+    - Crowd background
+    -. Gates
 
 ## _Sounds/Music_
 
@@ -386,25 +384,25 @@ SFX: Realistic metal crashes, crowd cheering and booing, and this audio feedback
 ### **Sounds Needed**
 
 1. Effects
-    Sword swing
-    Sword hit
-    Shield block
-    Animal roar
-    Crowd cheer
-    Crowd boo
-    Platform movement
-    Card selection flip
-    Powerup activation
-    Punishment activation
-    Landing
-    Gate opening
+    - Sword swing
+    - Sword hit
+    - Shield block
+    - Animal roar
+    - Crowd cheer
+    - Crowd boo
+    - Platform movement
+    - Card selection flip
+    - Powerup activation
+    - Punishment activation
+    - Landing
+    - Gate opening
 
 2. Feedback
-    Extra life gained
-    Life lost
-    Fame increase
-    Game Over sound
-    Victory sound
+    - Extra life gained
+    - Life lost
+    - Fame increase
+    - Game Over sound
+    - Victory sound
 
 
 ### **Music Needed**
@@ -423,25 +421,25 @@ SFX: Realistic metal crashes, crowd cheering and booing, and this audio feedback
 Main activities and the expected dates when they should be finished. This is only a reference, and can change as the project is developed.
 
 1. WEEK 4
-    i. Finish GDD
-    ii. Begin with the pitch presentation
-    iii. Begin with the DB
+    - Finish GDD
+    - Begin with the pitch presentation
+    - Begin with the DB
 2. WEEK 5
-    i. Implement base movement
-    ii. Implement character and enemy base class
+    - Implement base movement
+    - Implement character and enemy base class
 3. WEEK 6
-    i. Implement Level I
-    ii. Implement deck system
-    iii. Implement lives system
+    - Implement Level I
+    - Implement deck system
+    - Implement lives system
 4. WEEK 7
-    i. Implement Level II
-    ii. Add level variants
-    iii. Implement fame logic
+    - Implement Level II
+    - Add level variants
+    - Implement fame logic
 5. WEEK 8 
-    i. Implement Level III
-    ii. Add score system
-    iii. DB integration
+    - Implement Level III
+    - Add score system
+    - DB integration
 6. WEEK 9 
-    i. Polish visuals
-    ii. Add sound and music
-    iii. Playtesting and balancing (user view)
+    - Polish visuals
+    - Add sound and music
+    - Playtesting and balancing (user view)
