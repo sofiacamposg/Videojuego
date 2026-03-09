@@ -1,14 +1,14 @@
-class Player extends AnimatedObject {
+//Hereda de Animated Object
+import { AnimatedObject } from "../libs/AnimatedObject.js";
+class PlayerBase extends AnimatedObject {
 
   constructor(position){
-    super(position,80,80,"white","player",6)
-
-    this.health = 100
-    this.speed = 4
+    super(position,160,160,"white","player",6)
   }
 
   update(){
     // movimiento
+    this.updateAnimation(20);
   }
 
   draw(ctx){
@@ -16,3 +16,4 @@ class Player extends AnimatedObject {
   }
 
 }
+export { PlayerBase }; 

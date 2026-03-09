@@ -1,14 +1,19 @@
-class Enemy extends AnimatedObject {
+//Hereda de Animated Object
+import { AnimatedObject } from "../libs/AnimatedObject.js";
+class EnemyBase extends AnimatedObject {
 
   constructor(position){
-    super(position,80,80,"white","enemy",4)
-
-    this.health = 30
-    this.damage = 10
+    super(position,160,160,"white","enemy",4)
   }
 
   update(){
-    // lógica de movimiento
+    // movimiento
+    this.updateAnimation(20);
+  }
+
+  draw(ctx){
+    super.draw(ctx)
   }
 
 }
+export { EnemyBase }; 

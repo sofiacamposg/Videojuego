@@ -1,16 +1,7 @@
-/*
- * Class for the base Game Object used for all the actors in a scene
- *
- * The position of the object is its center.
- *
- * Gilberto Echeverria
- * 2026-02-15
- */
-
 "use strict";
-
-//import { Vector } from "./Vector.js";
-//import { Rect } from "./Rect.js";
+//Base for alll the actors in the scene
+import { Vector } from "./Vector.js";
+import { Rect } from "./Rect.js";
 
 // Global variables to select whether to display bounding boxes and colliders
 let showBBox = false;
@@ -60,19 +51,23 @@ class GameObject {
         // Use the scale as well
         this.xOffset = 0;
         this.yOffset = 0;
-        this.colliderWidth = 10;
-        this.colliderHeight = 10;
+        //TAREA
+        this.colliderWidth = width * this.scale;;
+        this.colliderHeight = height * this.scale;;
         this.updateCollider();
     }
 
     updateCollider() {
+        //TAREA
         // Adjust the Rect of the object with its position
         // TODO: Center the collider around the object position
         // Use the scale as well
-        this.collider = new Rect(5,
-                                 5,
-                                 15,
-                                 15);
+       this.collider = new Rect(
+            this.position.x - this.colliderWidth / 2,
+            this.position.y - this.colliderHeight / 2,
+            this.colliderWidth,
+            this.colliderHeight
+);
     }
 
     draw(ctx) {
@@ -150,3 +145,4 @@ class GameObject {
 
     }
 }
+export { GameObject }

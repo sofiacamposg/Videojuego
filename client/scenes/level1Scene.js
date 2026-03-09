@@ -1,68 +1,118 @@
+import { Player1 } from "../objects/Player1.js";
+import { Vector } from "../libs/Vector.js";
+import { EnemyLion } from "../objects/EnemyLion.js";
+
 "use strict"
 //Lógica del juego
+
+//tamaño del mundo
+let worldWidth = 3000;
+let worldHeight = 600;
+let cameraX = 0; //ventana del canvas
 
 // Mouse
 let mouseX = 0
 let mouseY = 0
 
-// Player, haorita lo puse como cuadrado porque aún no spe cómo meter un sprite
-let player = {
-    x: 450,
-    y: 300,
-    width: 60,
-    height: 60,
-    speed: 4,
-    health: 100
-}
+let keysDown = {}; //Para poder usar teclado para mover a los jugadores
+
+// Player
+let player = new Player1 (new Vector(200,350));
 
 // Enemies, igual figuras random
 let enemies = [
-    {x:800,y:200,width:50,height:50},
-     {x:900,y:150,width:50,height:50}
+    new EnemyLion (new Vector(900,377)),
+    new EnemyLion (new Vector(800,377))
 ]
 
 // Fondo
 let backgroundImage = new Image()
 backgroundImage.src = "./assets/Fondo2.png"
 
-function draw(ctx, canvas){
+let spawnTimer = 0;
+let spawnInterval = 2000; // 2000 ms = 2 segundos
+
+function draw(ctx){  //TODO DRAW DEBE CAMBIAR POR LA VENTANA DE LA CÁMARA
     //La idea es que hacemos, clear, después update y ya desués draw objects
     ctx.clearRect(0,0,canvas.width,canvas.height) //aquí limpiamos
-    ctx.drawImage(backgroundImage,0,0,canvas.width,canvas.height) //dibujamos el fondo
-
+    for(let i = 0; i < worldWidth; i+= canvas.width){
+    ctx.drawImage(backgroundImage,i-cameraX,0,canvas.width,canvas.height); //dibujamos el fondo
+    }
+    
     update() //llamamos a update que definimos abajo
 
-    drawPlayer(ctx) //dibujamos al sprite del jugador
-    drawEnemies(ctx) //dibujamos al spprite del enemigo
+    ctx.save();  //monito no se sale del screen
+    ctx.translate(-cameraX, 0);
 
+    drawPlayer(ctx) //dibujamos al sprite del jugador
+    drawEnemies(ctx) //dibujamos al sprite del enemigo
+    spawnTimer++;
+    if (spawnTimer >= spawnInterval) {
+        spawnEnemy();
+        spawnTimer = 0;
+    }
+    ctx.restore();
 }
 
 function update(){
-    enemies.forEach(enemy=>{
-        enemy.x -= 1 //nos movemos hacia la izquierda con el enemigo, para que avance hacia el jugador
-    })
     //aquí realmente debe ir toda la lógica de movimiento, colisiones, etc
+    //Movimiento del jugador
+    if (keysDown["ArrowLeft"]) {
+        player.position.x -= player.speed;
+    }
+    if (keysDown["ArrowRight"]) {
+        player.position.x  += player.speed;
+    }
+    // Esto es para limitar la posición dle jugador dentro del canvas
+    if (player.position.x < player.halfSize.x) {
+        player.position.x = player.halfSize.x;
+    }
+
+    if (player.position.x > worldWidth - player.halfSize.x) {
+        player.position.x = worldWidth - player.halfSize.x;
+    }
+
+    // movimiento enemigos, aquí no hay tanta ciencia porque solo tenenmos que hacer que avance hacia el juagador
+    enemies.forEach(enemy=>{
+        enemy.position.x -= 1;
+    });
+
+    //movemos la cámara para que siga al player
+    cameraX = player.position.x - canvas.width/2; //porque nuestro canvas mide 1000, cámmara empieza en 0, cuando jugador llega a 500 la cámara avanza
+    if (cameraX < 0) { //límites para que la cámara no salga del mundo y no muestre espacios vacíos
+        cameraX = 0;
+    }
+    if (cameraX > worldWidth - canvas.width){
+        cameraX = worldWidth - canvas.width;
+    }
 }
 
 function drawPlayer(ctx){
-    ctx.fillStyle = "white"
-    ctx.fillRect(player.x,player.y,player.width,player.height)
+    player.update();
+    player.draw(ctx); //depende de cameraX
 }
 
 function drawEnemies(ctx){
-    ctx.fillStyle = "red"
-    enemies.forEach(enemy=>{ //Para cada enemigo en emenies, depués cambiarlo
-        ctx.fillRect(enemy.x,enemy.y,enemy.width,enemy.height)
-    })
+    enemies.forEach(enemy=>{
+       enemy.update();
+       enemy.draw(ctx); //depende de cameraX
+    });
 }
+//ARREGLAR ESTA FUNCIÓN
+let totalSpawned = 0;
+let maxEnemies = 10;
+function spawnEnemy(){
+    let min = 1;
+    let max = 5;
+    let amount = Math.floor(Math.random() * (max - min + 1)) + min;
 
-function spawnEnemy(){ //Crea un enemigo nuevo y push lo agrega al array de arriba
-    enemies.push({ 
-        x: Math.random()*500, //aparece a una altura aleatoria en x
-        y: 575, //según yo ahí es nivel de piso porque de height mide 50 y nuestro canvas 600
-        width: 50,
-        height: 50
-    })
+    for(let i = 0; i < amount; i++){
+        if(totalSpawned >= maxEnemies) return;
+        enemies.push(
+            new EnemyLion( new Vector(Math.random() * (worldWidth - player.halfSize.x - 200) + 200,377))
+        );
+        totalSpawned++;
+    }
 }
 
 function handleMouseMove(event,canvas){ //Ya conocemos esta función
@@ -79,5 +129,11 @@ function reset(){
     enemies = [] //Limpia todo, solo se usa cuando el run se reinicia, sobre todo por health
     player.health = 100
 }
+function handleKeyDown(event){
+    keysDown[event.key] = true;
+}
 
-export { draw, handleMouseMove, handleClick, reset }
+function handleKeyUp(event){
+    keysDown[event.key] = false;
+}
+export { draw, handleMouseMove, handleClick, reset, handleKeyDown, handleKeyUp }
