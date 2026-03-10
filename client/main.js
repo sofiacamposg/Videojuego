@@ -1,5 +1,5 @@
 import { draw as drawMenu, handleMouseMove as handleMouseMoveMenu, handleClick as handleClickMenu } from "./scenes/menuScene.js";
-import { draw as drawLogIn, handleMouseMove as handleMouseMoveLogIn, handleClick as handleClickLogIn, handleKeyDown as handleKeyDownLogIn, getUsername, reset as resetLogIn } from "./scenes/logInScene.js";
+import { draw as drawLogIn, handleMouseMove as handleMouseMoveLogIn, handleClick as handleClickLogIn, handleKeyDown as handleKeyDownLogIn, getUsername, getPassword, reset as resetLogIn } from "./scenes/logInScene.js";
 import { draw as drawSelect, handleMouseMove as handleMouseMoveSelect, handleClick as handleClickSelect, reset as resetSelect } from "./scenes/selectScene.js";
 import { draw as drawLevel1, handleMouseMove as handleMouseMoveLevel1, handleClick as handleClickLevel1, reset as resetLevel1, handleKeyDown as handleKeyDownLevel1,
     handleKeyUp as handleKeyUpLevel1 } from "./scenes/level1Scene.js";
@@ -12,6 +12,11 @@ let ctx;
 
 let currentScene = "menu"; //nos posicionamos en menuScene al inicio de cualquier run
 let playerName = ""; //variable para log in
+const users = {
+    alex: "1234",
+    sofia: "abcd",
+    test: "test"
+};
 
 function main() {
     canvas = document.getElementById("canvas");
@@ -38,10 +43,17 @@ function main() {
                 resetLogIn();
                 currentScene = 'menu';
             }
-            if(clicked === 'confirm'){
-                playerName = getUsername();
-                currentScene = 'start';
-            }
+if(clicked === 'confirm'){
+    const username = getUsername();
+    const password = getPassword();
+
+    if(users[username] && users[username] === password){
+        playerName = username;
+        currentScene = 'start';
+    } else {
+        alert("Incorrect username or password");
+    }
+}
         }
         if (currentScene === 'start'){
             clicked = handleClickSelect(); //función que definimos en menuScene y nos regresa alguno de los botones

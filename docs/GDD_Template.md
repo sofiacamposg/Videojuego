@@ -77,12 +77,9 @@ Exit Button
 Background of the Colosseum
 Crown ambience audio
 
-SETTINGS:
+OPTIONS:
 Master Volume slider
 Music On/Off toggle
-
-LOG IN SCREEN:
-
 
 LEVEL SELECT:
 Levels advance automatically as you complete them
@@ -263,7 +260,7 @@ What kinds of colors will you be using? Do you have a limited palette to work wi
 
 What kind of graphic style are you going for? Cartoony? Pixel-y? Cute? How, specifically? Solid, thick outlines with flat hues? Non-black outlines with limited tints/shades? Emphasize smooth curvatures over sharp angles? Describe a set of general rules depicting your style here.
 
-Well-designed feedback, both good (e.g. leveling up) and bad (e.g. being hit), are great for teaching the player how to play through trial and error, instead of scripting a lengthy tutorial. What kind of visual feedback are you going to use to let the player know they&#39;re interacting with something? That they \*can\* interact with something?
+Well-designed feedback, both good (e.g. leveling up) and bad (e.g. being hit), are great for teaching the player how to play through trial and error, instead of scripting a lengthy tutorial. What kind of visual feedback are you going to use to let the player know they are interacting with something? That they \*can\* interact with something?
 
 ### **Graphics Needed**
 

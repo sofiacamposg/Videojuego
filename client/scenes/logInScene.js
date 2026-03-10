@@ -203,4 +203,8 @@ function reset() {
   mouseX = 0;
   mouseY = 0;
 }
-export { draw, handleMouseMove, handleClick, handleKeyDown, getUsername, reset };
+
+function getPassword() {
+  return password;
+}
+export { draw, handleMouseMove, handleClick, handleKeyDown, getUsername, getPassword, reset };
