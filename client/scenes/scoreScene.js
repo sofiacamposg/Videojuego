@@ -1,23 +1,30 @@
 "use strict"
-
 // Mouse
 let mouseX = 0;
 let mouseY = 0;
 
-const buttonStart = { x: 500, y: 450, text: "START" };
-const buttonSettings = { x: 500, y: 500, text: "SETTINGS" };
-const buttonLogIn = { x: 500, y: 550, text: "LOG IN" };
+const buttonExit = {
+    x: 150,
+    y: 600,
+    text: "EXIT"
+};
 
+const buttonAgain = {
+    x: 850,
+    y: 600,
+    text: "START AGAIN"
+};
+
+// Imagen de fondo
 let backgroundImage = new Image();
-backgroundImage.src = "./assets/Portada.png";
+backgroundImage.src = "./assets/PortadaBase.png";
 
 function draw(ctx, canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
-    drawButton(ctx, buttonStart);
-    drawButton(ctx, buttonSettings);
-    drawButton(ctx, buttonLogIn);
+    drawButton(ctx, buttonExit);
+    drawButton(ctx, buttonAgain);
 }
 
 function drawButton(ctx, button) {
@@ -74,13 +81,14 @@ function isMouseOverButton(button) {
 
   return mouseX > left && mouseX < right && mouseY > top && mouseY < bottom;
 }
+
 //Esta función solo revisa el resultado de la anterior y hace return
 function handleClick() {
   // revisa si el mouse está encima de START, SETTINGS o LOG IN
-  if (isMouseOverButton(buttonStart)) return "start";
-  if (isMouseOverButton(buttonSettings)) return "settings";
-  if (isMouseOverButton(buttonLogIn)) return "login";
+  if (isMouseOverButton(buttonExit)) return "exit";
+  if (isMouseOverButton(buttonAgain)) return "again";
   return null;
 }
 
 export { draw, handleMouseMove, handleClick };
+

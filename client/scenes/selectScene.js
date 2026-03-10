@@ -1,117 +1,186 @@
 "use strict"
-
 let mouseX = 0;
 let mouseY = 0;
 
-let backgroundLoaded = false;
-let imageLoaded = false;
+//Botones
+const buttonBack = {
+    x: 150,
+    y: 50,
+    text: "BACK TO MENU"
+};
 
-// Fondo
-let background = new Image();
-background.src = "./assets/Coliseo.png";
-background.onload = () => { backgroundLoaded = true; };
+const buttonConfirm = {
+    x: 850,
+    y: 50,
+    text: "CONFIRM"
+}; 
 
-// Imagen gladiadores
-let gladiatorsImage = new Image();
-gladiatorsImage.src = "./assets/gladiadores.png";
-gladiatorsImage.onload = () => { imageLoaded = true; };
+    //fondo
+    let backgroundImage = new Image();
+    backgroundImage.src = "./assets/PortadaBase.png";    ;
+    //characters
+    let gladiatorsImage = new Image();
+    gladiatorsImage.src = "./assets/gladiadores.png";
 
-// Zonas de personajes
-const zones = [
-    { x: 200, y: 150, width: 200, height: 300, name: "Guerrero", stats: "Vida:120 Ataque:20 Vel:5", description: "Gladiador equilibrado en ataque y defensa. Ideal para un estilo adaptable" },
-    { x: 400, y: 150, width: 200, height: 300, name: "Lancero", stats: "Vida:100 Ataque:25 Vel:6", description: "Gladiador rápido con mayor alcance. Perfecto para jugadores ágiles" },
-    { x: 600, y: 150, width: 200, height: 300, name: "Pesado", stats: "Vida:150 Ataque:15 Vel:3", description: "Gladiador resistente con gran defensa. Soporta mucho daño pero es más lento" }
-];
-
-function draw(ctx, canvas) {
-
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    ctx.fillStyle = "black";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    // Fondo
-    if(backgroundLoaded){
-        ctx.drawImage(background,0,0,canvas.width,canvas.height);
+    // Zonas de los personajes
+    let zones = [
+        { x: 200, y: 200, width: 200, height: 150, name: "Guerrero", stats: "Vida:120 Ataque:20 Vel:5", description: "Gladiador equilibrado en ataque y defensa. Ideal para un estilo adaptable" },
+        { x: 400, y: 200, width: 200, height: 150, name: "Lancero", stats: "Vida:100 Ataque:25 Vel:6", description: "Gladiador rápido con mayor alcance. Perfecto para jugadores ágiles" },
+        { x: 600, y: 200, width: 200, height: 150, name: "Pesado", stats: "Vida:150 Ataque:15 Vel:3", description: "Gladiador resistente con gran defensa. Soporta mucho daño pero es más lento" }
+    ];
+    //reset
+    function reset() {
+    mouseX = 0;
+    mouseY = 0;
     }
 
-    // Cargando
-    if(!imageLoaded){
-        ctx.fillStyle = "white";
-        ctx.font = "30px Arial";
+    function draw(ctx, canvas) {
+        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+        // Título
+        ctx.fillStyle = "white"; //texto
+        ctx.font = "40px 'VT323'";
         ctx.textAlign = "center";
-        ctx.fillText("Cargando...",canvas.width/2,canvas.height/2);
-        return;
-    }
+        ctx.strokeStyle = "rgb(255, 187, 86)"; //borde
+        ctx.lineWidth = 3;
+        ctx.strokeText("S E L E C T   C H A R A T E R", canvas.width / 2, 150);
+        ctx.fillText("S E L E C T   C H A R A T E R", canvas.width / 2, 150);
 
-    // Imagen gladiadores
-    ctx.drawImage(gladiatorsImage,200,150,600,300);
+        // Botones
+        drawButton(ctx, buttonConfirm);
+        drawButton(ctx, buttonBack);
+        //Dibujamos a los gladiadores
+        const targetW = 600;
+        const scale = targetW / gladiatorsImage.width;
+        const targetH = gladiatorsImage.height * scale;
 
-    ctx.fillStyle = "white";
-    ctx.font = "40px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("ELIGE TU GLADIADOR",canvas.width/2,100);
+        ctx.drawImage(gladiatorsImage, 200, 150, targetW, targetH);
 
-    zones.forEach(zone => {
-
+        // Hover: mostrar panel de stats/desc
+        zones.forEach((zone) => {
         const isHover =
         mouseX > zone.x &&
         mouseX < zone.x + zone.width &&
         mouseY > zone.y &&
         mouseY < zone.y + zone.height;
 
-        if(isHover){
+        // Visual de las stats de los characters
+        if (isHover) {
 
-            ctx.fillStyle = "rgba(0,0,0,0.85)";
-            ctx.fillRect(150,480,700,160);
+        // Panel
+        ctx.fillStyle = "rgba(0,0,0,0.85)";
+        ctx.fillRect(150, 480, 700, 160);
 
-            ctx.fillStyle = "yellow";
-            ctx.font = "22px Arial";
-            ctx.fillText(zone.name,canvas.width/2,510);
 
-            const vida = zone.stats.match(/Vida:(\d+)/)[1];
-            const ataque = zone.stats.match(/Ataque:(\d+)/)[1];
-            const vel = zone.stats.match(/Vel:(\d+)/)[1];
+        // Extraer stats 
+        const vidaMatch = zone.stats.match(/Vida:(\d+)/);
+        const ataqueMatch = zone.stats.match(/Ataque:(\d+)/);
+        const velMatch = zone.stats.match(/Vel:(\d+)/);
 
-            ctx.font = "18px Arial";
+        const vida = vidaMatch ? vidaMatch[1] : "?";
+        const ataque = ataqueMatch ? ataqueMatch[1] : "?";
+        const vel = velMatch ? velMatch[1] : "?";
 
-            ctx.fillStyle = "red";
-            ctx.fillText(`Vida: ${vida}`,canvas.width/2 - 100,540);
+        ctx.font = "22px 'VT323'";
+        ctx.fillStyle = "red";
+        ctx.fillText(`Vida: ${vida}`, canvas.width / 2 - 160, 550);
 
-            ctx.fillStyle = "#40E0D0";
-            ctx.fillText(`Ataque: ${ataque}`,canvas.width/2,540);
+        ctx.fillStyle = "#40E0D0";
+        ctx.fillText(`Ataque: ${ataque}`, canvas.width / 2, 550);
 
-            ctx.fillStyle = "green";
-            ctx.fillText(`Velocidad: ${vel}`,canvas.width/2 + 100,540);
+        ctx.fillStyle = "green";
+        ctx.fillText(`Velocidad: ${vel}`, canvas.width / 2 + 160, 550);
 
-            ctx.font = "16px Arial";
-            ctx.fillStyle = "white";
-            ctx.fillText(zone.description,canvas.width/2,570);
+        ctx.font = "18px 'VT323'";
+        ctx.fillStyle = "white";
+        ctx.fillText(zone.description, canvas.width / 2, 585);
         }
+        });
 
-    });
-}
+        // Botones
+        drawButton(ctx, buttonConfirm);
+        drawButton(ctx, buttonBack);
+    }
 
-function handleMouseMove(event,canvas){
-    const rect = canvas.getBoundingClientRect();
-    mouseX = event.clientX - rect.left;
-    mouseY = event.clientY - rect.top;
-}
+    //Reutiliza función de menuScreen
+    function drawButton(ctx, button) {
+        ctx.font = "25px 'VT323'";
+        ctx.textAlign = 'center';
 
-function handleClick(x,y){
+        const textWidth = ctx.measureText(button.text).width;
+        const textHeight = 30;
 
-    for(let zone of zones){
+        const left = button.x - textWidth / 2;
+        const right = button.x + textWidth / 2;
+        const top = button.y - textHeight;
+        const bottom = button.y;
 
-        if(
-            x > zone.x &&
-            x < zone.x + zone.width &&
-            y > zone.y &&
-            y < zone.y + zone.height
-        ){
-            console.log("Elegiste:",zone.name);
+        const isHover =
+            mouseX > left &&
+            mouseX < right &&
+            mouseY > top &&
+            mouseY < bottom;
+
+        ctx.fillStyle = isHover ? "red" : "white";
+        ctx.fillText(button.text, button.x, button.y);
+
+        if (isHover) {
+            ctx.beginPath();
+            ctx.moveTo(left, button.y + 5);
+            ctx.lineTo(right, button.y + 5);
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 3;
+            ctx.stroke();
         }
+    }
+
+    function handleMouseMove(event, canvas) {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = event.clientX - rect.left;
+        mouseY = event.clientY - rect.top;
 
     }
-}
 
-export {draw,handleMouseMove,handleClick};
+    //Esta función es para poder saber que botón se clickeo y asi movernos a otra escena
+    function isMouseOverButton(button) {
+        //usa el mismo font y tamaño que usas para dibujar
+        const dummyCanvas = document.createElement("canvas");
+        const dummyCtx = dummyCanvas.getContext("2d");
+        dummyCtx.font = "25px 'VT323'";
+
+        const textWidth = dummyCtx.measureText(button.text).width;
+        const textHeight = 30;
+
+        const left = button.x - textWidth / 2;
+        const right = button.x + textWidth / 2;
+        const top = button.y - textHeight;
+        const bottom = button.y;
+
+        return mouseX > left && mouseX < right && mouseY > top && mouseY < bottom;
+    }
+    //Esta función solo revisa el resultado de la anterior y hace return
+    function handleButtonClick() {
+        // revisa si el mouse está encima de START, SETTINGS o LOG IN
+        if (isMouseOverButton(buttonBack)) return "back";
+        if (isMouseOverButton(buttonConfirm)) return "confirm";
+        return null;
+    }
+    // Detecta click en zona y regresa cuál eligieron
+    function handleClick() {
+    for (const zone of zones) {
+        const inside =
+        mouseX > zone.x &&
+        mouseX < zone.x + zone.width &&
+        mouseY > zone.y &&
+        mouseY < zone.y + zone.height;
+
+        if (inside) return zone.name; // "Guerrero" | "Lancero" | "Pesado"
+        // revisa si el mouse está encima de START, SETTINGS o LOG IN
+    if (isMouseOverButton(buttonBack)) return "back";
+    if (isMouseOverButton(buttonConfirm)) return "confirm";
+    }
+    return null;
+    }
+    export { draw, handleMouseMove, handleClick, reset };
+        
+
+        
