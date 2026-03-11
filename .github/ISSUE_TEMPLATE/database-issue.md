@@ -1,8 +1,9 @@
 ---
-name: Database issue template
-about: Describe this issue template's purpose here.
-title: Database
-labels: ''
+name: Database Issue
+about: Database issues template
+title: ''
+labels: base de datos, Req. Funcionales, Req. No Funcionales, Sprint 1, Sprint 2,
+  Sprint 3, Sprint 4, Sprint 6, Sprints 5
 assignees: ''
 
 ---
