@@ -1,9 +1,9 @@
 ---
-name: Database Issue
-about: Database issues template
+name: Web Issues
+about: Descriweb issues template
 title: ''
-labels: Back-end, base de datos, Req. Funcionales, Req. No Funcionales, Sprint 1,
-  Sprint 2, Sprint 3, Sprint 4, Sprint 6, Sprints 5, videojuego
+labels: Front-end, Req. Funcionales, Req. No Funcionales, Sprint 1, Sprint 2, Sprint
+  3, Sprint 4, Sprint 6, Sprints 5, web
 assignees: ''
 
 ---
@@ -11,7 +11,7 @@ assignees: ''
 ---
 ## 🚀 New Task / Issue
 about: Structured issue description for GitHub Projects
-title: "[DATABASE] Brief description of the problem or task"
+title: "[web] Brief description of the problem or task"
 assignees:
 - responsible_user
 ---

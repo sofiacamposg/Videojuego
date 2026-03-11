@@ -1,9 +1,9 @@
 ---
-name: Database Issue
-about: Database issues template
+name: Videogame Issues
+about: videogame issues template
 title: ''
-labels: Back-end, base de datos, Req. Funcionales, Req. No Funcionales, Sprint 1,
-  Sprint 2, Sprint 3, Sprint 4, Sprint 6, Sprints 5, videojuego
+labels: Back-end, Req. Funcionales, Req. No Funcionales, Sprint 1, Sprint 2, Sprint
+  3, Sprint 4, Sprint 6, Sprints 5, videojuego
 assignees: ''
 
 ---
@@ -11,7 +11,7 @@ assignees: ''
 ---
 ## 🚀 New Task / Issue
 about: Structured issue description for GitHub Projects
-title: "[DATABASE] Brief description of the problem or task"
+title: "[videogame] Brief description of the problem or task"
 assignees:
 - responsible_user
 ---
