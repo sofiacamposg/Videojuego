@@ -38,7 +38,6 @@ let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
 function draw(ctx, canvas){
-
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(backgroundImage,0,0,canvas.width,canvas.height);
 
@@ -66,7 +65,6 @@ function draw(ctx, canvas){
 }
 
 function drawToggle(ctx){
-
     const left = toggleBox.x - toggleBox.w/2;
     const top = toggleBox.y - toggleBox.h/2;
 
@@ -76,18 +74,26 @@ function drawToggle(ctx){
         mouseY > top &&
         mouseY < top + toggleBox.h;
 
-    ctx.strokeStyle = "rgb(255, 187, 86)";
+    // Color según ON/OFF
+    ctx.fillStyle = volumeOn ? "green" : "red";
+
+    // Si está hover, aclaramos un poco el color
+    if(isHover){
+        ctx.fillStyle = volumeOn ? "#66ff66" : "#ff6666";
+    }
+
+    ctx.strokeStyle = "white";
     ctx.lineWidth = 3;
-    ctx.strokeRect(left,top,toggleBox.w,toggleBox.h);
+    ctx.fillRect(left, top, toggleBox.w, toggleBox.h);
+    ctx.strokeRect(left, top, toggleBox.w, toggleBox.h);
 
-    ctx.fillStyle = isHover ? "red" : "white";
     ctx.font = "25px 'VT323'";
-
-    ctx.fillText(volumeOn ? "ON" : "OFF",toggleBox.x,toggleBox.y+8);
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.fillText(volumeOn ? "ON" : "OFF", toggleBox.x, toggleBox.y + 8);
 }
 
 function drawVolumeBar(ctx){
-
     const left = volumeBar.x - volumeBar.w/2;
 
     ctx.strokeStyle = "white";
@@ -104,7 +110,6 @@ function drawVolumeBar(ctx){
 }
 
 function drawButton(ctx,button){
-
     ctx.font = "25px 'VT323'";
     ctx.textAlign = "center";
 
@@ -124,14 +129,11 @@ function drawButton(ctx,button){
 }
 
 function handleMouseMove(event,canvas){
-
     const rect = canvas.getBoundingClientRect();
-
     mouseX = event.clientX - rect.left;
     mouseY = event.clientY - rect.top;
 
     if(draggingVolume){
-
         const left = volumeBar.x - volumeBar.w/2;
         const pos = mouseX - left;
 
@@ -143,7 +145,6 @@ function handleMouseMove(event,canvas){
 }
 
 function isMouseOverToggle(){
-
     return mouseX > toggleBox.x - toggleBox.w/2 &&
            mouseX < toggleBox.x + toggleBox.w/2 &&
            mouseY > toggleBox.y - toggleBox.h/2 &&
@@ -151,7 +152,6 @@ function isMouseOverToggle(){
 }
 
 function isMouseOverVolume(){
-
     return mouseX > volumeBar.x - volumeBar.w/2 &&
            mouseX < volumeBar.x + volumeBar.w/2 &&
            mouseY > volumeBar.y &&
@@ -159,9 +159,7 @@ function isMouseOverVolume(){
 }
 
 function isMouseOverButton(button){
-
     const textWidth = 120;
-
     return mouseX > button.x - textWidth/2 &&
            mouseX < button.x + textWidth/2 &&
            mouseY > button.y - 30 &&
@@ -169,7 +167,6 @@ function isMouseOverButton(button){
 }
 
 function handleClick(){
-
     if(isMouseOverToggle()){
         volumeOn = !volumeOn;
         return;
@@ -185,7 +182,6 @@ function handleClick(){
 }
 
 function startDragging(){
-
     if(volumeOn && isMouseOverVolume()){
         draggingVolume = true;
     }
@@ -196,7 +192,6 @@ function stopDragging(){
 }
 
 function reset(){
-
     draggingVolume = false;
     mouseX = 0;
     mouseY = 0;
