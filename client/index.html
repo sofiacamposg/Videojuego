@@ -6,21 +6,67 @@
     </head>
 
     <body>
-        <div id="headerContainer">
+        <header id="headerContainer">
             <h1 class = 'pixelText'>G L A D I A T O R</h1>
             <h2>Enter the Arena</h2>
             <p>Fight, survive, and earn glory in the Roman Colosseum</p>
             <!--FALTA INICIO, TUTORIAL, DESCRIPCIÓN, ESTADISTICAS-->
         </div>
         <div class = 'tutorial'>
-            <h2>Tutorial</h2>
-        </div>
-        <div class = 'description'>
-            <h2>About the game</h2>
+            <a href = 'tutorial.html' class = 'tutorialButton'> Tutorial </a>
+            <a href = 'instructions.html' class = 'tutorialButton'> Instructions </a>
         </div>
         <div class = 'stats'>
             <h2>Player stats</h2>
-        </div>
+        </header>
+        <main class = 'description'>
+            <!--Sección para la descripción del juego-->
+            <section class = 'descriptionBox'>
+                <button class = 'dropdownButton' onclick = 'toggleDescription()'>
+                    About the Game <!--Botón que mostrará una descripción del juego onclick-->
+                </button>
+                <div class = 'descriptionContent' class = 'dropdowmContent'>
+                    <p>
+                        Gladiator is a 2D side-scrolling roguelite inspired by the Roman Colosseum.
+                        Players choose a gladiator, fight through dangerous levels, survive enemy waves,
+                        and balance glory, fame, and punishment from the Empire.
+                    </p>
+                </div>
+            </section>
+            <!-- Sección para las estadísticas del jugador -->
+            <section class = 'statsBox'>
+                <h2>Player Stats</h2>
+                <div class = 'statRow'> <!-- Con username -->
+                    <span class="statLabel">Username</span>
+                    <span class="statValue">Player1</span>
+                </div>
+                <div class="statRow"> <!-- Best score -->
+                    <span class="statLabel">Best Score</span>
+                    <span class="statValue">1240</span>
+                </div>
+
+                <div class="statRow"> <!-- Run Played -->
+                    <span class="statLabel">Runs Played</span>
+                    <span class="statValue">8</span>
+                </div>
+
+                <div class="statRow"> <!-- Best Level -->
+                    <span class="statLabel">Best Level</span>
+                    <span class="statValue">3</span>
+                </div>
+
+                <div class="statRow"> <!-- Current score -->
+                    <span class="statLabel">currentScore</span>
+                    <span class="statValue">1239</span>
+                </div>
+
+                <div class="statRow"> <!-- Highest Fame -->
+                    <span class="statLabel">Highest Fame</span>
+                    <span class="statValue">1239</span>
+                </div>
+
+            </section>
+        </main>
            
         <canvas id="canvas"></canvas>
         <script type="module" src="main.js"></script>

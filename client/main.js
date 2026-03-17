@@ -1,8 +1,8 @@
 import { draw as drawMenu, handleMouseMove as handleMouseMoveMenu, handleClick as handleClickMenu } from "./scenes/menuScene.js";
-import { draw as drawLogIn, handleMouseMove as handleMouseMoveLogIn, handleClick as handleClickLogIn, handleKeyDown as handleKeyDownLogIn, getUsername, reset as resetLogIn } from "./scenes/logInScene.js";
-import { draw as drawSelect, handleMouseMove as handleMouseMoveSelect, handleClick as handleClickSelect, reset as resetSelect } from "./scenes/selectScene.js";
+import { draw as drawLogIn, handleMouseMove as handleMouseMoveLogIn, handleClick as handleClickLogIn, handleKeyDown as handleKeyDownLogIn, reset as resetLogIn } from "./scenes/logInScene.js";
+import { draw as drawSelect, handleMouseMove as handleMouseMoveSelect, handleClick as handleClickSelect, reset as resetSelect, getSelectedCharacter } from "./scenes/selectScene.js";
 import { draw as drawLevel1, handleMouseMove as handleMouseMoveLevel1, handleClick as handleClickLevel1, reset as resetLevel1, handleKeyDown as handleKeyDownLevel1,
-    handleKeyUp as handleKeyUpLevel1 } from "./scenes/level1Scene.js";
+    handleKeyUp as handleKeyUpLevel1, setSelectedCharacter } from "./scenes/level1Scene.js";
 
 const canvasWidth = 1000;
 const canvasHeight = 600;
@@ -11,7 +11,7 @@ let canvas;
 let ctx;
 
 let currentScene = "menu"; //nos posicionamos en menuScene al inicio de cualquier run
-let playerName = ""; //variable para log in
+let selectedCharacter = null; 
 
 function main() {
     canvas = document.getElementById("canvas");
@@ -22,15 +22,15 @@ function main() {
     ctx = canvas.getContext("2d");
 
     let clicked;
+
     canvas.addEventListener("click", (event) => {
         if(currentScene === 'menu'){
             clicked = handleClickMenu(); //función que definimos en menuScene y nos regresa alguno de los botones
-            if(clicked === 'login'){
-                currentScene = 'login';
-            }
-            if (clicked === 'start'){
-                currentScene = 'start'; //Start es selectScene, que te lleva a escoger tu character
-            }
+
+            //start ahora lleva a loginScene, este start es de lo que recibe de la escena menu
+        if (clicked === 'start'){
+            currentScene = 'login'; //Start es selectScene, que te lleva a escoger tu character
+        }
         }
         if (currentScene === 'login'){
             clicked = handleClickLogIn(); //función que definimos en menuScene y nos regresa alguno de los botones
@@ -39,8 +39,7 @@ function main() {
                 currentScene = 'menu';
             }
             if(clicked === 'confirm'){
-                playerName = getUsername();
-                currentScene = 'start';
+                currentScene = 'start'; //este start es de currentScene
             }
         }
         if (currentScene === 'start'){
@@ -49,9 +48,13 @@ function main() {
                 resetSelect();
                 currentScene = 'menu'; 
             }
-            //Ahorita vamos a dejar que si das a start sin log in te mnada directo al nivel 1
-            //FALTA SCREEN DE SELECCIÓN DEL MUNDO
+            if (clicked === 'selectedCharacter'){
+                selectedCharacter = getSelectedCharacter();
+            }
+           //Aqui guardamos el character en una variable, esta varaible se pasa de parámetro a una función el level1Scene
             if (clicked === 'confirm'){
+                selectedCharacter = getSelectedCharacter();
+                setSelectedCharacter(selectedCharacter);
                 currentScene = 'level1';
             }
         }

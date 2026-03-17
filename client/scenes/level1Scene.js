@@ -1,4 +1,6 @@
 import { Player1 } from "../objects/Player1.js";
+import { Player2 } from "../objects/Player2.js";
+import { Player3 } from "../objects/Player3.js";
 import { Vector } from "../libs/Vector.js";
 import { EnemyLion } from "../objects/EnemyLion.js";
 
@@ -14,10 +16,22 @@ let cameraX = 0; //ventana del canvas
 let mouseX = 0
 let mouseY = 0
 
+let player
+
 let keysDown = {}; //Para poder usar teclado para mover a los jugadores
 
-// Player
-let player = new Player1 (new Vector(200,350));
+//Esta función es para escoger el sprite de player
+function setSelectedCharacter(selectedCharacter){
+    if (selectedCharacter === "Guerrero"){
+        player = new Player1(new Vector(200,350));
+    }
+    else if (selectedCharacter === "Lancero"){
+        player = new Player2(new Vector(200,350));
+    }
+    else if (selectedCharacter === "Pesado"){
+        player = new Player3(new Vector(200,350));
+    }
+}
 
 // Enemies, igual figuras random
 let enemies = [
@@ -136,4 +150,5 @@ function handleKeyDown(event){
 function handleKeyUp(event){
     keysDown[event.key] = false;
 }
-export { draw, handleMouseMove, handleClick, reset, handleKeyDown, handleKeyUp }
+
+export { draw, handleMouseMove, handleClick, reset, handleKeyDown, handleKeyUp, setSelectedCharacter }

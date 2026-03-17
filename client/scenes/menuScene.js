@@ -15,12 +15,6 @@ const buttonSettings = {
     text: "SETTINGS"
 };
 
-const buttonLogIn = {
-    x: 500,
-    y: 550,
-    text: "LOG IN"
-};
-
 // Imagen de fondo
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/Portada.png";
@@ -31,7 +25,6 @@ function draw(ctx, canvas) {
 
     drawButton(ctx, buttonStart);
     drawButton(ctx, buttonSettings);
-    drawButton(ctx, buttonLogIn);
 }
 
 function drawButton(ctx, button) {
@@ -93,7 +86,6 @@ function handleClick() {
   // revisa si el mouse está encima de START, SETTINGS o LOG IN
   if (isMouseOverButton(buttonStart)) return "start";
   if (isMouseOverButton(buttonSettings)) return "settings";
-  if (isMouseOverButton(buttonLogIn)) return "login";
   return null;
 }
 
