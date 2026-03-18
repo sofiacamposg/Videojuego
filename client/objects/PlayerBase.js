@@ -8,7 +8,16 @@ class PlayerBase extends AnimatedObject {
 
   update(){
     // movimiento
-    this.updateAnimation(20);
+    if(this.isMoving){ //Si hay movimiento haz update de frame
+      this.updateAnimation(20);
+    }
+    else{
+      this.frame = 0;
+      if(this.spriteRect){ //si no se mueve quedate en el frame 0
+        this.spriteRect.x = 0;
+      }
+    }
+    
   }
 
   draw(ctx){

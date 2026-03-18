@@ -3,6 +3,7 @@ import { Player2 } from "../objects/Player2.js";
 import { Player3 } from "../objects/Player3.js";
 import { Vector } from "../libs/Vector.js";
 import { EnemyLion } from "../objects/EnemyLion.js";
+import { MessageBox } from "../objects/MessageBox.js";
 
 "use strict"
 //Lógica del juego
@@ -19,6 +20,7 @@ let mouseY = 0
 let player
 
 let keysDown = {}; //Para poder usar teclado para mover a los jugadores
+let jumpPressed = false; //Para que no salga disparado hasta los cielos cuando salta
 
 //Esta función es para escoger el sprite de player
 function setSelectedCharacter(selectedCharacter){
@@ -71,12 +73,32 @@ function draw(ctx){  //TODO DRAW DEBE CAMBIAR POR LA VENTANA DE LA CÁMARA
 function update(){
     //aquí realmente debe ir toda la lógica de movimiento, colisiones, etc
     //Movimiento del jugador
+    player.isMoving = false;
     if (keysDown["ArrowLeft"]) {
         player.position.x -= player.speed;
+        player.isMoving = true;
     }
     if (keysDown["ArrowRight"]) {
         player.position.x  += player.speed;
+         player.isMoving = true; //Originalmente en false en el objeto
     }
+    //Lógica de salto
+    if (jumpPressed && player.isOnGround){ //barra espaciadora
+        player.velocityY = player.jumpStrength;
+        player.isOngGround = false;
+        jumpPressed = false;
+    }
+    player.velocityY += player.gravity;
+    player.position.y += player.velocityY; //cuando salta sube y baja por gravedad
+
+    //Ponemos limitante del piso
+    let groundY = 350;
+    if (player.position.y >= groundY){ //es para tener un sueño fijo
+        player.position.y = groundY;
+        player.velocityY = 0;
+        player.isOnGround = true;
+    }
+
     // Esto es para limitar la posición dle jugador dentro del canvas
     if (player.position.x < player.halfSize.x) {
         player.position.x = player.halfSize.x;
@@ -99,6 +121,7 @@ function update(){
     if (cameraX > worldWidth - canvas.width){
         cameraX = worldWidth - canvas.width;
     }
+
 }
 
 function drawPlayer(ctx){
@@ -144,11 +167,19 @@ function reset(){
     player.health = 100
 }
 function handleKeyDown(event){
+    if(event.repeat) return; //si no loopea si dejas apretado el spacebar
+
     keysDown[event.key] = true;
+    if(event.key === " "){ //spacebar for jump
+        jumpPressed = true;
+    }
 }
 
 function handleKeyUp(event){
     keysDown[event.key] = false;
+    if(event.key === " "){ //spacebar for jump
+        jumpPressed = false;
+    }
 }
 
 export { draw, handleMouseMove, handleClick, reset, handleKeyDown, handleKeyUp, setSelectedCharacter }

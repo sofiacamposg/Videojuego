@@ -54,12 +54,13 @@ function main() {
            //Aqui guardamos el character en una variable, esta varaible se pasa de parámetro a una función el level1Scene
             if (clicked === 'confirm'){
                 selectedCharacter = getSelectedCharacter();
-                setSelectedCharacter(selectedCharacter);
+                setSelectedCharacter(selectedCharacter); //selección de character
                 currentScene = 'level1';
             }
         }
         if (currentScene === 'level1'){
             clicked = handleClickLevel1();
+            
         }
     });
 

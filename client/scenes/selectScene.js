@@ -1,6 +1,9 @@
+import { MessageBox } from "../objects/MessageBox.js";
+
 "use strict"
 let mouseX = 0;
 let mouseY = 0;
+let ctx;
 
 //Botones
 const buttonBack = {
@@ -14,6 +17,22 @@ const buttonConfirm = {
     y: 50,
     text: "CONFIRM"
 }; 
+
+let errorMessage = new MessageBox(
+    "ERROR", 
+    "You must select a Character to continue",
+    250,
+    150,
+    500,
+    250
+);
+errorMessage.addButton("Resume", 330, 300, 120, 50, () =>{
+   errorMessage.hide()
+});
+errorMessage.addButton('Exit', 550, 300, 120, 50, () => {
+    return 'back';
+});
+
 
     //fondo
     let backgroundImage = new Image();
@@ -106,6 +125,8 @@ const buttonConfirm = {
         ctx.fillText(zone.description, canvas.width / 2, 585);
         }
         });
+        //errorBox
+         errorMessage.draw(ctx); 
     }
 
     //Reutiliza función de menuScreen
@@ -176,16 +197,24 @@ const buttonConfirm = {
 
         if (inside) {
             selectedCharacter = zone.name; // "Guerrero" | "Lancero" | "Pesado"
-            return "selecterCharacter"
+            return "selectedCharacter";
+        }
+        //errorMessage
+        if(errorMessage.visible){
+            errorMessage.handleClick(mouseX, mouseY);
+            return;
         }
     }
-        // revisa si el mouse está encima de START, SETTINGS o LOG IN
+        // revisa si el mouse está encima de BACK O CONFIRM
     if (isMouseOverButton(buttonBack)) return "back";
     if (isMouseOverButton(buttonConfirm)){
         if(selectedCharacter != null){
             return 'confirm'
         }
-        return null; //no deja confirmar si no eligió personaje
+        else{
+            errorMessage.show();
+        }
+        //return null; //no deja confirmar si no eligió personaje
     } 
      return null;
     }
