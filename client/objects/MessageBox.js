@@ -31,12 +31,12 @@ class MessageBox {
 
         //títle
         ctx.fillStyle = 'white';
-        ctx.font = '35px VT323';
+        ctx.font = '30px VT323';
         ctx.textAlign = 'center';
         ctx.fillText(this.title, this.x + this.width / 2, this.y + 50);
 
         //message
-        ctx.font = '35px VT323';
+        ctx.font = '25px VT323';
         ctx.fillText(this.message, this.x + this.width / 2, this.y + 110);
 
         this.buttons.forEach (button =>{
@@ -54,10 +54,12 @@ class MessageBox {
             const inside =
                 mouseX > button.x &&
                 mouseX < button.x + button.width &&
-                mouseY > button.Y &&
+                mouseY > button.y &&
                 mouseY < button.y + button.height;
             if(inside){
-                if(button.action) button.action();
+                if(button.action) {
+                    return button.action();
+                }
                 return button.text;
             }
         }

@@ -26,11 +26,8 @@ let errorMessage = new MessageBox(
     500,
     250
 );
-errorMessage.addButton("Resume", 330, 300, 120, 50, () =>{
+errorMessage.addButton("Resume", 440, 300, 120, 50, () =>{
    errorMessage.hide()
-});
-errorMessage.addButton('Exit', 550, 300, 120, 50, () => {
-    return 'back';
 });
 
 
@@ -188,6 +185,10 @@ errorMessage.addButton('Exit', 550, 300, 120, 50, () => {
     
     // Detecta click en zona y regresa cuál eligieron
     function handleClick() {
+    //errorMessage
+    if(errorMessage.visible){
+          return errorMessage.handleClick(mouseX, mouseY);
+    }
     for (const zone of zones) {
         const inside =
         mouseX > zone.x &&
@@ -198,11 +199,6 @@ errorMessage.addButton('Exit', 550, 300, 120, 50, () => {
         if (inside) {
             selectedCharacter = zone.name; // "Guerrero" | "Lancero" | "Pesado"
             return "selectedCharacter";
-        }
-        //errorMessage
-        if(errorMessage.visible){
-            errorMessage.handleClick(mouseX, mouseY);
-            return;
         }
     }
         // revisa si el mouse está encima de BACK O CONFIRM
