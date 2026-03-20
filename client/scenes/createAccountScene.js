@@ -8,24 +8,23 @@ const buttonBack = {
     y: 50,
     text: "BACK TO MENU"
 };
-//CONFIRM LOG IN BUTTON
+//CREATE ACCOUNT
 const buttonConfirm = {
     x: 850,
     y: 50,
-    text: "CONFIRM"
+    text: "CREATE"
 };
-//CREATE ACCOUNT BUTTON
-const buttonCreate = {
-    x: 500,
-    y: 550,
-    text: "CREATE ACCOUNT"
-};
+
 //Inputs
 let username = "";
 let password = "";
+let name = "";
+let age = "";
 let activeField = null; // "username" | "password" | null
 const inputUsername = { cx: 500, cy: 350, w: 500, h: 60 };
-const inputPassword = { cx: 500, cy: 470, w: 500, h: 60 };
+const inputPassword = { cx: 500, cy: 400, w: 500, h: 60 };
+const inputName = { cx: 500, cy: 450, w: 500, h: 60 };
+const inputAge = { cx: 500, cy: 500, w: 500, h: 60 };
 
 //Background
 let backgroundImage = new Image();
@@ -41,18 +40,19 @@ function draw(ctx, canvas) {
     ctx.textAlign = "center";
     ctx.strokeStyle = "rgb(255, 187, 86)"; 
     ctx.lineWidth = 3;
-    ctx.strokeText("L O G    I N", canvas.width / 2, 180);
-    ctx.fillText("L O G   I N", canvas.width / 2, 180);
+    ctx.strokeText("C R E A T E   A C C O U N T", canvas.width / 2, 180);
+    ctx.fillText("C R E A T E   A C C O U N T", canvas.width / 2, 180);
 
     //Inputs
     drawInputBox(ctx, canvas.width / 2, 350, 500, 60, "USERNAME");
-    drawInputBox(ctx, canvas.width / 2, 470, 500, 60, "PASSWORD");
+    drawInputBox(ctx, canvas.width / 2, 400, 500, 60, "PASSWORD");
+    drawInputBox(ctx, canvas.width / 2, 450, 500, 60, "NAME");
+    drawInputBox(ctx, canvas.width / 2, 500, 500, 60, "AGE");
+
 
     // Buttons
     drawButton(ctx, buttonConfirm);
     drawButton(ctx, buttonBack);
-    drawButton(ctx, buttonCreate);
-
 }
 
 //Básicamente lo nuevo son la svariables de los inputs y esta función para poder dibujarlos
@@ -63,7 +63,7 @@ function drawInputBox(ctx, centerX, centerY, w, h, label) {
   // Box
   ctx.strokeStyle = "rgb(255, 187, 86)";
   ctx.lineWidth = 3;
-  ctx.strokeRect(x, y, w, h);
+  ctx.strokeRect(x + 100, y - 40, w, h);
 
   // Label
   ctx.fillStyle = "white";
@@ -78,13 +78,15 @@ function drawInputBox(ctx, centerX, centerY, w, h, label) {
     let valueToShow = "";
     if (label === "USERNAME") valueToShow = username;
     if (label === "PASSWORD") valueToShow = "*".repeat(password.length);
-
+    if (label === "NAME") valueToShow = name;
+    if (label === "AGE") valueToShow = age;
+    
     if (valueToShow.length === 0) {
     ctx.fillStyle = "rgba(255,255,255,0.6)";
-    ctx.fillText("click to type...", x + 18, y + 45);
+    ctx.fillText("click to type...", x + 105, y);
     } else {
     ctx.fillStyle = "white";
-    ctx.fillText(valueToShow, x + 18, y + 45);
+    ctx.fillText(valueToShow, x + 105, y);
     }
 }
 
@@ -155,10 +157,7 @@ function isMouseOverBox(box) {
 function handleButtonClick() {
   // revisa si el mouse está encima de START, SETTINGS o LOG IN
   if (isMouseOverButton(buttonBack)) return "back";
-  if (isMouseOverButton(buttonConfirm)){
-    return "confirm";
-  } 
-  if (isMouseOverButton(buttonCreate)) return "create";
+  if (isMouseOverButton(buttonConfirm)) return "confirm";
   return null;
 }
 
@@ -171,6 +170,8 @@ function handleKeyDown(event) {
     event.preventDefault();
     if (activeField === "username") username = username.slice(0, -1);
     if (activeField === "password") password = password.slice(0, -1);
+    if (activeField === "name") name = name.slice(0, -1);
+    if (activeField === "age") age = age.slice(0, -1);
     return;
   }
 
@@ -186,6 +187,8 @@ function handleKeyDown(event) {
 
   if (activeField === "username") username += event.key;
   if (activeField === "password") password += event.key;
+   if (activeField === "name") name += event.key;
+  if (activeField === "age") age += event.key;
 }
 
 function handleClick() {
@@ -198,6 +201,14 @@ function handleClick() {
     activeField = "password";
     console.log("activeField:", activeField);
     return "password";
+  }
+  if (isMouseOverBox(inputName)) {
+    activeField = "name";
+    return 'name';
+  }
+  if (isMouseOverBox(inputAge)) {
+    activeField = "age";
+    return 'age';
   }
 
   // 2) si no, entonces clickeó botones

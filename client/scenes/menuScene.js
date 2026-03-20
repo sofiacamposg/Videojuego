@@ -15,7 +15,7 @@ const buttonSettings = {
     text: "SETTINGS"
 };
 
-// Imagen de fondo
+// Background
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/Portada.png";
 

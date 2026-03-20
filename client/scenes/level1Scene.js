@@ -68,6 +68,52 @@ function draw(ctx){  //TODO DRAW DEBE CAMBIAR POR LA VENTANA DE LA CÁMARA
         spawnTimer = 0;
     }
     ctx.restore();
+
+    drawHealthBar(ctx, 20, 20, 100, 30, 50, 100);
+    ctx.font = "50px Arial";
+    drawHearts(ctx, 150, 50, 3, 5);
+}
+//HEATH BAR
+function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
+    // fondo (vida perdida)
+    ctx.fillStyle = "gray";
+    ctx.fillRect(x, y, width, height);
+
+    // vida actual
+    const healthWidth = (current / max) * width;
+    ctx.fillStyle = "green";
+    ctx.fillRect(x, y, healthWidth, height);
+
+    // borde
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, width, height);
+}
+//HEARTS
+function drawHearts(ctx, x, y, current, max) { //current from db and max is const
+    const heartValue = 1;
+    const totalHearts = max / heartValue;
+    const filledHearts = Math.ceil(current / heartValue);
+
+    for (let i = 0; i < totalHearts; i++) {
+        ctx.fillStyle = i < filledHearts ? "red" : "gray";
+        ctx.fillText("♥", x + i * 50, y);
+    }
+}
+//DECK BUTTON
+function drawDeckButton(ctx, button) {
+    const left = button.x - button.w / 2;
+    const top = button.y - button.h / 2;
+
+    ctx.fillStyle = "black";
+    ctx.fillRect(left, top, button.w, button.h);
+
+    ctx.strokeStyle = "white";
+    ctx.strokeRect(left, top, button.w, button.h);
+
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.fillText("DECK", button.x, button.y);
 }
 
 function update(){

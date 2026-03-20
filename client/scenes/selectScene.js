@@ -202,7 +202,9 @@ errorMessage.addButton("Resume", 440, 300, 120, 50, () =>{
         }
     }
         // revisa si el mouse está encima de BACK O CONFIRM
-    if (isMouseOverButton(buttonBack)) return "back";
+    if (isMouseOverButton(buttonBack)) {
+        return "back";
+    }
     if (isMouseOverButton(buttonConfirm)){
         if(selectedCharacter != null){
             return 'confirm'
