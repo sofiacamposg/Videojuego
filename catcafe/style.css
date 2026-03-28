@@ -1,0 +1,175 @@
+/*estilo del fondo, cosas generales*/
+body {
+    background-color: #fef7e9;       /* Fondo crema suave */
+    color: #3e2a1f;                   /* Marrón oscuro para texto */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/*banner inicial*/
+.header {
+    background-color: #b98b7d;        /* Marrón claro */
+    color: #fff4e6;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.header h1 {
+    font-size: 3rem;
+    margin: 0;
+    letter-spacing: 5px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.subtitulo {
+    font-size: 1.2rem;
+    font-style: italic;
+    margin-top: 0.5rem;
+}
+
+/*texto general*/
+.content {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 30px 30px 10px 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+/* formato del area del centro */
+section {
+    margin-bottom: 2.5rem;
+}
+
+h2 {
+    color: #b35e3a;
+    font-size: 2.5rem;
+    margin-top: 0;
+    text-align: center;
+    font-weight: 600;
+}
+
+h3 {
+    color: #7a4d3a;
+    font-size: 1.8rem;
+    border-left: 6px solid #d9b8a6;
+    padding-left: 1rem;
+    margin-top: 2rem;
+}
+
+h4 {
+    color: #9b6b5a;
+    font-size: 1.3rem;
+    margin-bottom: 0.3rem;
+}
+
+hr {
+    border: 1px dashed #d9b8a6;
+    margin: 2rem 0;
+}
+
+/*estilo de las imagenes*/
+img {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    display: block;
+    margin: 1.5rem auto;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+img:hover {
+    transform: scale(1.02);
+}
+
+.epigrafe {
+    text-align: center;
+    color: #7a5a4a;
+    font-weight: bold;
+    margin-top: -0.5rem;
+}
+
+/*estilo de los botones*/
+.btn {
+    background-color: #d9b8a6;
+    color: #3e2a1f;
+    border: none;
+    padding: 0.8rem 1.8rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    margin: 0.5rem 0.5rem 0.5rem 0;
+    border: 1px solid #b98b7d;
+}
+
+.btn:hover {
+    background-color: #c4a08b;
+    box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/*espacio de las imagenes, el cuadro extra que hice al final*/
+.interactivo {
+    background-color: #fff1e6;
+    padding: 1.5rem;
+    border-radius: 30px;
+    text-align: center;
+    border: 2px dashed #b98b7d;
+    margin-top: 3rem;
+}
+
+.interactivo p {
+    font-size: 1.3rem;
+    background: #f9e2d2;
+    padding: 0.8rem;
+    border-radius: 40px;
+    margin-top: 1rem;
+}
+
+/*benner final*/
+.footer {
+    background-color: #3e2a1f;
+    color: #fef7e9;
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.hidden {  /*oculta las imagenes hasta que se le diga*/
+    display: none;
+}
+
+/*bloque de imagenes de los gatos, formato de imagenes*/
+.contenedor-imagen-adoptar {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#imagen-adoptar {
+    max-width: 300px;
+    max-height: 300px;
+    width: auto;
+    height: auto;
+    border-radius: 50%;
+    border: 5px solid #d9b8a6;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+#imagen-adoptar:hover {
+    transform: scale(1.05);
+}

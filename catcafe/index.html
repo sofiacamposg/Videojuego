@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cat Café · Daniela Angulo</title>
+    <link rel="stylesheet" href="style.css"> <!--pegamos el file-->
+</head>
+<body>
+    <header class="header"> <!--banner incial-->
+        <h1>🐱 MEOW 🐱</h1>
+        <p class="subtitulo">Un lugar donde los gatos y el café se encuentran</p>
+    </header>
+
+    <main class="content">  <!--aqui  empieza el texto de la página-->
+        <section class="intro">
+            <h2>CAT CAFE</h2>
+            <hr>
+            <h3>¿Qué es un cat café?</h3>
+            <p id="texto-cambiable">Un cat café o cafetería de gatos es un establecimiento temático donde
+                <b>los clientes pueden consumir bebidas y alimentos mientras conviven, acarician e interactúan con gatos</b> 
+                que deambulan libremente por el local.</p>
+            <button class="btn" onclick="cambiarTexto()">✨ Más detalles</button>
+        </section>
+
+        <section class="imagen-ejemplo">
+            <img src="https://media.timeout.com/images/102535828/750/422/image.jpg" alt="Gato reposando en su cama">  <!-- se le agrega alt por accesibilidad-->
+            <p class="epigrafe">Ejemplo de cat café</p>
+        </section>
+
+        <hr>
+
+        <section class="origen">  <!--segundo grupo de texto-->
+            <h3>¿De dónde se originan los cat café?</h3>
+            <p>Originados en Taiwán y popularizados en Japón,
+                <b>estos espacios suelen albergar felinos rescatados y promueven la adopción responsable</b>, 
+                ofreciendo un ambiente relajado para amantes de los gatos.</p>
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHJAHABk1BnFXqLstjD1SAZ5cPqtdecsvAzQ&s" alt="Mujer con gatos en una cafetería">
+        </section>
+
+        <hr>
+
+        <section class="caracteristicas"> <!--tercer bloque de texto-->
+            <h3>Características clave de los cat cafés:</h3>
+            <article>
+                <h4>🐾 Interacción felina</h4>
+                <p>Los gatos son los protagonistas, moviéndose por áreas adaptadas con rascadores y juguetes.</p>
+            </article>
+            <article>
+                <h4>🐾 Adopción y rescate</h4>
+                <p>Muchos funcionan como refugios temporales donde se puede conocer a los gatos para adoptarlos.</p>
+            </article>
+            <article>
+                <h4>🐾 Normas de convivencia</h4>
+                <p>Es obligatorio seguir reglas como no despertar a los gatos, no alimentarlos y, a veces, pagar una cuota de entrada o reserva por tiempo.</p>
+            </article>
+            <article>
+                <h4>🐾 Temática</h4>
+                <p>Tanto la comida (panes, crepas) como la decoración suelen tener motivos de gatos.</p>
+            </article>
+            <article>
+                <h4>🐾 Objetivo</h4>
+                <p>Ofrecer relajación (técnica conocida como felinoterapia) y conciencia sobre el cuidado animal.</p>
+            </article>
+        </section>
+
+        <!-- esto es la union con js, es el boton de las fotos-->
+        <section class="interactivo">
+            <h3>¿Quieres adoptar?</h3>
+
+            <!-- contenedor de imagen oculto al inicio -->
+            <div class="contenedor-imagen-adoptar hidden">
+                <img id="imagen-adoptar" src="" alt="Gato para adoptar">
+            </div>
+
+            <button class="btn" onclick="adoptar()">Mira los gatitos que esperan un nuevo hogar:</button>
+        </section>
+
+    </main>
+
+    <footer class="footer">  <!-- banner final-->
+        <p>Actividad de página web - Daniela Angulo</p>
+    </footer>
+
+    <script src="script.js"></script>  <!--pegamos el file-->
+</body>
+</html>
