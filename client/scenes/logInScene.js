@@ -42,9 +42,9 @@ function draw(ctx, canvas){  //? draw every element on the canvas
     //? title
     ctx.font = "120px VT323";
     ctx.textAlign = "center";
-    ctx.fillStyle = "rgb(255, 187, 86)"; //text
+    ctx.fillStyle = "white"; //text
     ctx.fillText("L O G   I N", canvas.width / 2, canvas.height / 2 - 100);
-    ctx.strokeStyle = "rgb(255, 255, 255)"; 
+    ctx.strokeStyle = "rgb(255, 187, 86)"; 
     ctx.lineWidth = 2;
     ctx.strokeText("L O G   I N", canvas.width / 2, canvas.height / 2 - 100);
     
