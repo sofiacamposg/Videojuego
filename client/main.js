@@ -38,7 +38,7 @@ function main() {
         }
         }
         //SEETINGS SCENE
-        if(currentScene === 'settings') {
+        else if(currentScene === 'settings') {
             clicked = handleClickSettings();
             if(clicked === 'back' || clicked === 'confirm') {
                 resetSettings();
@@ -46,7 +46,7 @@ function main() {
             }
         }
         //LOG IN SCENE
-        if (currentScene === 'login'){
+        else if (currentScene === 'login'){
             clicked = handleClickLogIn(ctx); //función que definimos en menuScene y nos regresa alguno de los botones
             if(clicked === 'back'){
                 resetLogIn();
@@ -60,18 +60,21 @@ function main() {
             }
         }
         //CREATE ACCOUNT SCENE
-        if(currentScene === 'createAccount') {
-            clicked = handleClickCreateAccount();
+        else if(currentScene === 'createAccount') {
+            clicked = handleClickCreateAccount(ctx);
             if(clicked === 'back') {
                 resetCreateAccount();
-                currentScene = 'back';
+                currentScene = 'menu';
+            }
+            if(clicked === 'login') {
+                currentScene = 'login';
             }
             if(clicked === 'confirm') {
                 currentScene = 'login';
             }
         }
         //SELECT CHARACTER
-        if (currentScene === 'start'){
+        else if (currentScene === 'start'){
             clicked = handleClickSelect(); //función que definimos en menuScene y nos regresa alguno de los botones
             if(clicked === 'back'){
                 resetSelect();
@@ -88,7 +91,7 @@ function main() {
             }
         }
         //LEVEL 1 SCENE
-        if (currentScene === 'level1'){
+        else if (currentScene === 'level1'){
             clicked = handleClickLevel1();  
         }
     });
@@ -100,9 +103,6 @@ function main() {
     canvas.addEventListener("mouseup", () => {
         if(currentScene === "settings") stopDragging();
     });
-
-
-
      canvas.addEventListener("mousemove", (event) => {
         if(currentScene === 'menu') handleMouseMoveMenu(event,canvas);
         if(currentScene === 'settings') handleMouseMoveSettings(event,canvas);
