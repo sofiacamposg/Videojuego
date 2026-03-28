@@ -2,85 +2,153 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Cat Café · Daniela Angulo</title>
-    <link rel="stylesheet" href="style.css"> <!--pegamos el file-->
+    <title>Cat Café | Cat-fé</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> <!--add bootstrap-->
+    <link rel="stylesheet" href="style.css"> <!--add style.css-->
 </head>
 <body>
-    <header class="header"> <!--banner incial-->
-        <h1>🐱 MEOW 🐱</h1>
-        <p class="subtitulo">Un lugar donde los gatos y el café se encuentran</p>
+    <header class="header"> <!--incial banner-->
+        <h1>-> CAT-FÉ <- </h1>
+        <p class="subtitulo">Where every sip comes with a purr</p>
     </header>
 
-    <main class="content">  <!--aqui  empieza el texto de la página-->
+    <main class="content">
+    <!--tabs, using nav nav-pills class from bootstrap to style the tab buttons, 
+    more info:https://getbootstrap.com/docs/5.3/components/navs-tabs/#tabs -->
+    <ul class="nav nav-pills nav-justified" id="mainTab">
+        <li class="nav-item">  <!--deffault tab, our cafe info.
+            tpe, role, controls, selected are for accessibility navigation -->
+            <button class="nav-link active" 
+                id="pills-cafe-tab" 
+                data-bs-toggle="pill" 
+                data-bs-target="#pills-cafe" 
+                type="button"  
+                role="tab" 
+                aria-controls="pills-cafe" 
+                aria-selected="true">  
+            Our cafe
+            </button>
+        </li>
+
+        <li class="nav-item"> <!--our acts and adoption info-->
+            <button class="nav-link" 
+                id="pills-cats-tab" 
+                data-bs-toggle="pill" 
+                data-bs-target="#pills-cats" 
+                type="button" 
+                role="tab" 
+                aria-controls="pills-cats" 
+                aria-selected="false">
+            Our Cats
+            </button> 
+        </li>
+
+        <li class="nav-item"> <!--definition info-->
+            <button class="nav-link"
+                id="pills-whatis-tab" 
+                data-bs-toggle="pill" 
+                data-bs-target="#pills-whatis" 
+                type="button" 
+                role="tab" 
+                aria-controls="pills-whatis" 
+                aria-selected="false">
+            What is a Cat Cafe?
+            </button>  
+        </li>
+    </ul>
+
+    <div class="tab-content" id="pills-tabContent"> <!--content of each pill-->
+
+    <div class="tab-pane fade show active" 
+        id="pills-cafe" 
+        role="tabpanel" 
+        aria-labelledby="pills-cafe-tab" 
+        tabindex="0">
+        <p>Our Café content here 1</p>
+    </div>
+
+    <div class="tab-pane fade" 
+        id="pills-cats" 
+        role="tabpanel" 
+        aria-labelledby="pills-cats-tab" 
+        tabindex="0">
+        
+        <section class="interactivo"> <!--js function, pics photos botton-->
+            <h3>Want to adopt?</h3>
+
+            <!--image container hidden at start-->
+            <div class="contenedor-imagen-adoptar hidden">
+                <img id="imagen-adoptar" src="" alt="Cat available for adoption">
+            </div>
+
+            <button class="btn" onclick="adoptar()">Meet the kitties waiting for a new home:</button>
+        </section>
+    </div>
+
+    <div class="tab-pane fade" 
+        id="pills-whatis" 
+        role="tabpanel" 
+        aria-labelledby="pills-whatis-tab" 
+        tabindex="0">
         <section class="intro">
+            <hr>
             <h2>CAT CAFE</h2>
             <hr>
-            <h3>¿Qué es un cat café?</h3>
-            <p id="texto-cambiable">Un cat café o cafetería de gatos es un establecimiento temático donde
-                <b>los clientes pueden consumir bebidas y alimentos mientras conviven, acarician e interactúan con gatos</b> 
-                que deambulan libremente por el local.</p>
-            <button class="btn" onclick="cambiarTexto()">✨ Más detalles</button>
+            <h3>What is a cat cafe?</h3>
+            <p id="texto-cambiable">A cat café is a themed establishment where <b>customers can enjoy drinks and food while socializing,
+                 petting and interacting with cats</b> that roam freely around the place.</p>
+            <button class="btn" onclick="cambiarTexto()">✨ More details</button>
         </section>
 
         <section class="imagen-ejemplo">
-            <img src="https://media.timeout.com/images/102535828/750/422/image.jpg" alt="Gato reposando en su cama">  <!-- se le agrega alt por accesibilidad-->
-            <p class="epigrafe">Ejemplo de cat café</p>
+            <img src="https://media.timeout.com/images/102535828/750/422/image.jpg" alt="Cat resting on his bed">  <!--acccessibility-->
+            <p class="epigrafe">Example of a cat cafe</p>
         </section>
 
         <hr>
 
-        <section class="origen">  <!--segundo grupo de texto-->
-            <h3>¿De dónde se originan los cat café?</h3>
-            <p>Originados en Taiwán y popularizados en Japón,
-                <b>estos espacios suelen albergar felinos rescatados y promueven la adopción responsable</b>, 
-                ofreciendo un ambiente relajado para amantes de los gatos.</p>
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHJAHABk1BnFXqLstjD1SAZ5cPqtdecsvAzQ&s" alt="Mujer con gatos en una cafetería">
+        <section class="origen">  
+            <h3>Where do cat cafes come from?</h3>
+            <p>Originally from Taiwan and popularized in Japan, <b>these spaces usually shelter rescued cats and promote
+                 responsible adoption</b>, offering a relaxed environment for cat lovers.</p>
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHJAHABk1BnFXqLstjD1SAZ5cPqtdecsvAzQ&s" alt="Woman with cats in a cat cafe">
         </section>
-
         <hr>
-
-        <section class="caracteristicas"> <!--tercer bloque de texto-->
-            <h3>Características clave de los cat cafés:</h3>
+        <section class="caracteristicas"> 
+            <h3>Key features of cat cafes:</h3>
             <article>
-                <h4>🐾 Interacción felina</h4>
-                <p>Los gatos son los protagonistas, moviéndose por áreas adaptadas con rascadores y juguetes.</p>
+                <h4>🐾 Feline interaction</h4>
+                <p>The cats are the stars, roaming through adapted areas with scratching posts and toys.</p>
             </article>
             <article>
-                <h4>🐾 Adopción y rescate</h4>
-                <p>Muchos funcionan como refugios temporales donde se puede conocer a los gatos para adoptarlos.</p>
+                <h4>🐾 Adoption and rescue</h4>
+                <p>Many work as temporary shelters where you can meet cats available for adoption.</p>
             </article>
             <article>
-                <h4>🐾 Normas de convivencia</h4>
-                <p>Es obligatorio seguir reglas como no despertar a los gatos, no alimentarlos y, a veces, pagar una cuota de entrada o reserva por tiempo.</p>
+                <h4>🐾 House rules</h4>
+                <p>Guests must follow rules such as not waking the cats, not feeding them, and sometimes paying an 
+                    entry fee or time-based reservation.</p>
             </article>
             <article>
-                <h4>🐾 Temática</h4>
-                <p>Tanto la comida (panes, crepas) como la decoración suelen tener motivos de gatos.</p>
+                <h4>🐾 Themed experience</h4>
+                <p>Both the food (breads, crepes) and the decoration usually feature cat motifs.</p>
             </article>
             <article>
-                <h4>🐾 Objetivo</h4>
-                <p>Ofrecer relajación (técnica conocida como felinoterapia) y conciencia sobre el cuidado animal.</p>
+                <h4>🐾 Main goal</h4>
+                <p>To offer relaxation through feline therapy and raise awareness about animal care.</p>
             </article>
         </section>
+    </div>
 
-        <!-- esto es la union con js, es el boton de las fotos-->
-        <section class="interactivo">
-            <h3>¿Quieres adoptar?</h3>
+    </div>
 
-            <!-- contenedor de imagen oculto al inicio -->
-            <div class="contenedor-imagen-adoptar hidden">
-                <img id="imagen-adoptar" src="" alt="Gato para adoptar">
-            </div>
+</main>
 
-            <button class="btn" onclick="adoptar()">Mira los gatitos que esperan un nuevo hogar:</button>
-        </section>
-
-    </main>
-
-    <footer class="footer">  <!-- banner final-->
-        <p>Actividad de página web - Daniela Angulo</p>
+    <footer class="footer">  <!--final banner-->
+        <p>Act4: Cat cafe by Gladiator team</p>
     </footer>
 
-    <script src="script.js"></script>  <!--pegamos el file-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> <!--add bootstrap-->
+    <script src="script.js"></script>  <!--add js-->
 </body>
 </html>

@@ -16,7 +16,7 @@ let contadorgatos = 0; // Variable para el contador de texto
 // cambia el texto de la definicion
 function cambiarTexto() {
     let parrafo = document.getElementById('texto-cambiable');
-    parrafo.innerHTML = 'Es una cafeteria con gatos sentados junto a ti';
+    parrafo.innerHTML = 'A cozy café where cats sit right beside you';
 }
 
 function adoptar() {
