@@ -47,7 +47,7 @@ function main() {
         }
         //LOG IN SCENE
         if (currentScene === 'login'){
-            clicked = handleClickLogIn(); //función que definimos en menuScene y nos regresa alguno de los botones
+            clicked = handleClickLogIn(ctx); //función que definimos en menuScene y nos regresa alguno de los botones
             if(clicked === 'back'){
                 resetLogIn();
                 currentScene = 'menu';
@@ -64,13 +64,13 @@ function main() {
             clicked = handleClickCreateAccount();
             if(clicked === 'back') {
                 resetCreateAccount();
-                currentScene = 'menu';
+                currentScene = 'back';
             }
             if(clicked === 'confirm') {
                 currentScene = 'login';
             }
         }
-        //SELECT SCENE
+        //SELECT CHARACTER
         if (currentScene === 'start'){
             clicked = handleClickSelect(); //función que definimos en menuScene y nos regresa alguno de los botones
             if(clicked === 'back'){

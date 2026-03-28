@@ -1,98 +1,102 @@
+import { MessageBox } from "../objects/MessageBox.js";  
 "use strict"
-// Mouse
+
+//? mouse track
 let mouseX = 0;
 let mouseY = 0;
-//BACK TO MENU BUTTON
-const buttonBack = {
+const buttonBack = { //? BACK TO MENU BUTTON
     x: 150,
-    y: 50,
+    y: 70,
     text: "BACK TO MENU"
 };
-//CONFIRM LOG IN BUTTON
-const buttonConfirm = {
-    x: 850,
-    y: 50,
+const buttonConfirm = {  //? CONFIRM LOG IN BUTTON
+    x: 500,
+    y: 500,
     text: "CONFIRM"
 };
-//CREATE ACCOUNT BUTTON
-const buttonCreate = {
-    x: 500,
-    y: 550,
+const buttonCreate = {  //? CREATE ACCOUNT BUTTON
+    x: 850,
+    y: 70,
     text: "CREATE ACCOUNT"
 };
-//Inputs
-let username = "";
+const errorMessage = new MessageBox(  //? error message creation
+    "ERROR", "Please fill in both fields", 250, 150, 500, 250);
+    errorMessage.addButton("Try again", 440, 300, 120, 50, () =>{  //? hide when clicked
+        errorMessage.hide()
+    });
+//? inputs 
+let username = "";  
 let password = "";
-let activeField = null; // "username" | "password" | null
-const inputUsername = { cx: 500, cy: 350, w: 500, h: 60 };
-const inputPassword = { cx: 500, cy: 470, w: 500, h: 60 };
+let activeField = null; //username / password / null
+const inputUsername = { x: 500, y: 300, w: 500, h: 60 };
+const inputPassword = { x: 500, y: 410, w: 500, h: 60 };
 
-//Background
+//? background
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
-function draw(ctx, canvas) {
+function draw(ctx, canvas){  //? draw every element on the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
-    // Title
-    ctx.fillStyle = "white"; //text
-    ctx.font = "40px 'VT323'";
+    //? title
+    ctx.font = "120px VT323";
     ctx.textAlign = "center";
-    ctx.strokeStyle = "rgb(255, 187, 86)"; 
-    ctx.lineWidth = 3;
-    ctx.strokeText("L O G    I N", canvas.width / 2, 180);
-    ctx.fillText("L O G   I N", canvas.width / 2, 180);
+    ctx.fillStyle = "rgb(255, 187, 86)"; //text
+    ctx.fillText("L O G   I N", canvas.width / 2, canvas.height / 2 - 100);
+    ctx.strokeStyle = "rgb(255, 255, 255)"; 
+    ctx.lineWidth = 2;
+    ctx.strokeText("L O G   I N", canvas.width / 2, canvas.height / 2 - 100);
+    
+    //? inputs boxes
+    drawInputBox(ctx, inputUsername.x, inputUsername.y, inputUsername.w, inputUsername.h, "USERNAME");
+    drawInputBox(ctx, inputPassword.x, inputPassword.y, inputPassword.w, inputPassword.h, "PASSWORD");
 
-    //Inputs
-    drawInputBox(ctx, canvas.width / 2, 350, 500, 60, "USERNAME");
-    drawInputBox(ctx, canvas.width / 2, 470, 500, 60, "PASSWORD");
-
-    // Buttons
+    //? buttons
     drawButton(ctx, buttonConfirm);
     drawButton(ctx, buttonBack);
     drawButton(ctx, buttonCreate);
 
+    errorMessage.draw(ctx); 
 }
+function drawInputBox(ctx, centerX, centerY, w, h, label){  //? draw the labels and input boxes
+    const x = centerX - w / 2;
+    const y = centerY - h / 2;
 
-//Básicamente lo nuevo son la svariables de los inputs y esta función para poder dibujarlos
-function drawInputBox(ctx, centerX, centerY, w, h, label) {
-  const x = centerX - w / 2;
-  const y = centerY - h / 2;
+    //? box
+    ctx.strokeStyle = "rgb(255, 187, 86)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x, y, w, h);
 
-  // Box
-  ctx.strokeStyle = "rgb(255, 187, 86)";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(x, y, w, h);
+    //? label
+    ctx.fillStyle = "white";
+    ctx.font = "22px 'VT323'";
+    ctx.textAlign = "left";
+    ctx.fillText(label + ":", x, y - 15);
 
-  // Label
-  ctx.fillStyle = "white";
-  ctx.font = "22px 'VT323'";
-  ctx.textAlign = "left";
-  ctx.fillText(label + ":", x, y - 15);
-
-  // Placeholder text inside
-  ctx.font = "25px 'VT323'";
+    //? text inside box
+    ctx.font = "25px 'VT323'";
     ctx.textAlign = "left";
 
     let valueToShow = "";
-    if (label === "USERNAME") valueToShow = username;
-    if (label === "PASSWORD") valueToShow = "*".repeat(password.length);
+    if (label === "USERNAME") valueToShow = username;  //shows what user writes
+    if (label === "PASSWORD") valueToShow = "*".repeat(password.length);  //secret password
 
-    if (valueToShow.length === 0) {
-    ctx.fillStyle = "rgba(255,255,255,0.6)";
-    ctx.fillText("click to type...", x + 18, y + 45);
-    } else {
-    ctx.fillStyle = "white";
-    ctx.fillText(valueToShow, x + 18, y + 45);
+    //? check if any box is active
+    if (activeField === label.toLowerCase() && valueToShow.length === 0){  //case 1: active but without text, shows | to let know the user they can type now
+        ctx.fillStyle = "white";
+        ctx.fillText("|", x + 18, y + 38);
+    } else if (valueToShow.length === 0){  //case 2: its inactive and without text
+        ctx.fillStyle = "rgba(255,255,255,0.6)";
+        ctx.fillText("click to type...", x + 18, y + 38);
+    } else{  //case 3: has text and shows text
+        ctx.fillStyle = "white";
+        ctx.fillText(valueToShow + (activeField === label.toLowerCase() ? "|" : ""), x + 18, y + 38);  //check if is inactive so the | doesn't appear 
     }
 }
-
-//Reutiliza función de menuScreen
-function drawButton(ctx, button) {
+function drawButton(ctx, button){  //? draw buttons 
     ctx.font = "25px 'VT323'";
     ctx.textAlign = 'center';
-
     const textWidth = ctx.measureText(button.text).width;
     const textHeight = 30;
 
@@ -101,16 +105,16 @@ function drawButton(ctx, button) {
     const top = button.y - textHeight;
     const bottom = button.y;
 
-    const isHover =
+    const isHover =  //is over the button?
         mouseX > left &&
         mouseX < right &&
         mouseY > top &&
         mouseY < bottom;
 
-    ctx.fillStyle = isHover ? "red" : "white";
+    ctx.fillStyle = isHover ? "red" : "white";  //change color if hover
     ctx.fillText(button.text, button.x, button.y);
 
-    if (isHover) {
+    if (isHover){  
         ctx.beginPath();
         ctx.moveTo(left, button.y + 5);
         ctx.lineTo(right, button.y + 5);
@@ -119,94 +123,77 @@ function drawButton(ctx, button) {
         ctx.stroke();
     }
 }
-
-function handleMouseMove(event, canvas) {
+function handleMouseMove(event, canvas){  //? track mouse movement
     const rect = canvas.getBoundingClientRect();
     mouseX = event.clientX - rect.left;
     mouseY = event.clientY - rect.top;
 }
-//Esta función es para poder saber que botón se clickeo y asi movernos a otra escena
-function isMouseOverButton(button) {
-  //usa el mismo font y tamaño que usas para dibujar
-  const dummyCanvas = document.createElement("canvas");
-  const dummyCtx = dummyCanvas.getContext("2d");
-  dummyCtx.font = "25px 'VT323'";
-
-  const textWidth = dummyCtx.measureText(button.text).width;
-  const textHeight = 30;
-
-  const left = button.x - textWidth / 2;
-  const right = button.x + textWidth / 2;
-  const top = button.y - textHeight;
-  const bottom = button.y;
-
-  return mouseX > left && mouseX < right && mouseY > top && mouseY < bottom;
+function isMouseOver(element,ctx){  //? handle if mouse is over any botton or box
+    let w, h;
+    if (element.w){ //if element has a w atribute
+        w = element.w;
+        h = element.h;
+    } else{  //buttons do not have w
+        ctx.font = "25px 'VT323'";  //force the size of text
+        w = ctx.measureText(element.text).width;
+        h = 30;
+    }
+    return mouseX > element.x - w / 2 &&  
+           mouseX < element.x + w / 2 &&
+           mouseY > element.y - h / 2 &&
+           mouseY < element.y + h / 2;
 }
-//Esta es para poder saber si el mouse pasa por encima del espacio del input
-function isMouseOverBox(box) {
-  const left = box.cx - box.w / 2;
-  const right = box.cx + box.w / 2;
-  const top = box.cy - box.h / 2;
-  const bottom = box.cy + box.h / 2;
-
-  return mouseX > left && mouseX < right && mouseY > top && mouseY < bottom;
+function handleClick(ctx){  //? handle cliks over any element
+    if (errorMessage.visible) {
+        return errorMessage.handleClick(mouseX, mouseY);
+    }
+    if (isMouseOver(inputUsername, ctx)){
+        activeField = "username"; 
+        return "username";
+    }
+    if (isMouseOver(inputPassword, ctx)){
+        activeField = "password"; 
+        return "password";
+    }
+    if (isMouseOver(buttonBack, ctx)){
+        return "back";
+    }
+    if (isMouseOver(buttonCreate, ctx)){
+        return "create";
+    }
+    if (isMouseOver(buttonConfirm, ctx)) {
+        if (username === "" || password === "") {
+            errorMessage.show();
+            return null;
+        }
+        return "confirm";
+    }
+    return null;
 }
-//Esta función solo revisa el resultado de la anterior y hace return
-function handleButtonClick() {
-  // revisa si el mouse está encima de START, SETTINGS o LOG IN
-  if (isMouseOverButton(buttonBack)) return "back";
-  if (isMouseOverButton(buttonConfirm)){
-    return "confirm";
-  } 
-  if (isMouseOverButton(buttonCreate)) return "create";
-  return null;
-}
-
 //Tenemos que hacer esta función para darle valor a la variable activeField
-function handleKeyDown(event) {
-  
-  if (activeField === null) return; // si no hay campo activo, no hacemos nada
+function handleKeyDown(event){  //? handles user's input
+  if (activeField === null) return; //case 1: no active field
 
-  if (event.key === "Backspace") { // Backspace
+  if (event.key === "Backspace"){ //case 2: deletes lasts key wrote
     event.preventDefault();
     if (activeField === "username") username = username.slice(0, -1);
     if (activeField === "password") password = password.slice(0, -1);
     return;
   }
-
-  if (event.key === "Enter") { // Enter
+  if (event.key === "Enter"){ //case 3: enter pressed
     activeField = null;
     return;
   }
- 
-  if (event.key.length !== 1) return; // Solo aceptar teclas que sean 1 caracter (letras/números/símbolos)
-
-  const allowed = /^[a-zA-Z0-9 _\-\.@]$/.test(event.key); // Filtro básico de caracteres permitidos
+  if (event.key.length !== 1) return; //case 4: one key at a time
+  const allowed = /^[a-zA-Z0-9 _\-\.@]$/.test(event.key); //case 5: checks input
   if (!allowed) return;
-
-  if (activeField === "username") username += event.key;
+  if (activeField === "username") username += event.key;  //adds letter to stricng
   if (activeField === "password") password += event.key;
 }
-
-function handleClick() {
-  // 1) si clickeó input
-  if (isMouseOverBox(inputUsername)) {
-    activeField = "username";
-    return "username";
-  }
-  if (isMouseOverBox(inputPassword)) {
-    activeField = "password";
-    console.log("activeField:", activeField);
-    return "password";
-  }
-
-  // 2) si no, entonces clickeó botones
-  return handleButtonClick(); // "back" | "confirm"
-}
-function getUsername() {
+function getUsername(){  //? getter
   return username;
 }
-function reset() {
+function reset() {  //? reset to default values
   username = "";
   password = "";
   activeField = null;
