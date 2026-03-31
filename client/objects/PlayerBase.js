@@ -11,17 +11,16 @@ class PlayerBase extends AnimatedObject {
     if (!this.isOnGround) {
       //case 1: jump
       this.spriteImage = (this.direction === "right") ? this.spriteJumpRight : this.spriteJumpLeft;
-      this.frame = 0;  
-      if (this.spriteRect) this.spriteRect.x = 0;  //return to initial frame
+      this.updateAnimation(20);
     } else if (this.isMoving) {
       //case 2: walk
       this.spriteImage = (this.direction === "right") ? this.spriteRight : this.spriteLeft;
-      this.updateAnimation(15);
+      this.updateAnimation(20);
     } else {
       //case 3: stay
       this.spriteImage = (this.direction === "right") ? this.spriteRight : this.spriteLeft;
       this.frame = 0;  //returns variable to 0
-      if (this.spriteRect) this.spriteRect.x = 0;  //returns image to initial frame
+      if (this.spriteRect) this.spriteRect.x = 0;  //returns image to initial frame (reset)
     }
   }
 

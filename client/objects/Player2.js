@@ -1,20 +1,33 @@
 import { PlayerBase } from "./PlayerBase.js";
 import { Rect } from "../libs/Rect.js";
 
-class Player2 extends PlayerBase {  //708 x 414 px
+class Player2 extends PlayerBase {  //1736 x 608 px
     constructor(position){
         super(position);
-        this.health = 100; //ejemplo
-        this.speed = 4; //ejemplo
-        this.setSprite("./assets/Player2.png", new Rect (0, 0, 354, 414)); //dibuja solo una sección del sprite, el primer frame
-        this.sheetCols = 2;
-        this.setAnimation(0, 1, true, 200);
+        this.health = 100; //* TODO: traer esta info de la db
+        this.speed = 4; 
+        this.sheetCols = 4;
+        this.setAnimation(0, 2, true, 200);
         //De aquí para abajo las propiedades son para que pueda quedarse quieto si no está en movimiento y que pueda saltar
         this.velocityY = 0; //qué tan rápido brinca
         this.gravity = 0.8; 
         this.jumpStrength = -14;
         this.isOnGround = true;
         this.isMoving = false;
+
+        //upload all the sprites
+        this.spriteRight = new Image();
+        this.spriteRight.src = "./assets/player2/5.png";
+        this.spriteLeft = new Image();
+        this.spriteLeft.src = "./assets/player2/6.png";
+        this.spriteJumpRight = new Image();
+        this.spriteJumpRight.src = "./assets/player2/7.png";
+        this.spriteJumpLeft = new Image();
+        this.spriteJumpLeft.src = "./assets/player2/8.png";
+
+        //initial sprite
+        this.spriteImage = this.spriteRight;
+        this.spriteRect = new Rect(0, 0, 434, 608);
     }
 }
 export { Player2 };
