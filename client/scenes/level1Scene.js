@@ -6,7 +6,7 @@ import { EnemyLion } from "../objects/EnemyLion.js";
 import { MessageBox } from "../objects/MessageBox.js";
 
 "use strict"
-//Lógica del juego
+//* GAME'S LOGIC
 
 //tamaño del mundo
 let worldWidth = 3000;
@@ -43,12 +43,12 @@ let enemies = [
 
 // Fondo
 let backgroundImage = new Image()
-backgroundImage.src = "./assets/Fondo2.png"
+backgroundImage.src = "./assets/fondo2.png"; 
 
 let spawnTimer = 0;
 let spawnInterval = 2000; // 2000 ms = 2 segundos
 
-function draw(ctx){  //TODO DRAW DEBE CAMBIAR POR LA VENTANA DE LA CÁMARA
+function draw(ctx, canvas){  //TODO DRAW DEBE CAMBIAR POR LA VENTANA DE LA CÁMARA
     //La idea es que hacemos, clear, después update y ya desués draw objects
     ctx.clearRect(0,0,canvas.width,canvas.height) //aquí limpiamos
     for(let i = 0; i < worldWidth; i+= canvas.width){
@@ -120,18 +120,23 @@ function update(){
     //aquí realmente debe ir toda la lógica de movimiento, colisiones, etc
     //Movimiento del jugador
     player.isMoving = false;
-    if (keysDown["ArrowLeft"]) {
+    //variables to know which keys are pressed
+    const goLeft  = keysDown["ArrowLeft"] || keysDown['a'];
+    const goRight = keysDown["ArrowRight"] || keysDown['d'];
+
+    if (goLeft && !goRight) {  //case 1: only the keys for left are pressed
         player.position.x -= player.speed;
         player.isMoving = true;
+        player.direction = "left";
+    } else if (goRight && !goLeft) {  //case 2: only the keys for right are pressed
+        player.position.x += player.speed;
+        player.isMoving = true;
+        player.direction = "right";
     }
-    if (keysDown["ArrowRight"]) {
-        player.position.x  += player.speed;
-         player.isMoving = true; //Originalmente en false en el objeto
-    }
-    //Lógica de salto
+        //Lógica de salto
     if (jumpPressed && player.isOnGround){ //barra espaciadora
         player.velocityY = player.jumpStrength;
-        player.isOngGround = false;
+        player.isOnGround = false;
         jumpPressed = false;
     }
     player.velocityY += player.gravity;
