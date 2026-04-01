@@ -41,7 +41,47 @@
     <div class="tab-content" id="pills-tabContent">  <!--content of each tab-->
     <!--tab 1-->
     <div class="tab-pane fade show active" id="pills-cafe" role="tabpanel" aria-labelledby="pills-cafe-tab" tabindex="0">
-        <p>Our Café content here 1</p>
+        <h3>Our history</h2>
+        <hr>
+        <p>texto explicando porque está el cafe y asi, chance una que otra imagen</p>
+        <h4>Our values</h4>
+        <p>🐾 All our cats are rescued</p>
+        <p>☕ Mexican coffee</p>
+        <p>🏠 A safe space for cats and humans</p>
+        <hr>
+        <h3>Menú</h3>
+        <p>Our menú change everyday. We're open Wednesday to Sunday, even cats need their days off.</p>
+
+        <!--dropdown, more info: https://getbootstrap.com/docs/4.0/components/input-group/#custom-select-->
+        <div class="input-group mb-3">
+            <select class="custom-select" id="selector-dia" onchange="cambiarDia()">
+                <option selected>Select a day...</option>
+                <option value="wen">Wednesday</option>
+                <option value="thu">Thursday</option>
+                <option value="fri">Friday</option>
+                <option value="sat">Saturday</option>
+                <option value="sun">Sunday</option>
+            </select>
+        </div>
+
+        <!--containers, all hidden at start-->
+        <div id="wen" class="hidden">
+            <section class="interactivo">
+                <h3>Wednesday menú</h3>
+            </section>
+        </div>
+        <div id="thu" class="hidden">
+            <p>thu content here</p>
+        </div>
+        <div id="fri" class="hidden">
+            <p>fri content here</p>
+        </div>
+        <div id="sat" class="hidden">
+            <p>sat content here</p>
+        </div>
+        <div id="sun" class="hidden">
+            <p>sun content here</p>
+        </div>
     </div>
     <!--tab 2-->
     <div class="tab-pane fade" id="pills-cats" role="tabpanel" aria-labelledby="pills-cats-tab" tabindex="0">

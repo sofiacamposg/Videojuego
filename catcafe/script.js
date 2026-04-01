@@ -10,15 +10,15 @@ const imagenesGatos = [  //cat images array
     'https://stickerly.pstatic.net/sticker_pack/M6DUfwweCC1PPhJ9HOcpw/DAS3U4/19/-808047720.png'
 ];
 const textoGatos = [  //cat info array, same order as images
-    '<b>Name:</b> Juan<br><b>Age:</b> 10 años<br><b>Personlity:</b> Optimistic',  //<br> for line break
-    '<b>Name:</b> Luna<br><b>Age:</b> 3 años<br><b>Personlity:</b> Playful',
-    '<b>Name:</b> Pedro<br><b>Age:</b> 3 meses<br><b>Personlity:</b> Shy',
-    '<b>Name:</b> Lola<br><b>Age:</b> 7 años<br><b>Personlity:</b> Funny',
-    '<b>Name:</b> Copito<br><b>Age:</b> 3 años<br><b>Personlity:</b> Friendly',
-    '<b>Name:</b> Mimi<br><b>Age:</b> 11 meses<br><b>Personlity:</b> Lazy',
-    '<b>Name:</b> Bob<br><b>Age:</b> 19 años<br><b>Personlity:</b> Mischievous',
-    '<b>Name:</b> Gema<br><b>Age:</b> 7 años<br><b>Personlity:</b> Affectionate',
-    '<b>Name:</b> Zafiro<br><b>Age:</b> 5 años<br><b>Personlity:</b> Curious',
+    '<b>Name:</b> Juan<br><b>Age:</b> 10 años<br><b>Personality:</b> Optimistic',  //<br> for line break
+    '<b>Name:</b> Luna<br><b>Age:</b> 3 años<br><b>Personality:</b> Playful',
+    '<b>Name:</b> Pedro<br><b>Age:</b> 3 meses<br><b>Personality:</b> Shy',
+    '<b>Name:</b> Lola<br><b>Age:</b> 7 años<br><b>Personality:</b> Funny',
+    '<b>Name:</b> Copito<br><b>Age:</b> 3 años<br><b>Personality:</b> Friendly',
+    '<b>Name:</b> Mimi<br><b>Age:</b> 11 meses<br><b>Personality:</b> Lazy',
+    '<b>Name:</b> Bob<br><b>Age:</b> 19 años<br><b>Personality:</b> Mischievous',
+    '<b>Name:</b> Gema<br><b>Age:</b> 7 años<br><b>Personality:</b> Affectionate',
+    '<b>Name:</b> Zafiro<br><b>Age:</b> 5 años<br><b>Personality:</b> Curious',
 ];
 let indiceActual = 0;  //tracks which image/text to show
 
@@ -41,3 +41,10 @@ function adoptar() {  //shows cat images and info on button click
         indiceActual = 0;  //reset to first cat
     }
 }
+
+function cambiarDia() {
+    let contenedor = document.querySelector('.dia'); //gets the container
+    let diaSeleccionado = document.getElementById('selector-dia').value;  //value of selected day 
+    console.log(diaSeleccionado);
+}
+
