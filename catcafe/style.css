@@ -168,3 +168,23 @@ img:hover {  /*image jump on hover*/
     --bs-nav-pills-link-active-bg: #b98b7d;    /*active tab background*/
     --bs-nav-pills-link-active-color: white;   /*active tab text*/
 }
+/*These classes are for the display of the menu items per day*/
+.menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* texto izquierda, imagen derecha */
+    margin: 10px 0;
+    padding: 5px 10px;
+}
+
+/* imagen escondida */
+.menu-item img {
+    width: 120px;
+    border-radius: 10px;
+    display: none;
+}
+
+/* aparece en hover */
+.menu-item:hover img {
+    display: block;
+}
