@@ -43,13 +43,21 @@
     <div class="tab-pane fade show active" id="pills-cafe" role="tabpanel" aria-labelledby="pills-cafe-tab" tabindex="0">
         <h3>Our history</h2>
         <hr>
-        <p>texto explicando porque está el cafe y asi, chance una que otra imagen</p>
+        <p>Cat-fé was born in the heart of Mexico City because we asked ourselves a very important question: <strong>why choose 
+            between a good coffee and a cat on your lap?</strong> We started as a tiny spot in Colonia Roma with three rescued cats,
+             a secondhand espresso machine, and zero regrets. Today we have more cats, a better machine, and still zero regrets.
+             Every cat you meet here has a story, most of them were found on the streets of CDMX, and all of them decided
+             that this café was home. Honestly, same.</p>
         <h4>Our values</h4>
         <p>🐾 All our cats are rescued</p>
         <p>☕ Mexican coffee</p>
         <p>🏠 A safe space for cats and humans</p>
-        <hr>
+        <div class="img-intro">
+            <img id="img-intro1" src="https://www.safehavenforcats.org/wp-content/uploads/2019/08/Cat-Reel-for-CTS-Ask-1080x640-1080x640.jpg" alt="All rescued cats">
+            <img id="img-intro2" src="https://i0.wp.com/busyabuelita.com/wp-content/uploads/2024/02/cafe-de-olla-feat1200-x-628-px.png?fit=1200%2C628&ssl=1" alt="All rescued cats">
+        </div>
         <h3>Menú</h3>
+        <hr>
         <p>Our menú change everyday. We're open Wednesday to Sunday, even cats need their days off.</p>
 
         <!--dropdown, more info: https://getbootstrap.com/docs/4.0/components/input-group/#custom-select-->
@@ -67,6 +75,7 @@
         <!--containers, all hidden at start-->
         <div id="wen" class="dia-menu hidden">
             <section class="interactivo">
+<<<<<<< HEAD
                 <h3>Wednesday menú</h3>
                 <div class="menu-item">
                     ☕ Oaxacan mocha
@@ -141,10 +150,37 @@
                     🍪 Polvorón shortbread
                     <img src="./assets/Polvoron.jpg" class="img-hover">
                 </div>
+=======
+                <h3>Wednesday menu</h3>
+                <h4>☕ Oaxacan mocha <br>
+                    🧋 Tamarind iced tea <br>
+                    🍵 Mint green tea <br>
+                    🧁 Cinnamon churro cupcake <br>
+                    🍮 Tres leches cup</h4>
+        </div>
+        <div id="thu" class="dia-menu hidden">
+            <section class="interactivo">
+                <h3>Thursday menu</h3>
+                <h4>☕ Spiced Mexican espresso<br>
+                    🧋 Mango chile cold brew<br>
+                    🍵 Hibiscus iced tea<br>
+                    🍰 Choco-abuelita brownie<br>
+                    🍮 Coconut panna cotta</h4>
+        </div>
+        <div id="fri" class="dia-menu hidden">
+            <section class="interactivo">
+                <h3>Friday menu</h3>
+                <h4>☕ Vanilla piloncillo latte<br>
+                    🧋 Strawberry horchata<br>
+                    🍵 Lavender earl grey<br>
+                    🧁 Dulce de leche muffin<br>
+                    🍪 Polvorón shortbread</h4>
+>>>>>>> c016615124b9f39982dae53628c351586ea38290
             </section>
         </div>
         <div id="sat" class="dia-menu hidden">
             <section class="interactivo">
+<<<<<<< HEAD
                 <h3>Saturday menú</h3>
                 <div class="menu-item">
                     ☕ Café de olla americano
@@ -163,10 +199,19 @@
                     🍮 Arroz con leche pudding
                     <img src="./assets/ArrozLeche.jpg" class="img-hover">
                 </div>
+=======
+                <h3>Saturday menu</h3>
+                <h4>☕ Café de olla americano<br>
+                    🧋 Matcha horchata latte<br>
+                    🍵 Cinnamon rooibos tea<br>
+                    🍰 Abuelita hot chocolate cake<br>
+                    🍮 Arroz con leche pudding</h4>
+>>>>>>> c016615124b9f39982dae53628c351586ea38290
             </section>
         </div>
         <div id="sun" class="dia-menu hidden">
             <section class="interactivo">
+<<<<<<< HEAD
                 <h3>Sunday menú</h3>
                 <div class="menu-item">
                     ☕ Café de olla latte
@@ -189,6 +234,14 @@
                     🍪 Piloncillo cookie
                     <img src="./assets/PiloncilloCookie.jpg" class="img-hover">
                 </div>
+=======
+                <h3>Sunday menu</h3>
+                <h4>☕ Café de olla latte <br>
+                    🧋 Horchata cold brew<br>
+                    🍵 Chamomile & honey tea<br>
+                    🍮 Cajeta flan<br>
+                    🍪 Piloncillo cookie</h4>
+>>>>>>> c016615124b9f39982dae53628c351586ea38290
             </section>
         </div>
     </div>
@@ -208,52 +261,47 @@
     <!--tab 3 content: what is a cat cafe-->
     <div class="tab-pane fade" id="pills-whatis" role="tabpanel" aria-labelledby="pills-whatis-tab" tabindex="0">
         
-        <section class="intro">
-            <h2>CAT CAFE</h2>
-            <hr>
-            <h3>What is a cat cafe?</h3>
-            <p id="texto-cambiable">A cat café is a themed establishment where <b>customers can enjoy drinks and food while socializing,
-                 petting and interacting with cats</b> that roam freely around the place.</p>
-            <button class="btn" onclick="cambiarTexto()">✨ More details</button>  <!--calls cambiarTexto()-->
-        </section>
-
-        <section class="imagen-ejemplo">
-            <img src="https://media.timeout.com/images/102535828/750/422/image.jpg" alt="Cat resting on his bed"> 
-            <p class="epigrafe">Example of a cat cafe</p>
-        </section>
+        <h2>CAT CAFE</h2>
+        <h3>What is a cat cafe?</h3>
         <hr>
+        <p id="texto-cambiable">A cat café is a themed establishment where <b>customers can enjoy drinks and food while socializing,
+             petting and interacting with cats</b> that roam freely around the place.</p>
+        <button class="btn" onclick="cambiarTexto()">✨ More details</button>  <!--calls cambiarTexto()-->
 
-        <section class="origen"> 
-            <h3>Where do cat cafes come from?</h3>
-            <p>Originally from Taiwan and popularized in Japan, <b>these spaces usually shelter rescued cats and promote
-                 responsible adoption</b>, offering a relaxed environment for cat lovers.</p>
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHJAHABk1BnFXqLstjD1SAZ5cPqtdecsvAzQ&s" alt="Woman with cats in a cat cafe">  
-        </section>
+        <img src="https://media.timeout.com/images/102535828/750/422/image.jpg" alt="Cat resting on his bed"> 
+        <p class="epigrafe">Example of a cat cafe</p>
+
+        <h3>Where do cat cafes come from?</h3>
         <hr>
-        <section class="caracteristicas">  
-            <h3>Key features of cat cafes:</h3>
-            <article>
-                <h4>🐾 Feline interaction</h4>
-                <p>The cats are the stars, roaming through adapted areas with scratching posts and toys.</p>
-            </article>
-            <article>
-                <h4>🐾 Adoption and rescue</h4>
-                <p>Many work as temporary shelters where you can meet cats available for adoption.</p>
-            </article>
-            <article>
-                <h4>🐾 House rules</h4>
-                <p>Guests must follow rules such as not waking the cats, not feeding them, and sometimes paying an
-                    entry fee or time-based reservation.</p>
-            </article>
-            <article>
-                <h4>🐾 Themed experience</h4>
-                <p>Both the food (breads, crepes) and the decoration usually feature cat motifs.</p>
-            </article>
-            <article>
-                <h4>🐾 Main goal</h4>
-                <p>To offer relaxation through feline therapy and raise awareness about animal care.</p>
-            </article>
-        </section>
+        <p>Originally from Taiwan and popularized in Japan, <b>these spaces usually shelter rescued cats and promote
+             responsible adoption</b>, offering a relaxed environment for cat lovers.</p>
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHJAHABk1BnFXqLstjD1SAZ5cPqtdecsvAzQ&s" alt="Woman with cats in a cat cafe">  
+        <p class="epigrafe">Happy cats, happy clients</p>
+
+        <h3>Key features of cat cafes:</h3>
+        <hr>
+        <article>
+            <h4>🐾 Feline interaction</h4>
+            <p>The cats are the stars, roaming through adapted areas with scratching posts and toys.</p>
+        </article>
+        <article>
+            <h4>🐾 Adoption and rescue</h4>
+            <p>Many work as temporary shelters where you can meet cats available for adoption.</p>
+        </article>
+        <article>
+            <h4>🐾 House rules</h4>
+            <p>Guests must follow rules such as not waking the cats, not feeding them, and sometimes paying an
+                entry fee or time-based reservation.</p>
+        </article>
+        <article>
+            <h4>🐾 Themed experience</h4>
+            <p>Both the food (breads, crepes) and the decoration usually feature cat motifs.</p>
+        </article>
+        <article>
+            <h4>🐾 Main goal</h4>
+            <p>To offer relaxation through feline therapy and raise awareness about animal care.</p>
+        </article>
+
     </div>
 
     </div>
