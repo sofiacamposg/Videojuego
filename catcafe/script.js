@@ -49,7 +49,14 @@ function cambiarDia() {
         contenedor[i].classList.add('hidden');
         if (diaSeleccionado === contenedor[i].id){
             contenedor[i].classList.remove('hidden');
+            contenedor[i].classList.remove('expand'); // remove first
+            void contenedor[i].offsetWidth; // forces browser to reset the animation
+            contenedor[i].classList.add('expand'); // add it back
         }
     }
+}
+
+window.onload = function() {  // reset dropdown to default
+    document.getElementById('selector-dia').selectedIndex = 0;
 }
 
