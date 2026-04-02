@@ -43,8 +43,13 @@ function adoptar() {  //shows cat images and info on button click
 }
 
 function cambiarDia() {
-    let contenedor = document.querySelector('.dia'); //gets the container
     let diaSeleccionado = document.getElementById('selector-dia').value;  //value of selected day 
-    console.log(diaSeleccionado);
+    let contenedor = document.querySelectorAll('.dia-menu'); //gets all the hidden containers
+    for (let i = 0; i < contenedor.length; i++){
+        contenedor[i].classList.add('hidden');
+        if (diaSeleccionado === contenedor[i].id){
+            contenedor[i].classList.remove('hidden');
+        }
+    }
 }
 
