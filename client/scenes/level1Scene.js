@@ -37,8 +37,8 @@ function setSelectedCharacter(selectedCharacter){
 
 // Enemies, igual figuras random
 let enemies = [
-    new EnemyLion (new Vector(900,377)),
-    new EnemyLion (new Vector(800,377))
+    new EnemyLion (new Vector(900,357)),
+    new EnemyLion (new Vector(800,357))
 ]
 
 // Fondo
@@ -192,7 +192,7 @@ let totalSpawned = 0;
 let maxEnemies = 10;
 function spawnEnemy(){
     let min = 1;
-    let max = 5;
+    let max = 15;
     let amount = Math.floor(Math.random() * (max - min + 1)) + min;
 
     for(let i = 0; i < amount; i++){
