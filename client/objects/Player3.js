@@ -16,14 +16,21 @@ class Player3 extends PlayerBase {  //1736 x 608 px
         this.isMoving = false;
 
         //upload all the sprites
-        this.spriteRight = new Image();
+        this.spriteRight = new Image();  //walk
         this.spriteRight.src = "./assets/player3/9.png";
         this.spriteLeft = new Image();
         this.spriteLeft.src = "./assets/player3/10.png";
-        this.spriteJumpRight = new Image();
+
+        this.spriteJumpRight = new Image();  //jump
         this.spriteJumpRight.src = "./assets/player3/11.png";
         this.spriteJumpLeft = new Image();
         this.spriteJumpLeft.src = "./assets/player3/12.png";
+
+        this.attackRight = new Image();
+        this.attackRight.src = "./assets/player3/attackright.png";  //attack right
+        this.attackLeft = new Image();
+        this.attackLeft.src = "./assets/player3/attackleft.png";  //attack left
+
 
         //initial sprite
         this.spriteImage = this.spriteRight;
