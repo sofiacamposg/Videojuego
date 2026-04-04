@@ -139,6 +139,7 @@ function update(){
         player.isOnGround = false;
         jumpPressed = false;
     }
+    
     player.velocityY += player.gravity;
     player.position.y += player.velocityY; //cuando salta sube y baja por gravedad
 
@@ -223,6 +224,12 @@ function handleKeyDown(event){
     keysDown[event.key] = true;
     if(event.key === " "){ //spacebar for jump
         jumpPressed = true;
+    }
+    if(event.key === "j"){ //J for attack
+        if(!player.playeratack){
+            player.playeratack = true;
+            player.attackFrames = 0;
+        }
     }
 }
 
