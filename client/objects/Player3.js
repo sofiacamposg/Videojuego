@@ -7,7 +7,7 @@ class Player3 extends PlayerBase {  //1736 x 608 px
         this.health = 100; //* TODO: traer esta info de la db
         this.speed = 4; 
         this.sheetCols = 4;
-        this.setAnimation(0, 2, true, 200);
+        this.setAnimation(0, 3, true, 200);
         //De aquí para abajo las propiedades son para que pueda quedarse quieto si no está en movimiento y que pueda saltar
         this.velocityY = 0; //qué tan rápido brinca
         this.gravity = 0.8; 

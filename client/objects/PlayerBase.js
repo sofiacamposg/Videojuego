@@ -3,7 +3,7 @@ import { AnimatedObject } from "../libs/AnimatedObject.js";
 class PlayerBase extends AnimatedObject {
 
   constructor(position){
-    super(position,160,160,"white","player",6)
+    super(position, 160, 160,"white","player",6)
     this.direction = "right";  //default direction
     this.playeratack = false;  //default attack state
     this.attackFrames = 0;  //frames counter

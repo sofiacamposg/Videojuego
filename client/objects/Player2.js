@@ -7,7 +7,7 @@ class Player2 extends PlayerBase {  //1736 x 608 px
         this.health = 100; //* TODO: traer esta info de la db
         this.speed = 4; 
         this.sheetCols = 4;
-        this.setAnimation(0, 2, true, 200);  //le puse 2 porque si no se mueve raro
+        this.setAnimation(0, 3, true, 200);  //le puse 2 porque si no se mueve raro
         //De aquí para abajo las propiedades son para que pueda quedarse quieto si no está en movimiento y que pueda saltar
         this.velocityY = 0; //qué tan rápido brinca
         this.gravity = 0.8; 
@@ -27,9 +27,9 @@ class Player2 extends PlayerBase {  //1736 x 608 px
         this.spriteJumpLeft.src = "./assets/player2/8.png";  //jump left
 
         this.attackRight = new Image();
-        this.attackRight.src = "./assets/player2/p2_attackright.png";  //attack right
+        this.attackRight.src = "./assets/player2/attackright.png";  //attack right
         this.attackLeft = new Image();
-        this.attackLeft.src = "./assets/player2/p2_attackleft.png";  //attack left
+        this.attackLeft.src = "./assets/player2/attackleft.png";  //attack left
 
         //initial sprite
         this.spriteImage = this.spriteRight;
