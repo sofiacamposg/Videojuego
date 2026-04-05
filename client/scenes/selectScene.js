@@ -1,6 +1,9 @@
+import { MessageBox } from "../objects/MessageBox.js";
+
 "use strict"
 let mouseX = 0;
 let mouseY = 0;
+let ctx;
 
 //Botones
 const buttonBack = {
@@ -15,6 +18,19 @@ const buttonConfirm = {
     text: "CONFIRM"
 }; 
 
+let errorMessage = new MessageBox(
+    "ERROR", 
+    "You must select a Character to continue",
+    250,
+    150,
+    500,
+    250
+);
+errorMessage.addButton("Resume", 440, 300, 120, 50, () =>{
+   errorMessage.hide()
+});
+
+
     //fondo
     let backgroundImage = new Image();
     backgroundImage.src = "./assets/PortadaBase.png";    ;
@@ -24,14 +40,17 @@ const buttonConfirm = {
 
     // Zonas de los personajes
     let zones = [
-        { x: 200, y: 200, width: 200, height: 150, name: "Guerrero", stats: "Vida:120 Ataque:20 Vel:5", description: "Gladiador equilibrado en ataque y defensa. Ideal para un estilo adaptable" },
-        { x: 400, y: 200, width: 200, height: 150, name: "Lancero", stats: "Vida:100 Ataque:25 Vel:6", description: "Gladiador rápido con mayor alcance. Perfecto para jugadores ágiles" },
-        { x: 600, y: 200, width: 200, height: 150, name: "Pesado", stats: "Vida:150 Ataque:15 Vel:3", description: "Gladiador resistente con gran defensa. Soporta mucho daño pero es más lento" }
+        { x: 200, y: 190, width: 180, height: 150, name: "Guerrero", stats: "Vida:120 Ataque:20 Vel:5", description: "Gladiador equilibrado en ataque y defensa. Ideal para un estilo adaptable" },
+        { x: 400, y: 190, width: 180, height: 150, name: "Lancero", stats: "Vida:100 Ataque:25 Vel:6", description: "Gladiador rápido con mayor alcance. Perfecto para jugadores ágiles" },
+        { x: 600, y: 190, width: 180, height: 150, name: "Pesado", stats: "Vida:150 Ataque:15 Vel:3", description: "Gladiador resistente con gran defensa. Soporta mucho daño pero es más lento" }
     ];
+
+    let selectedCharacter = null;
     //reset
     function reset() {
     mouseX = 0;
     mouseY = 0;
+    selectedCharacter = null;
     }
 
     function draw(ctx, canvas) {
@@ -42,8 +61,8 @@ const buttonConfirm = {
         ctx.textAlign = "center";
         ctx.strokeStyle = "rgb(255, 187, 86)"; //borde
         ctx.lineWidth = 3;
-        ctx.strokeText("S E L E C T   C H A R A T E R", canvas.width / 2, 150);
-        ctx.fillText("S E L E C T   C H A R A T E R", canvas.width / 2, 150);
+        ctx.strokeText("S E L E C T   C H A R A C T E R", canvas.width / 2, 150);
+        ctx.fillText("S E L E C T   C H A R A C T E R", canvas.width / 2, 150);
 
         // Botones
         drawButton(ctx, buttonConfirm);
@@ -62,6 +81,14 @@ const buttonConfirm = {
         mouseX < zone.x + zone.width &&
         mouseY > zone.y &&
         mouseY < zone.y + zone.height;
+
+        const isSelected = selectedCharacter === zone.name;
+        if (isSelected){
+            ctx.strokeStyle = 'lime';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(zone.x, zone.y, zone.width, zone.height);
+
+        }
 
         // Visual de las stats de los characters
         if (isHover) {
@@ -95,10 +122,8 @@ const buttonConfirm = {
         ctx.fillText(zone.description, canvas.width / 2, 585);
         }
         });
-
-        // Botones
-        drawButton(ctx, buttonConfirm);
-        drawButton(ctx, buttonBack);
+        //errorBox
+         errorMessage.draw(ctx); 
     }
 
     //Reutiliza función de menuScreen
@@ -157,15 +182,13 @@ const buttonConfirm = {
 
         return mouseX > left && mouseX < right && mouseY > top && mouseY < bottom;
     }
-    //Esta función solo revisa el resultado de la anterior y hace return
-    function handleButtonClick() {
-        // revisa si el mouse está encima de START, SETTINGS o LOG IN
-        if (isMouseOverButton(buttonBack)) return "back";
-        if (isMouseOverButton(buttonConfirm)) return "confirm";
-        return null;
-    }
+    
     // Detecta click en zona y regresa cuál eligieron
     function handleClick() {
+    //errorMessage
+    if(errorMessage.visible){
+          return errorMessage.handleClick(mouseX, mouseY);
+    }
     for (const zone of zones) {
         const inside =
         mouseX > zone.x &&
@@ -173,14 +196,31 @@ const buttonConfirm = {
         mouseY > zone.y &&
         mouseY < zone.y + zone.height;
 
-        if (inside) return zone.name; // "Guerrero" | "Lancero" | "Pesado"
-        // revisa si el mouse está encima de START, SETTINGS o LOG IN
-    if (isMouseOverButton(buttonBack)) return "back";
-    if (isMouseOverButton(buttonConfirm)) return "confirm";
+        if (inside) {
+            selectedCharacter = zone.name; // "Guerrero" | "Lancero" | "Pesado"
+            return "selectedCharacter";
+        }
     }
-    return null;
+        // revisa si el mouse está encima de BACK O CONFIRM
+    if (isMouseOverButton(buttonBack)) {
+        return "back";
     }
-    export { draw, handleMouseMove, handleClick, reset };
+    if (isMouseOverButton(buttonConfirm)){
+        if(selectedCharacter != null){
+            return 'confirm'
+        }
+        else{
+            errorMessage.show();
+        }
+        //return null; //no deja confirmar si no eligió personaje
+    } 
+     return null;
+    }
+
+    function getSelectedCharacter(){
+        return selectedCharacter;
+    }
+    export { draw, handleMouseMove, handleClick, reset, getSelectedCharacter };
         
 
         

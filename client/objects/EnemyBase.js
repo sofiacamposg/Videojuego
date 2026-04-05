@@ -3,7 +3,7 @@ import { AnimatedObject } from "../libs/AnimatedObject.js";
 class EnemyBase extends AnimatedObject {
 
   constructor(position){
-    super(position,160,160,"white","enemy",4)
+    super(position,200,200,"white","enemy",4)
   }
 
   update(){

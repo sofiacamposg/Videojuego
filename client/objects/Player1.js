@@ -1,14 +1,39 @@
 import { PlayerBase } from "./PlayerBase.js";
 import { Rect } from "../libs/Rect.js";
 
-class Player1 extends PlayerBase {  //720 x 390 px
+class Player1 extends PlayerBase {  //1736 x 608 px
     constructor(position){
         super(position);
-        this.health = 100; //ejemplo
-        this.speed = 4; //ejemplo
-        this.setSprite("./assets/Player1.png", new Rect (0, 0, 360, 390)); //dibuja solo una sección del sprite, el primer frame
-        this.sheetCols = 2;
-        this.setAnimation(0, 1, true, 200);
+        this.health = 120; //* TODO: traer esta info de la db
+        this.speed = 5; 
+        this.sheetCols = 4;
+        this.setAnimation(0, 3, true, 200);  
+        //De aquí para abajo las propiedades son para que pueda quedarse quieto si no está en movimiento y que pueda saltar
+        this.velocityY = 0; //qué tan rápido brinca
+        this.gravity = 0.8;
+        this.jumpStrength = -14;
+        this.isOnGround = true;
+        this.isMoving = false;
+
+        //upload all the sprites
+        this.spriteRight = new Image();  //walk
+        this.spriteRight.src = "./assets/player1/1.png";
+        this.spriteLeft = new Image();
+        this.spriteLeft.src = "./assets/player1/2.png";
+
+        this.spriteJumpRight = new Image();  //jump
+        this.spriteJumpRight.src = "./assets/player1/3.png";
+        this.spriteJumpLeft = new Image();
+        this.spriteJumpLeft.src = "./assets/player1/4.png";
+
+        this.attackRight = new Image();
+        this.attackRight.src = "./assets/player1/attackright.png";  //attack right
+        this.attackLeft = new Image();
+        this.attackLeft.src = "./assets/player1/attackleft.png";  //attack left
+
+        //initial sprite
+        this.spriteImage = this.spriteRight;
+        this.spriteRect = new Rect(0, 0, 434, 608);
     }
 }
 export { Player1 };

@@ -5,94 +5,102 @@ import { MessageBox } from "../objects/MessageBox.js";
 let mouseX = 0;
 let mouseY = 0;
 const buttonBack = { //? BACK TO MENU BUTTON
-    x: 150,
+    x: 850,
     y: 70,
     text: "BACK TO MENU"
 };
+const buttonLogIn = { //? BACK TO LOG IN BUTTON
+    x: 150,
+    y: 70,
+    text: "BACK TO LOG IN"
+};
 const buttonConfirm = {  //? CONFIRM LOG IN BUTTON
     x: 500,
-    y: 500,
+    y: 540,
     text: "CONFIRM"
 };
-const buttonCreate = {  //? CREATE ACCOUNT BUTTON
-    x: 850,
-    y: 70,
-    text: "CREATE ACCOUNT"
-};
 const errorMessage = new MessageBox(  //? error message creation
-    "ERROR", "Please fill in both fields", 250, 150, 500, 250);
+    "ERROR", "Please fill in all fields", 250, 150, 500, 250);
     errorMessage.addButton("Try again", 440, 300, 120, 50, () =>{  //? hide when clicked
         errorMessage.hide()
     });
 //? inputs 
-let username = "";  
+let username = "";
 let password = "";
-let activeField = null; //username / password / null
-const inputUsername = { x: 500, y: 300, w: 500, h: 60 };
-const inputPassword = { x: 500, y: 410, w: 500, h: 60 };
+let name = "";
+let age = "";
+let activeField = null; //username / password / name / age / null
+const inputUsername = { x: 540, y: 250, w: 500, h: 60 };
+const inputPassword = { x: 540, y: 325, w: 500, h: 60 };
+const inputName = { x: 540, y: 400, w: 500, h: 60 };
+const inputAge = { x: 540, y: 475, w: 500, h: 60 };
 
 //? background
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
-function draw(ctx, canvas){  //? draw every element on the canvas
+function draw(ctx, canvas){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
     //? title
-    ctx.font = "120px VT323";
+    ctx.fillStyle = "white";//text
+    ctx.font = "70px 'VT323'";
     ctx.textAlign = "center";
-    ctx.fillStyle = "white"; //text
-    ctx.fillText("L O G   I N", canvas.width / 2, canvas.height / 2 - 100);
     ctx.strokeStyle = "rgb(255, 187, 86)"; 
     ctx.lineWidth = 2;
-    ctx.strokeText("L O G   I N", canvas.width / 2, canvas.height / 2 - 100);
-    
-    //? inputs boxes
+    ctx.strokeText("C R E A T E   A C C O U N T", canvas.width / 2, canvas.height / 2 - 120);
+    ctx.fillText("C R E A T E   A C C O U N T", canvas.width / 2, canvas.height / 2 - 120);
+
+    //? inputs
     drawInputBox(ctx, inputUsername.x, inputUsername.y, inputUsername.w, inputUsername.h, "USERNAME");
     drawInputBox(ctx, inputPassword.x, inputPassword.y, inputPassword.w, inputPassword.h, "PASSWORD");
+    drawInputBox(ctx, inputName.x, inputName.y, inputName.w, inputName.h, "NAME");
+    drawInputBox(ctx, inputAge.x, inputAge.y, inputAge.w, inputAge.h, "AGE");
 
     //? buttons
     drawButton(ctx, buttonConfirm);
     drawButton(ctx, buttonBack);
-    drawButton(ctx, buttonCreate);
+    drawButton(ctx, buttonLogIn);
 
     errorMessage.draw(ctx); 
 }
 function drawInputBox(ctx, centerX, centerY, w, h, label){  //? draw the labels and input boxes
-    const x = centerX - w / 2;
-    const y = centerY - h / 2;
+  const x = centerX - w / 2;
+  const y = centerY - h / 2;
 
-    //? box
-    ctx.strokeStyle = "rgb(255, 187, 86)";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(x, y, w, h);
+  //? box
+  ctx.strokeStyle = "rgb(255, 187, 86)";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x, y, w, h);
 
-    //? label
-    ctx.fillStyle = "white";
-    ctx.font = "22px 'VT323'";
-    ctx.textAlign = "left";
-    ctx.fillText(label + ":", x, y - 15);
+  //? label
+  ctx.fillStyle = "white";
+  ctx.font = "22px 'VT323'";
+  ctx.textAlign = "left";
+  ctx.fillText(label + ":", x - 90, y + 35);
 
-    //? text inside box
-    ctx.font = "25px 'VT323'";
-    ctx.textAlign = "left";
+  //? text inside box
+  ctx.font = "25px 'VT323'";
+  ctx.textAlign = "left";
 
-    let valueToShow = "";
-    if (label === "USERNAME") valueToShow = username;  //shows what user writes
-    if (label === "PASSWORD") valueToShow = "*".repeat(password.length);  //secret password
-
-    //? check if any box is active
-    if (activeField === label.toLowerCase() && valueToShow.length === 0){  //case 1: active but without text, shows | to let know the user they can type now
-        ctx.fillStyle = "white";
-        ctx.fillText("|", x + 18, y + 38);
-    } else if (valueToShow.length === 0){  //case 2: its inactive and without text
-        ctx.fillStyle = "rgba(255,255,255,0.6)";
-        ctx.fillText("click to type...", x + 18, y + 38);
-    } else{  //case 3: has text and shows text
-        ctx.fillStyle = "white";
-        ctx.fillText(valueToShow + (activeField === label.toLowerCase() ? "|" : ""), x + 18, y + 38);  //check if is inactive so the | doesn't appear 
-    }
+  let valueToShow = "";
+  if (label === "USERNAME") valueToShow = username;
+  if (label === "PASSWORD") valueToShow = "*".repeat(password.length);
+  if (label === "NAME") valueToShow = name;
+  if (label === "AGE") valueToShow = age;
+  
+  //? check if any box is active
+  if (activeField === label.toLowerCase() && valueToShow.length === 0){  //case 1: active but without text, shows | to let know the user they can type now
+      ctx.fillStyle = "white";
+      ctx.fillText("|", x + 20, y + 38);
+  } else if (valueToShow.length === 0){  //case 2: its inactive and without text
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.fillText("click to type...", x + 20, y + 38);
+  } else{  //case 3: has text and shows text
+      ctx.fillStyle = "white";
+      ctx.fillText(valueToShow + (activeField === label.toLowerCase() ? "|" : ""), x + 20, y + 38);  //check if is inactive so the | doesn't appear 
+  }
 }
 function drawButton(ctx, button){  //? draw buttons 
     ctx.font = "25px 'VT323'";
@@ -111,10 +119,10 @@ function drawButton(ctx, button){  //? draw buttons
         mouseY > top &&
         mouseY < bottom;
 
-    ctx.fillStyle = isHover ? "red" : "white";  //change color if hover
+    ctx.fillStyle = isHover ? "red" : "white";  //change color
     ctx.fillText(button.text, button.x, button.y);
 
-    if (isHover){  
+    if (isHover) {
         ctx.beginPath();
         ctx.moveTo(left, button.y + 5);
         ctx.lineTo(right, button.y + 5);
@@ -155,14 +163,22 @@ function handleClick(ctx){  //? handle cliks over any element
         activeField = "password"; 
         return "password";
     }
+    if (isMouseOver(inputName, ctx)){
+        activeField = "name"; 
+        return "name";
+    }
+    if (isMouseOver(inputAge, ctx)){
+        activeField = "age"; 
+        return "age";
+    }
     if (isMouseOver(buttonBack, ctx)){
         return "back";
     }
-    if (isMouseOver(buttonCreate, ctx)){
-        return "create";
+    if (isMouseOver(buttonLogIn, ctx)){
+        return "login";
     }
     if (isMouseOver(buttonConfirm, ctx)) {
-        if (username === "" || password === "") {
+        if (username === "" || password === "" || name === "" || age === "") {
             errorMessage.show();
             return null;
         }
@@ -170,32 +186,41 @@ function handleClick(ctx){  //? handle cliks over any element
     }
     return null;
 }
-//Tenemos que hacer esta función para darle valor a la variable activeField
-function handleKeyDown(event){  //? handles user's input
-  if (activeField === null) return; //case 1: no active field
+function handleKeyDown(event){
+  if (activeField === null) return;  //case 1: no active field
 
-  if (event.key === "Backspace"){ //case 2: deletes lasts key wrote
+  if (event.key === "Backspace") {  //case 2: deletes lasts key wrote
     event.preventDefault();
     if (activeField === "username") username = username.slice(0, -1);
     if (activeField === "password") password = password.slice(0, -1);
+    if (activeField === "name") name = name.slice(0, -1);
+    if (activeField === "age") age = age.slice(0, -1);
     return;
   }
-  if (event.key === "Enter"){ //case 3: enter pressed
+
+  if (event.key === "Enter") { //case 3: enter pressed
     activeField = null;
     return;
   }
+ 
   if (event.key.length !== 1) return; //case 4: one key at a time
+
   const allowed = /^[a-zA-Z0-9 _\-\.@]$/.test(event.key); //case 5: checks input
   if (!allowed) return;
-  if (activeField === "username") username += event.key;  //adds letter to stricng
+
+  if (activeField === "username") username += event.key;  //adds letter to string
   if (activeField === "password") password += event.key;
+  if (activeField === "name") name += event.key;
+  if (activeField === "age") age += event.key;
 }
 function getUsername(){  //? getter
   return username;
 }
-function reset() {  //? reset to default values
+function reset(){  //? reset to default values
   username = "";
   password = "";
+  name = "";
+  age = "";
   activeField = null;
   mouseX = 0;
   mouseY = 0;

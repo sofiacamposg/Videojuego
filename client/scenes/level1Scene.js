@@ -1,9 +1,12 @@
 import { Player1 } from "../objects/Player1.js";
+import { Player2 } from "../objects/Player2.js";
+import { Player3 } from "../objects/Player3.js";
 import { Vector } from "../libs/Vector.js";
 import { EnemyLion } from "../objects/EnemyLion.js";
+import { MessageBox } from "../objects/MessageBox.js";
 
 "use strict"
-//Lógica del juego
+//* GAME'S LOGIC
 
 //tamaño del mundo
 let worldWidth = 3000;
@@ -14,25 +17,38 @@ let cameraX = 0; //ventana del canvas
 let mouseX = 0
 let mouseY = 0
 
-let keysDown = {}; //Para poder usar teclado para mover a los jugadores
+let player
 
-// Player
-let player = new Player1 (new Vector(200,350));
+let keysDown = {}; //Para poder usar teclado para mover a los jugadores
+let jumpPressed = false; //Para que no salga disparado hasta los cielos cuando salta
+
+//Esta función es para escoger el sprite de player
+function setSelectedCharacter(selectedCharacter){
+    if (selectedCharacter === "Guerrero"){
+        player = new Player1(new Vector(200,350));
+    }
+    else if (selectedCharacter === "Lancero"){
+        player = new Player2(new Vector(200,350));
+    }
+    else if (selectedCharacter === "Pesado"){
+        player = new Player3(new Vector(200,350));
+    }
+}
 
 // Enemies, igual figuras random
 let enemies = [
-    new EnemyLion (new Vector(900,377)),
-    new EnemyLion (new Vector(800,377))
+    new EnemyLion (new Vector(900,357)),
+    new EnemyLion (new Vector(800,357))
 ]
 
 // Fondo
 let backgroundImage = new Image()
-backgroundImage.src = "./assets/Fondo2.png"
+backgroundImage.src = "./assets/fondo2.png"; 
 
 let spawnTimer = 0;
 let spawnInterval = 2000; // 2000 ms = 2 segundos
 
-function draw(ctx){  //TODO DRAW DEBE CAMBIAR POR LA VENTANA DE LA CÁMARA
+function draw(ctx, canvas){  //TODO DRAW DEBE CAMBIAR POR LA VENTANA DE LA CÁMARA
     //La idea es que hacemos, clear, después update y ya desués draw objects
     ctx.clearRect(0,0,canvas.width,canvas.height) //aquí limpiamos
     for(let i = 0; i < worldWidth; i+= canvas.width){
@@ -52,17 +68,89 @@ function draw(ctx){  //TODO DRAW DEBE CAMBIAR POR LA VENTANA DE LA CÁMARA
         spawnTimer = 0;
     }
     ctx.restore();
+
+    drawHealthBar(ctx, 20, 20, 100, 30, 50, 100);
+    ctx.font = "50px Arial";
+    drawHearts(ctx, 150, 50, 3, 5);
+}
+//HEATH BAR
+function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
+    // fondo (vida perdida)
+    ctx.fillStyle = "gray";
+    ctx.fillRect(x, y, width, height);
+
+    // vida actual
+    const healthWidth = (current / max) * width;
+    ctx.fillStyle = "green";
+    ctx.fillRect(x, y, healthWidth, height);
+
+    // borde
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, width, height);
+}
+//HEARTS
+function drawHearts(ctx, x, y, current, max) { //current from db and max is const
+    const heartValue = 1;
+    const totalHearts = max / heartValue;
+    const filledHearts = Math.ceil(current / heartValue);
+
+    for (let i = 0; i < totalHearts; i++) {
+        ctx.fillStyle = i < filledHearts ? "red" : "gray";
+        ctx.fillText("♥", x + i * 50, y);
+    }
+}
+//DECK BUTTON
+function drawDeckButton(ctx, button) {
+    const left = button.x - button.w / 2;
+    const top = button.y - button.h / 2;
+
+    ctx.fillStyle = "black";
+    ctx.fillRect(left, top, button.w, button.h);
+
+    ctx.strokeStyle = "white";
+    ctx.strokeRect(left, top, button.w, button.h);
+
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.fillText("DECK", button.x, button.y);
 }
 
 function update(){
     //aquí realmente debe ir toda la lógica de movimiento, colisiones, etc
     //Movimiento del jugador
-    if (keysDown["ArrowLeft"]) {
+    player.isMoving = false;
+    //variables to know which keys are pressed
+    const goLeft  = keysDown["ArrowLeft"] || keysDown['a'];
+    const goRight = keysDown["ArrowRight"] || keysDown['d'];
+
+    if (goLeft && !goRight) {  //case 1: only the keys for left are pressed
         player.position.x -= player.speed;
+        player.isMoving = true;
+        player.direction = "left";
+    } else if (goRight && !goLeft) {  //case 2: only the keys for right are pressed
+        player.position.x += player.speed;
+        player.isMoving = true;
+        player.direction = "right";
     }
-    if (keysDown["ArrowRight"]) {
-        player.position.x  += player.speed;
+        //Lógica de salto
+    if (jumpPressed && player.isOnGround){ //barra espaciadora
+        player.velocityY = player.jumpStrength;
+        player.isOnGround = false;
+        jumpPressed = false;
     }
+    
+    player.velocityY += player.gravity;
+    player.position.y += player.velocityY; //cuando salta sube y baja por gravedad
+
+    //Ponemos limitante del piso
+    let groundY = 350;
+    if (player.position.y >= groundY){ //es para tener un sueño fijo
+        player.position.y = groundY;
+        player.velocityY = 0;
+        player.isOnGround = true;
+    }
+
     // Esto es para limitar la posición dle jugador dentro del canvas
     if (player.position.x < player.halfSize.x) {
         player.position.x = player.halfSize.x;
@@ -85,6 +173,7 @@ function update(){
     if (cameraX > worldWidth - canvas.width){
         cameraX = worldWidth - canvas.width;
     }
+
 }
 
 function drawPlayer(ctx){
@@ -103,7 +192,7 @@ let totalSpawned = 0;
 let maxEnemies = 10;
 function spawnEnemy(){
     let min = 1;
-    let max = 5;
+    let max = 15;
     let amount = Math.floor(Math.random() * (max - min + 1)) + min;
 
     for(let i = 0; i < amount; i++){
@@ -130,10 +219,25 @@ function reset(){
     player.health = 100
 }
 function handleKeyDown(event){
+    if(event.repeat) return; //si no loopea si dejas apretado el spacebar
+
     keysDown[event.key] = true;
+    if(event.key === " "){ //spacebar for jump
+        jumpPressed = true;
+    }
+    if(event.key === "j"){ //J for attack
+        if(!player.playeratack){
+            player.playeratack = true;
+            player.attackFrames = 0;
+        }
+    }
 }
 
 function handleKeyUp(event){
     keysDown[event.key] = false;
+    if(event.key === " "){ //spacebar for jump
+        jumpPressed = false;
+    }
 }
-export { draw, handleMouseMove, handleClick, reset, handleKeyDown, handleKeyUp }
+
+export { draw, handleMouseMove, handleClick, reset, handleKeyDown, handleKeyUp, setSelectedCharacter }
