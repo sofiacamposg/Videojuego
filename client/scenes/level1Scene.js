@@ -6,7 +6,7 @@ import { EnemyLion } from "../objects/EnemyLion.js";
 import { MessageBox } from "../objects/MessageBox.js";
 
 "use strict"
-//* GAME'S LOGIC
+//Lógica del juego
 
 //tamaño del mundo
 let worldWidth = 3000;
@@ -37,60 +37,61 @@ function setSelectedCharacter(selectedCharacter){
 
 // Enemies, igual figuras random
 let enemies = [
-    new EnemyLion (new Vector(900,357)),
-    new EnemyLion (new Vector(800,357))
+    new EnemyLion (new Vector(900,377)),
+    new EnemyLion (new Vector(800,377))
 ]
 
-// Fondo
+
 let backgroundImage = new Image()
-backgroundImage.src = "./assets/fondo2.png"; 
+backgroundImage.src = "./assets/Fondo2.png"
 
 let spawnTimer = 0;
-let spawnInterval = 2000; // 2000 ms = 2 segundos
+let spawnInterval = 2000; 
 
-function draw(ctx, canvas){  //TODO DRAW DEBE CAMBIAR POR LA VENTANA DE LA CÁMARA
-    //La idea es que hacemos, clear, después update y ya desués draw objects
-    ctx.clearRect(0,0,canvas.width,canvas.height) //aquí limpiamos
+function draw(ctx){  
+    ctx.clearRect(0,0,canvas.width,canvas.height)
+
     for(let i = 0; i < worldWidth; i+= canvas.width){
-    ctx.drawImage(backgroundImage,i-cameraX,0,canvas.width,canvas.height); //dibujamos el fondo
+        ctx.drawImage(backgroundImage,i-cameraX,0,canvas.width,canvas.height);
     }
     
-    update() //llamamos a update que definimos abajo
+    update()
 
-    ctx.save();  //monito no se sale del screen
+    ctx.save();
     ctx.translate(-cameraX, 0);
 
-    drawPlayer(ctx) //dibujamos al sprite del jugador
-    drawEnemies(ctx) //dibujamos al sprite del enemigo
+    drawPlayer(ctx)
+    drawEnemies(ctx)
+
     spawnTimer++;
     if (spawnTimer >= spawnInterval) {
         spawnEnemy();
         spawnTimer = 0;
     }
+
     ctx.restore();
 
     drawHealthBar(ctx, 20, 20, 100, 30, 50, 100);
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, 3, 5);
 }
+
 //HEATH BAR
-function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
-    // fondo (vida perdida)
+function drawHealthBar(ctx, x, y, width, height, current, max) {
     ctx.fillStyle = "gray";
     ctx.fillRect(x, y, width, height);
 
-    // vida actual
     const healthWidth = (current / max) * width;
     ctx.fillStyle = "green";
     ctx.fillRect(x, y, healthWidth, height);
 
-    // borde
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
 }
+
 //HEARTS
-function drawHearts(ctx, x, y, current, max) { //current from db and max is const
+function drawHearts(ctx, x, y, current, max) {
     const heartValue = 1;
     const totalHearts = max / heartValue;
     const filledHearts = Math.ceil(current / heartValue);
@@ -100,6 +101,7 @@ function drawHearts(ctx, x, y, current, max) { //current from db and max is cons
         ctx.fillText("♥", x + i * 50, y);
     }
 }
+
 //DECK BUTTON
 function drawDeckButton(ctx, button) {
     const left = button.x - button.w / 2;
@@ -117,41 +119,39 @@ function drawDeckButton(ctx, button) {
 }
 
 function update(){
-    //aquí realmente debe ir toda la lógica de movimiento, colisiones, etc
-    //Movimiento del jugador
     player.isMoving = false;
-    //variables to know which keys are pressed
-    const goLeft  = keysDown["ArrowLeft"] || keysDown['a'];
-    const goRight = keysDown["ArrowRight"] || keysDown['d'];
 
-    if (goLeft && !goRight) {  //case 1: only the keys for left are pressed
+
+    if (keysDown["ArrowLeft"]) {
         player.position.x -= player.speed;
         player.isMoving = true;
         player.direction = "left";
-    } else if (goRight && !goLeft) {  //case 2: only the keys for right are pressed
-        player.position.x += player.speed;
+    }
+
+    if (keysDown["ArrowRight"]) {
+        player.position.x  += player.speed;
         player.isMoving = true;
         player.direction = "right";
     }
-        //Lógica de salto
-    if (jumpPressed && player.isOnGround){ //barra espaciadora
+
+    // SALTO
+    if (jumpPressed && player.isOnGround){
         player.velocityY = player.jumpStrength;
-        player.isOnGround = false;
+        player.isOnGround = false; 
         jumpPressed = false;
     }
-    
-    player.velocityY += player.gravity;
-    player.position.y += player.velocityY; //cuando salta sube y baja por gravedad
 
-    //Ponemos limitante del piso
+    player.velocityY += player.gravity;
+    player.position.y += player.velocityY;
+
     let groundY = 350;
-    if (player.position.y >= groundY){ //es para tener un sueño fijo
+    if (player.position.y >= groundY){
         player.position.y = groundY;
         player.velocityY = 0;
         player.isOnGround = true;
     }
 
-    // Esto es para limitar la posición dle jugador dentro del canvas
+    // LIMITES
     if (player.position.x < player.halfSize.x) {
         player.position.x = player.halfSize.x;
     }
@@ -160,72 +160,83 @@ function update(){
         player.position.x = worldWidth - player.halfSize.x;
     }
 
-    // movimiento enemigos, aquí no hay tanta ciencia porque solo tenenmos que hacer que avance hacia el juagador
+    // ENEMIGOS
     enemies.forEach(enemy=>{
         enemy.position.x -= 1;
     });
 
-    //movemos la cámara para que siga al player
-    cameraX = player.position.x - canvas.width/2; //porque nuestro canvas mide 1000, cámmara empieza en 0, cuando jugador llega a 500 la cámara avanza
-    if (cameraX < 0) { //límites para que la cámara no salga del mundo y no muestre espacios vacíos
+    // CÁMARA
+    cameraX = player.position.x - canvas.width/2;
+
+    if (cameraX < 0) {
         cameraX = 0;
     }
+
     if (cameraX > worldWidth - canvas.width){
         cameraX = worldWidth - canvas.width;
     }
-
 }
 
 function drawPlayer(ctx){
     player.update();
-    player.draw(ctx); //depende de cameraX
+    player.draw(ctx);
 }
 
 function drawEnemies(ctx){
     enemies.forEach(enemy=>{
        enemy.update();
-       enemy.draw(ctx); //depende de cameraX
+       enemy.draw(ctx);
     });
 }
-//ARREGLAR ESTA FUNCIÓN
+
+//SPAWN
 let totalSpawned = 0;
 let maxEnemies = 10;
+
 function spawnEnemy(){
     let min = 1;
-    let max = 15;
+    let max = 5;
     let amount = Math.floor(Math.random() * (max - min + 1)) + min;
 
     for(let i = 0; i < amount; i++){
         if(totalSpawned >= maxEnemies) return;
+
         enemies.push(
-            new EnemyLion( new Vector(Math.random() * (worldWidth - player.halfSize.x - 200) + 200,377))
+            new EnemyLion(
+                new Vector(Math.random() * (worldWidth - player.halfSize.x - 200) + 200,377)
+            )
         );
+
         totalSpawned++;
     }
 }
 
-function handleMouseMove(event,canvas){ //Ya conocemos esta función
+function handleMouseMove(event,canvas){
     const rect = canvas.getBoundingClientRect()
     mouseX = event.clientX - rect.left
     mouseY = event.clientY - rect.top
 }
 
 function handleClick(){
- //Aquí podemos ahora meter las funciones de ataque, de usar cartas y powerups
+ //Aquí podemos meter ataques después
 }
 
 function reset(){
-    enemies = [] //Limpia todo, solo se usa cuando el run se reinicia, sobre todo por health
+    enemies = []
     player.health = 100
 }
+
 function handleKeyDown(event){
-    if(event.repeat) return; //si no loopea si dejas apretado el spacebar
+    if(event.repeat) return;
 
     keysDown[event.key] = true;
-    if(event.key === " "){ //spacebar for jump
+
+    if(event.key === " "){
         jumpPressed = true;
     }
-    if(event.key === "j"){ //J for attack
+
+
+    if(event.key === "j"){
         if(!player.playeratack){
             player.playeratack = true;
             player.attackFrames = 0;
@@ -235,7 +246,8 @@ function handleKeyDown(event){
 
 function handleKeyUp(event){
     keysDown[event.key] = false;
-    if(event.key === " "){ //spacebar for jump
+
+    if(event.key === " "){
         jumpPressed = false;
     }
 }
