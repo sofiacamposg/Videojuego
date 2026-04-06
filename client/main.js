@@ -11,7 +11,7 @@ const canvasHeight = 600;
 let canvas;
 let ctx;
 
-let currentScene = "menu"; //nos posicionamos en menuScene al inicio de cualquier run
+let currentScene = "menu"; //we start in menuScene at the beginning of any run
 let selectedCharacter = null; 
 
 function main() {
@@ -27,17 +27,17 @@ function main() {
     canvas.addEventListener("click", (event) => {
         //MENU SCENE
         if(currentScene === 'menu'){
-            clicked = handleClickMenu(); //función que definimos en menuScene y nos regresa alguno de los botones
+            clicked = handleClickMenu(); //function defined in menuScene that returns which button was clicked
 
-            //start ahora lleva a loginScene, este start es de lo que recibe de la escena menu
+            //start now goes to loginScene, this start comes from menuScene
         if (clicked === 'start'){
-            currentScene = 'login'; //Start es selectScene, que te lleva a escoger tu character
+            currentScene = 'login'; //Start leads to selectScene where you choose your character
         }
         if (clicked === 'settings'){
             currentScene = 'settings';
         }
         }
-        //SEETINGS SCENE
+        //SETTINGS SCENE
         else if(currentScene === 'settings') {
             clicked = handleClickSettings();
             if(clicked === 'back' || clicked === 'confirm') {
@@ -47,7 +47,7 @@ function main() {
         }
         //LOG IN SCENE
         else if (currentScene === 'login'){
-            clicked = handleClickLogIn(ctx); //función que definimos en menuScene y nos regresa alguno de los botones
+            clicked = handleClickLogIn(ctx); //function defined in loginScene that returns which button was clicked
             if(clicked === 'back'){
                 resetLogIn();
                 currentScene = 'menu';
@@ -56,7 +56,7 @@ function main() {
                 currentScene = 'createAccount'
             }
             if(clicked === 'confirm'){
-                currentScene = 'start'; //este start es de currentScene
+                currentScene = 'start'; //this start refers to currentScene
             }
         }
         //CREATE ACCOUNT SCENE
@@ -75,7 +75,7 @@ function main() {
         }
         //SELECT CHARACTER
         else if (currentScene === 'start'){
-            clicked = handleClickSelect(); //función que definimos en menuScene y nos regresa alguno de los botones
+            clicked = handleClickSelect(); //function defined in selectScene that returns which button was clicked
             if(clicked === 'back'){
                 resetSelect();
                 currentScene = 'menu'; 
@@ -83,10 +83,10 @@ function main() {
             if (clicked === 'selectedCharacter'){
                 selectedCharacter = getSelectedCharacter();
             }
-           //Aqui guardamos el character en una variable, esta varaible se pasa de parámetro a una función el level1Scene
+           //Here we store the character in a variable, this variable is passed as a parameter to a function in level1Scene
             if (clicked === 'confirm'){
                 selectedCharacter = getSelectedCharacter();
-                setSelectedCharacter(selectedCharacter); //selección de character
+                setSelectedCharacter(selectedCharacter); //character selection
                 currentScene = 'level1';
             }
         }

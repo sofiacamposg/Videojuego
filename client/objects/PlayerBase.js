@@ -1,4 +1,4 @@
-//Hereda de Animated Object
+//  Inherits from Animated Object
 import { AnimatedObject } from "../libs/AnimatedObject.js";
 class PlayerBase extends AnimatedObject {
 

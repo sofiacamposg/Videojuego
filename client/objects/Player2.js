@@ -4,12 +4,12 @@ import { Rect } from "../libs/Rect.js";
 class Player2 extends PlayerBase {  //1736 x 608 px
     constructor(position){
         super(position);
-        this.health = 100; //* TODO: traer esta info de la db
+        this.health = 100; //* TODO: get this info from the db
         this.speed = 4; 
         this.sheetCols = 4;
-        this.setAnimation(0, 3, true, 200);  //le puse 2 porque si no se mueve raro
-        //De aquí para abajo las propiedades son para que pueda quedarse quieto si no está en movimiento y que pueda saltar
-        this.velocityY = 0; //qué tan rápido brinca
+        this.setAnimation(0, 3, true, 200);  //I set it to 2 because otherwise it moves weirdly
+        //From here down, these properties allow the character to stay idle when not moving and to be able to jump
+        this.velocityY = 0; //how fast it jumps
         this.gravity = 0.8; 
         this.jumpStrength = -14;
         this.isOnGround = true;

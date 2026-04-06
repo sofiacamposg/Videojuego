@@ -8,10 +8,10 @@ import { MessageBox } from "../objects/MessageBox.js";
 "use strict"
 //* GAME'S LOGIC
 
-//tamaño del mundo
+//world size
 let worldWidth = 3000;
 let worldHeight = 600;
-let cameraX = 0; //ventana del canvas
+let cameraX = 0; //canvas viewport
 
 // Mouse
 let mouseX = 0
@@ -19,10 +19,10 @@ let mouseY = 0
 
 let player
 
-let keysDown = {}; //Para poder usar teclado para mover a los jugadores
-let jumpPressed = false; //Para que no salga disparado hasta los cielos cuando salta
+let keysDown = {}; //To track keyboard input for player movement
+let jumpPressed = false; //Prevents continuous jumping when holding the key
 
-//Esta función es para escoger el sprite de player
+//This function selects the player sprite
 function setSelectedCharacter(selectedCharacter){
     if (selectedCharacter === "Guerrero"){
         player = new Player1(new Vector(200,350));
@@ -35,33 +35,33 @@ function setSelectedCharacter(selectedCharacter){
     }
 }
 
-// Enemies, igual figuras random
+// Enemies, also random entities
 let enemies = [
     new EnemyLion (new Vector(900,357)),
     new EnemyLion (new Vector(800,357))
 ]
 
-// Fondo
+// Background
 let backgroundImage = new Image()
 backgroundImage.src = "./assets/fondo2.png"; 
 
 let spawnTimer = 0;
-let spawnInterval = 2000; // 2000 ms = 2 segundos
+let spawnInterval = 2000; // 2000 ms = 2 seconds
 
-function draw(ctx, canvas){  //TODO DRAW DEBE CAMBIAR POR LA VENTANA DE LA CÁMARA
-    //La idea es que hacemos, clear, después update y ya desués draw objects
-    ctx.clearRect(0,0,canvas.width,canvas.height) //aquí limpiamos
+function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
+    //Clear → update → draw objects
+    ctx.clearRect(0,0,canvas.width,canvas.height) //clear canvas
     for(let i = 0; i < worldWidth; i+= canvas.width){
-    ctx.drawImage(backgroundImage,i-cameraX,0,canvas.width,canvas.height); //dibujamos el fondo
+    ctx.drawImage(backgroundImage,i-cameraX,0,canvas.width,canvas.height); //draw background
     }
     
-    update() //llamamos a update que definimos abajo
+    update() //call update defined below
 
-    ctx.save();  //monito no se sale del screen
+    ctx.save();  //keeps character within screen
     ctx.translate(-cameraX, 0);
 
-    drawPlayer(ctx) //dibujamos al sprite del jugador
-    drawEnemies(ctx) //dibujamos al sprite del enemigo
+    drawPlayer(ctx) //draw player sprite
+    drawEnemies(ctx) //draw enemy sprites
     spawnTimer++;
     if (spawnTimer >= spawnInterval) {
         spawnEnemy();
@@ -73,18 +73,18 @@ function draw(ctx, canvas){  //TODO DRAW DEBE CAMBIAR POR LA VENTANA DE LA CÁMA
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, 3, 5);
 }
-//HEATH BAR
+//HEALTH BAR
 function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
-    // fondo (vida perdida)
+    // background (lost health)
     ctx.fillStyle = "gray";
     ctx.fillRect(x, y, width, height);
 
-    // vida actual
+    // current health
     const healthWidth = (current / max) * width;
     ctx.fillStyle = "green";
     ctx.fillRect(x, y, healthWidth, height);
 
-    // borde
+    // border
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
@@ -117,41 +117,41 @@ function drawDeckButton(ctx, button) {
 }
 
 function update(){
-    //aquí realmente debe ir toda la lógica de movimiento, colisiones, etc
-    //Movimiento del jugador
+    //Handles movement logic, collisions, etc.
+    //Player movement
     player.isMoving = false;
     //variables to know which keys are pressed
     const goLeft  = keysDown["ArrowLeft"] || keysDown['a'];
     const goRight = keysDown["ArrowRight"] || keysDown['d'];
 
-    if (goLeft && !goRight) {  //case 1: only the keys for left are pressed
+    if (goLeft && !goRight) {  //case 1: only left keys are pressed
         player.position.x -= player.speed;
         player.isMoving = true;
         player.direction = "left";
-    } else if (goRight && !goLeft) {  //case 2: only the keys for right are pressed
+    } else if (goRight && !goLeft) {  //case 2: only right keys are pressed
         player.position.x += player.speed;
         player.isMoving = true;
         player.direction = "right";
     }
-        //Lógica de salto
-    if (jumpPressed && player.isOnGround){ //barra espaciadora
+        //Jump logic
+    if (jumpPressed && player.isOnGround){ //spacebar
         player.velocityY = player.jumpStrength;
         player.isOnGround = false;
         jumpPressed = false;
     }
     
     player.velocityY += player.gravity;
-    player.position.y += player.velocityY; //cuando salta sube y baja por gravedad
+    player.position.y += player.velocityY; //vertical movement due to gravity
 
-    //Ponemos limitante del piso
+    //Ground limit
     let groundY = 350;
-    if (player.position.y >= groundY){ //es para tener un sueño fijo
+    if (player.position.y >= groundY){ //fixed ground level
         player.position.y = groundY;
         player.velocityY = 0;
         player.isOnGround = true;
     }
 
-    // Esto es para limitar la posición dle jugador dentro del canvas
+    //Limit player position inside the canvas
     if (player.position.x < player.halfSize.x) {
         player.position.x = player.halfSize.x;
     }
@@ -160,14 +160,14 @@ function update(){
         player.position.x = worldWidth - player.halfSize.x;
     }
 
-    // movimiento enemigos, aquí no hay tanta ciencia porque solo tenenmos que hacer que avance hacia el juagador
+    //enemy movement: simple movement towards player
     enemies.forEach(enemy=>{
         enemy.position.x -= 1;
     });
 
-    //movemos la cámara para que siga al player
-    cameraX = player.position.x - canvas.width/2; //porque nuestro canvas mide 1000, cámmara empieza en 0, cuando jugador llega a 500 la cámara avanza
-    if (cameraX < 0) { //límites para que la cámara no salga del mundo y no muestre espacios vacíos
+    //camera follows player
+    cameraX = player.position.x - canvas.width/2; //camera centers player horizontally
+    if (cameraX < 0) { //prevent camera from going outside world
         cameraX = 0;
     }
     if (cameraX > worldWidth - canvas.width){
@@ -178,16 +178,16 @@ function update(){
 
 function drawPlayer(ctx){
     player.update();
-    player.draw(ctx); //depende de cameraX
+    player.draw(ctx); //depends on cameraX
 }
 
 function drawEnemies(ctx){
     enemies.forEach(enemy=>{
        enemy.update();
-       enemy.draw(ctx); //depende de cameraX
+       enemy.draw(ctx); //depends on cameraX
     });
 }
-//ARREGLAR ESTA FUNCIÓN
+//FIX THIS FUNCTION
 let totalSpawned = 0;
 let maxEnemies = 10;
 function spawnEnemy(){
@@ -204,22 +204,22 @@ function spawnEnemy(){
     }
 }
 
-function handleMouseMove(event,canvas){ //Ya conocemos esta función
+function handleMouseMove(event,canvas){ //Standard mouse tracking function
     const rect = canvas.getBoundingClientRect()
     mouseX = event.clientX - rect.left
     mouseY = event.clientY - rect.top
 }
 
 function handleClick(){
- //Aquí podemos ahora meter las funciones de ataque, de usar cartas y powerups
+ //Handles attacks, cards, and powerups
 }
 
 function reset(){
-    enemies = [] //Limpia todo, solo se usa cuando el run se reinicia, sobre todo por health
+    enemies = [] //Resets enemies, used when restarting the run
     player.health = 100
 }
 function handleKeyDown(event){
-    if(event.repeat) return; //si no loopea si dejas apretado el spacebar
+    if(event.repeat) return; //prevents looping when holding spacebar
 
     keysDown[event.key] = true;
     if(event.key === " "){ //spacebar for jump

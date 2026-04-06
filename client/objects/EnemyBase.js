@@ -1,4 +1,4 @@
-//Hereda de Animated Object
+//Inherits from Animated Object
 import { AnimatedObject } from "../libs/AnimatedObject.js";
 class EnemyBase extends AnimatedObject {
 
@@ -7,7 +7,7 @@ class EnemyBase extends AnimatedObject {
   }
 
   update(){
-    // movimiento
+    // movement
     this.updateAnimation(20);
   }
 
