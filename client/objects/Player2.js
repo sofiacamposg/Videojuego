@@ -6,6 +6,8 @@ class Player2 extends PlayerBase {  //1736 x 470 px
         super(position);
         this.health = 100; //* TODO: get this info from the db
         this.speed = 4; 
+        this.damage = 15
+
         this.sheetCols = 4;
         this.setAnimation(0, 3, true, 200);  //I set it to 2 because otherwise it moves weirdly
         //From here down, these properties allow the character to stay idle when not moving and to be able to jump

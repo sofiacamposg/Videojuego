@@ -2,18 +2,18 @@
 import { AnimatedObject } from "../libs/AnimatedObject.js";
 class EnemyBase extends AnimatedObject {
 
-  constructor(position){
+  constructor(position, hp = 100, damage = 20, speed = 4){
     super(position,200,200,"white","enemy",4)
 
-    
+    this.hp = hp;
+    this.damage = damage;
+    this.speed = speed;
   }
 
   update(){
     // movement
     this.updateAnimation(20);
-
     this.attackHitbox = null;
-
   }
 
   createHitbox(){
@@ -33,6 +33,12 @@ class EnemyBase extends AnimatedObject {
       };
     }
   };
+
+  takeDamage(hit){
+    this.hp -= hit;
+    if (this.hp < 0) 
+      this.hp = 0;
+  }
 
   draw(ctx){
     super.draw(ctx)

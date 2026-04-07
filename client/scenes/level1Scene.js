@@ -181,8 +181,7 @@ function checkAttackHits() {
             return;  
         if (hitboxOverlap(player.attackHitbox, enemy)) {
             player.hitEnemies.add(enemy);
-
-            // TODO: enemy.takeDamage(player.damage)
+            enemy.takeDamage(player.damage)
         }
     });
 }

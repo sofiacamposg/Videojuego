@@ -10,14 +10,13 @@ class PlayerBase extends AnimatedObject {
     this.attackFrames = 0;  //frames counter
     this.attackDuration = 25;  //frames the attack lasts
     //hitbox
-    this.HITBOX_WIDTH = 30;
-    this.HITBOX_HEIGHT = 80;
+    this.HITBOX_WIDTH = 50;  //range
+    this.HITBOX_HEIGHT = 80; 
     this.HITBOX_OFFSET = -15;  
     this.hitEnemies = new Set();  //tracks enemies already hit in this attack swing  $
 
     //THIS ARE FOR WHEN WE ENABLE CARD SYSTEM
     //player.damage = 10;
-    //player.range = 50;
     //player.invincible = false;
     //player.canJump = true;
     //player.lifeSteal = false;
