@@ -4,6 +4,7 @@ import { Player3 } from "../objects/Player3.js";
 import { Vector } from "../libs/Vector.js";
 import { EnemyLion } from "../objects/EnemyLion.js";
 import { MessageBox } from "../objects/MessageBox.js";
+import { hitboxOverlap } from "../libs/game_functions.js";
 
 "use strict"
 //* GAME'S LOGIC
@@ -172,6 +173,20 @@ function drawDeckButton(ctx, button) {
     ctx.fillText("DECK", button.x, button.y);
 }
 
+function checkAttackHits() {
+    if (!player.playeratack || !player.attackHitbox) //"player is attacking?"
+        return;  
+    enemies.forEach(enemy => {
+        if (player.hitEnemies.has(enemy))  //single attack doesnt hit the same enemy more than once
+            return;  
+        if (hitboxOverlap(player.attackHitbox, enemy)) {
+            player.hitEnemies.add(enemy);
+
+            // TODO: enemy.takeDamage(player.damage)
+        }
+    });
+}
+
 function update(){
     //Handles movement logic, collisions, etc.
     //Player movement
@@ -245,8 +260,11 @@ function update(){
             player.velocityY = 0;
             player.isOnGround = true;
         }
-    });
-}
+        });
+    }
+
+    //check attack hitbox against all active enemies
+    checkAttackHits();
 }
 
 function drawPlayer(ctx){
