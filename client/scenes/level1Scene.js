@@ -19,8 +19,36 @@ let mouseY = 0
 
 let player
 
+/* For HTML stats (User stats)
+let levelTime = 0;
+let lastTome = 0; */
+
 let keysDown = {}; //To track keyboard input for player movement
 let jumpPressed = false; //Prevents continuous jumping when holding the key
+
+//Pause
+let isPaused = false;
+let goToMenu = false;
+let pauseBox = new MessageBox(
+    "PAUSED",
+    "Game is paused",
+    250, 150, 500, 300
+);
+pauseBox.addButton("Continue", 440, 290, 120, 35, () => {
+    isPaused = false;
+    console.log('continue');
+    pauseBox.hide();
+});
+
+pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
+    reset();
+    isPaused = false;
+    pauseBox.hide();
+});
+//DOESN´T WORK, MUST CONNECT WITH SWITCH SCENE
+pauseBox.addButton("Home", 440, 390, 120, 35, () => {
+    goToMenu = true;
+});
 
 //This function selects the player sprite
 function setSelectedCharacter(selectedCharacter){
@@ -35,11 +63,27 @@ function setSelectedCharacter(selectedCharacter){
     }
 }
 
-// Enemies, also random entities
+// Enemies, random entities
 let enemies = [
     new EnemyLion (new Vector(900,357)),
     new EnemyLion (new Vector(800,357))
 ]
+//Obstacles, also random entities
+let platforms = [];
+let platformImage = new Image();
+platformImage.src = "./assets/Platform.png";
+//HITBOX
+platforms.push({
+    x: 300,
+    y: 300,
+    width: 120,
+    height: 70
+});
+function drawPlatforms(ctx){
+    platforms.forEach(p=>{
+        ctx.drawImage(platformImage, p.x, p.y, p.width + 20, p.height);
+    });
+}
 
 // Background
 let backgroundImage = new Image()
@@ -55,13 +99,24 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     ctx.drawImage(backgroundImage,i-cameraX,0,canvas.width,canvas.height); //draw background
     }
     
+    /*HTML stats (User Stats)
+    let delta = time - lastTime;
+    lastTime = time;
+    levelTime += delta;
+    document.getElementById("timer").textContent =
+    (levelTime / 1000).toFixed(1) + "s"; */
+
+    if(!isPaused){
     update() //call update defined below
+    }
 
     ctx.save();  //keeps character within screen
     ctx.translate(-cameraX, 0);
 
     drawPlayer(ctx) //draw player sprite
     drawEnemies(ctx) //draw enemy sprites
+    //OBSTACLES
+    drawPlatforms(ctx);
     spawnTimer++;
     if (spawnTimer >= spawnInterval) {
         spawnEnemy();
@@ -72,6 +127,7 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     drawHealthBar(ctx, 20, 20, 100, 30, 50, 100);
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, 3, 5);
+    pauseBox.draw(ctx);
 }
 //HEALTH BAR
 function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
@@ -173,7 +229,24 @@ function update(){
     if (cameraX > worldWidth - canvas.width){
         cameraX = worldWidth - canvas.width;
     }
-
+    //Jumping on platforms logic
+    if(!player.isOnGround){
+    platforms.forEach(p => {
+        let playerBottom = player.position.y + player.halfSize.y;
+        let isFalling = player.velocityY >= 0;
+        let withinX =
+            player.position.x + player.halfSize.x > p.x &&
+            player.position.x - player.halfSize.x < p.x + p.width;
+        let touchingTop =
+            playerBottom >= p.y &&
+            playerBottom <= p.y + p.height;
+        if (isFalling && withinX && touchingTop) { //If the player is falling but is above the limits of the platform, let the player on top
+            player.position.y = p.y - player.halfSize.y;
+            player.velocityY = 0;
+            player.isOnGround = true;
+        }
+    });
+}
 }
 
 function drawPlayer(ctx){
@@ -211,17 +284,46 @@ function handleMouseMove(event,canvas){ //Standard mouse tracking function
 }
 
 function handleClick(){
+    if(isPaused){
+        return pauseBox.handleClick(mouseX, mouseY);
+    }
  //Handles attacks, cards, and powerups
 }
 
 function reset(){
-    enemies = [] //Resets enemies, used when restarting the run
-    player.health = 100
+     // reset player
+    player.position.x = 200;
+    player.position.y = 350;
+    player.velocityY = 0;
+    player.health = 100;
+
+    // reset enemies
+    enemies = [
+        new EnemyLion(new Vector(900,357)),
+        new EnemyLion(new Vector(800,357))
+    ];
+
+    // reset camera
+    cameraX = 0;
+
+    // reset spawn
+    spawnTimer = 0;
 }
+
 function handleKeyDown(event){
     if(event.repeat) return; //prevents looping when holding spacebar
+    if(isPaused) return; 
+        keysDown[event.key] = true;
 
-    keysDown[event.key] = true;
+        if(event.key === "Escape"){ //PauseMessage
+        isPaused = !isPaused;
+
+        if(isPaused){
+            pauseBox.show();
+        } else {
+            pauseBox.hide();
+        }
+    }
     if(event.key === " "){ //spacebar for jump
         jumpPressed = true;
     }
@@ -240,4 +342,4 @@ function handleKeyUp(event){
     }
 }
 
-export { draw, handleMouseMove, handleClick, reset, handleKeyDown, handleKeyUp, setSelectedCharacter }
+export { draw, handleMouseMove, handleClick, reset, handleKeyDown, handleKeyUp, setSelectedCharacter, goToMenu }

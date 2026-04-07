@@ -24,12 +24,14 @@ const errorMessage = new MessageBox(  //? error message creation
     errorMessage.addButton("Try again", 440, 300, 120, 50, () =>{  //? hide when clicked
         errorMessage.hide()
     });
+
 //? inputs 
 let username = "";
 let password = "";
 let name = "";
 let age = "";
 let activeField = null; //username / password / name / age / null
+
 const inputUsername = { x: 540, y: 250, w: 500, h: 60 };
 const inputPassword = { x: 540, y: 325, w: 500, h: 60 };
 const inputName = { x: 540, y: 400, w: 500, h: 60 };

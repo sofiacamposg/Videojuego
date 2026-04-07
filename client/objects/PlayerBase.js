@@ -8,6 +8,13 @@ class PlayerBase extends AnimatedObject {
     this.playeratack = false;  //default attack state
     this.attackFrames = 0;  //frames counter
     this.attackDuration = 25;  //frames the attack lasts
+
+    //THIS ARE FOR WHEN WE ENABLE CARD SYSTEM
+    //player.damage = 10;
+    //player.range = 50;
+    //player.invincible = false;
+    //player.canJump = true;
+    //player.lifeSteal = false;
   }
 
   update(){
