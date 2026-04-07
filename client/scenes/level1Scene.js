@@ -65,8 +65,8 @@ function setSelectedCharacter(selectedCharacter){
 
 // Enemies, random entities
 let enemies = [
-    new EnemyLion (new Vector(900,357)),
-    new EnemyLion (new Vector(800,357))
+    new EnemyLion (new Vector(900,370)),
+    new EnemyLion (new Vector(800,370))
 ]
 //Obstacles, also random entities
 let platforms = [];
@@ -200,7 +200,7 @@ function update(){
     player.position.y += player.velocityY; //vertical movement due to gravity
 
     //Ground limit
-    let groundY = 350;
+    let groundY = 370;
     if (player.position.y >= groundY){ //fixed ground level
         player.position.y = groundY;
         player.velocityY = 0;
