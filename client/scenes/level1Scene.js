@@ -91,7 +91,7 @@ let backgroundImage = new Image()
 backgroundImage.src = "./assets/fondo2.png"; 
 
 let spawnTimer = 0;
-let spawnInterval = 2000; // 2000 ms = 2 seconds
+let spawnInterval = 200; // 2000 ms = 2 seconds
 
 function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     //Clear → update → draw objects
@@ -100,6 +100,7 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     ctx.drawImage(backgroundImage,i-cameraX,0,canvas.width,canvas.height); //draw background
     }
     
+
     /*HTML stats (User Stats)
     let delta = time - lastTime;
     lastTime = time;
@@ -186,6 +187,9 @@ function checkAttackHits() {
     });
 }
 
+let killedEnemies = 0;
+let conditionEnemies = 60;
+
 function update(){
     //Handles movement logic, collisions, etc.
     //Player movement
@@ -230,10 +234,18 @@ function update(){
         player.position.x = worldWidth - player.halfSize.x;
     }
 
+
+//-----ENEMY--------
     //enemy movement: simple movement towards player
     enemies.forEach(enemy=>{
         enemy.position.x -= 1;
     });
+
+    let totalLenEnemies = enemies.length;
+    enemies = enemies.filter(alive => alive.hp > 0);
+    let aliveLenEnemies = enemies.length;
+    killedEnemies += totalLenEnemies - aliveLenEnemies;
+
 
     //camera follows player
     cameraX = player.position.x - canvas.width/2; //camera centers player horizontally
@@ -277,21 +289,20 @@ function drawEnemies(ctx){
        enemy.draw(ctx); //depends on cameraX
     });
 }
-//FIX THIS FUNCTION
-let totalSpawned = 0;
-let maxEnemies = 10;
+
 function spawnEnemy(){
-    let min = 1;
-    let max = 15;
+   let min = 1;
+    let max = 5 ;
     let amount = Math.floor(Math.random() * (max - min + 1)) + min;
 
-    for(let i = 0; i < amount; i++){
-        if(totalSpawned >= maxEnemies) return;
-        enemies.push(
-            new EnemyLion( new Vector(Math.random() * (worldWidth - player.halfSize.x - 200) + 200,377))
-        );
-        totalSpawned++;
-    }
+    if (killedEnemies != conditionEnemies) {  //"win" condition 
+        for (let i = 0; i < amount; i++){
+            enemies.push(  //spwan enemies
+                new EnemyLion(new Vector(Math.random() * (worldWidth - (player.position.x + 150))  //safe zone de 150px
+                , 377)));
+        };
+
+    };
 }
 
 function handleMouseMove(event,canvas){ //Standard mouse tracking function

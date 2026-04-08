@@ -8,7 +8,7 @@ class PlayerBase extends AnimatedObject {
     //attack
     this.playeratack = false;  //default attack state
     this.attackFrames = 0;  //frames counter
-    this.attackDuration = 25;  //frames the attack lasts
+    this.attackDuration = 10;  //frames the attack lasts
     //hitbox
     this.HITBOX_WIDTH = 50;  //range
     this.HITBOX_HEIGHT = 80; 
