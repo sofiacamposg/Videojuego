@@ -36,8 +36,11 @@ class EnemyBase extends AnimatedObject {
 
   takeDamage(hit){
     this.hp -= hit;
-    if (this.hp < 0) 
+    if (this.hp <= 0) {
+      this.spriteImage = this.spriteDeath;  //TODO arrerglarla para que salga bien el sprite
+      this.updateAnimation(500);
       this.hp = 0;
+    }
   }
 
   draw(ctx){

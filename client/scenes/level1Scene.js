@@ -27,6 +27,10 @@ let lastTome = 0; */
 let keysDown = {}; //To track keyboard input for player movement
 let jumpPressed = false; //Prevents continuous jumping when holding the key
 
+//ENEMY VARIABLES
+let killedEnemies = 0;
+let conditionEnemies = 60;
+
 //Pause
 let isPaused = false;
 let goToMenu = false;
@@ -187,9 +191,6 @@ function checkAttackHits() {
     });
 }
 
-let killedEnemies = 0;
-let conditionEnemies = 60;
-
 function update(){
     //Handles movement logic, collisions, etc.
     //Player movement
@@ -246,6 +247,8 @@ function update(){
     let aliveLenEnemies = enemies.length;
     killedEnemies += totalLenEnemies - aliveLenEnemies;
 
+    //check attack hitbox against all active enemies
+    checkAttackHits();
 
     //camera follows player
     cameraX = player.position.x - canvas.width/2; //camera centers player horizontally
@@ -273,9 +276,6 @@ function update(){
         }
         });
     }
-
-    //check attack hitbox against all active enemies
-    checkAttackHits();
 }
 
 function drawPlayer(ctx){
