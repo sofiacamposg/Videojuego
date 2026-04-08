@@ -139,3 +139,15 @@ body {
         width: 80%;
     }
 }
+body {
+    background-color: black;
+    color: white;
+    text-align: center;
+    padding: 40px;
+}
+
+p {
+    max-width: 600px;
+    margin: 20px auto;
+    line-height: 1.6;
+}
