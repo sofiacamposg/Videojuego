@@ -29,7 +29,7 @@ let jumpPressed = false; //Prevents continuous jumping when holding the key
 
 //ENEMY VARIABLES
 let killedEnemies = 0;
-let conditionEnemies = 60;
+const conditionEnemies = 60;
 
 //Pause
 let isPaused = false;
@@ -141,7 +141,7 @@ function drawHealthBar(ctx, x, y, width, height, current, max) { //current from 
     // background (lost health)
     ctx.fillStyle = "white";
     ctx.font = "20px Arial";
-    ctx.fillText("HP: " + player.health, 20, 70);
+    ctx.fillText("HP: " + player.hp, 20, 70);
 
 
     ctx.fillStyle = "gray";
@@ -199,8 +199,12 @@ function attackEnemy() {  //player attack and kill enemy
 
 function attackPlayer() {
     enemies.forEach(enemy => {
-        if (!enemy.attackHitbox) return;
+        if (!enemy.attackHitbox)  //enemy is attacking?
+            return;
+        if (enemy.hitPlayers.has(enemy))  //one hit per swing 
+            return; 
         if (hitboxOverlap(enemy.attackHitbox, player)) {
+            enemy.hitPlayers.add(enemy);
             player.takeDamage(enemy.damage);
         }
     });
@@ -311,13 +315,13 @@ function drawEnemies(ctx){
 
 function spawnEnemy(){
    let min = 1;
-    let max = 5 ;
+    let max = 25;
     let amount = Math.floor(Math.random() * (max - min + 1)) + min;
 
     if (killedEnemies != conditionEnemies) {  //"win" condition 
         for (let i = 0; i < amount; i++){
             enemies.push(  //spwan enemies
-                new EnemyLion(new Vector(Math.random() * (worldWidth - (player.position.x + 150))  //safe zone de 150px
+                new EnemyLion(new Vector((worldWidth - (player.position.x + 550))  //safe zone de 150px
                 , 377)));
         };
 

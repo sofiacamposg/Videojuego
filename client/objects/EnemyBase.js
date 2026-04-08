@@ -13,6 +13,11 @@ class EnemyBase extends AnimatedObject {
     this.HITBOX_WIDTH = 60;  //range
     this.HITBOX_HEIGHT = 50; 
     this.HITBOX_OFFSET = 70;  
+    //attack
+    this.playeratack = false;  //default attack state
+    this.attackFrames = 0;  //frames counter
+    this.attackDuration = 10;  //frames the attack lasts
+    this.hitPlayers = new Set();  //tracks player already hit in this attack swing  $
   }
 
   update(player){
@@ -22,10 +27,17 @@ class EnemyBase extends AnimatedObject {
     this.attackHitbox = null;
 
     //attack
-    if (hitboxOverlap(this.collider, player) && player.position.x < this.position.x){ //if the player is near in x and y
+    if (hitboxOverlap(this.collider, player) && player.position.x < this.position.x){ 
       this.spriteImage = this.spriteAttack;
-      this.updateAnimation(0.2);
+      this.updateAnimation(2);
       this.createHitbox();  //hitbox to attack
+      this.attackFrames++;
+      if (this.attackFrames >= this.attackDuration) {  //reset to default 
+        this.playeratack = false;
+        this.attackFrames = 0;
+        this.attackHitbox = null;  //turn off hitbox
+        this.hitPlayers.clear();  //clean "hitbox" to accept enemies again
+      }
     } else {
       this.spriteImage = this.spriteWalk;
     }
@@ -34,7 +46,7 @@ class EnemyBase extends AnimatedObject {
   createHitbox(){
       this.attackHitbox = {
         x: this.position.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET,
-        y: this.position.y,// 
+        y: this.position.y,
         width: this.HITBOX_WIDTH,
         height: this.HITBOX_HEIGHT
       };
