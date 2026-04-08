@@ -131,7 +131,7 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     }
     ctx.restore();
 
-    drawHealthBar(ctx, 20, 20, 100, 30, 50, 100);
+    drawHealthBar(ctx, 20, 20, 100, 30, player.hp, 100);
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, 3, 5);
     pauseBox.draw(ctx);
@@ -139,6 +139,11 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
 //HEALTH BAR
 function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
     // background (lost health)
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText("HP: " + player.health, 20, 70);
+
+
     ctx.fillStyle = "gray";
     ctx.fillRect(x, y, width, height);
 

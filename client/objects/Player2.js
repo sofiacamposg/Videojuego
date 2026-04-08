@@ -4,7 +4,7 @@ import { Rect } from "../libs/Rect.js";
 class Player2 extends PlayerBase {  //1736 x 470 px
     constructor(position){
         super(position);
-        this.health = 100; //* TODO: get this info from the db
+        this.hp = 100; //* TODO: get this info from the db
         this.speed = 6; 
         this.damage = 25;
 

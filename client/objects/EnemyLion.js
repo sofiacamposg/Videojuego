@@ -3,7 +3,7 @@ import { Rect } from "../libs/Rect.js";
 
 class EnemyLion extends EnemyBase {  //2300 x 608 px
     constructor(position){
-        super(position, 100, 15, 4);
+        super(position, 100, 5, 4);
         this.sheetCols = 4;
         this.setAnimation(0, 3, true, 200);
         this.scale = 0.8; 
