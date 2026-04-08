@@ -29,7 +29,7 @@ let jumpPressed = false; //Prevents continuous jumping when holding the key
 
 //ENEMY VARIABLES
 let killedEnemies = 0;
-const conditionEnemies = 60;
+const conditionEnemies = 20;
 
 //Pause
 let isPaused = false;
@@ -71,7 +71,7 @@ function setSelectedCharacter(selectedCharacter){
 // Enemies, random entities
 let enemies = [
     new EnemyLion (new Vector(900,370)),
-    new EnemyLion (new Vector(800,370))
+    new EnemyLion (new Vector(1100,370))
 ]
 //Obstacles, also random entities
 let platforms = [];
