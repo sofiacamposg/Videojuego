@@ -4,13 +4,14 @@ class EnemyBase extends AnimatedObject {
 
   constructor(position, hp = 100, damage = 20, speed = 4){
     super(position,200,200,"white","enemy",4)
-
+    this.setCollider(140, 65);
     this.hp = hp;
     this.damage = damage;
     this.speed = speed;
   }
 
   update(){
+    this.updateCollider();
     // movement
     this.updateAnimation(20);
     this.attackHitbox = null;

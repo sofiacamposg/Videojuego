@@ -120,6 +120,7 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     ctx.translate(-cameraX, 0);
 
     drawPlayer(ctx) //draw player sprite
+    //show
     drawEnemies(ctx) //draw enemy sprites
     //OBSTACLES
     drawPlatforms(ctx);

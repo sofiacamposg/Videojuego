@@ -3,7 +3,8 @@ import { AnimatedObject } from "../libs/AnimatedObject.js";
 class PlayerBase extends AnimatedObject {
 
   constructor(position){
-    super(position, 160, 160,"white","player",6)
+    super(position, 160, 160,"white","player",6);
+    this.setCollider(40, 120); //player's hitbox
     this.direction = "right";  //default direction
     //attack
     this.playeratack = false;  //default attack state
@@ -23,6 +24,7 @@ class PlayerBase extends AnimatedObject {
   }
 
   update(){
+    this.updateCollider();
     if (!this.isOnGround) {
       //case 1: jump (no attack allowed in the air)
       this.spriteImage = (this.direction === "right") ? this.spriteJumpRight : this.spriteJumpLeft;
