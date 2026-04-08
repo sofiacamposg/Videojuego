@@ -151,7 +151,7 @@ function drawHealthBar(ctx, x, y, width, height, current, max) { //current from 
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
-}
+};
 //HEARTS
 function drawHearts(ctx, x, y, current, max) { //current from db and max is const
     const heartValue = 1;
@@ -162,7 +162,7 @@ function drawHearts(ctx, x, y, current, max) { //current from db and max is cons
         ctx.fillStyle = i < filledHearts ? "red" : "gray";
         ctx.fillText("♥", x + i * 50, y);
     }
-}
+};
 //DECK BUTTON
 function drawDeckButton(ctx, button) {
     const left = button.x - button.w / 2;
@@ -177,9 +177,9 @@ function drawDeckButton(ctx, button) {
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.fillText("DECK", button.x, button.y);
-}
+};
 
-function checkAttackHits() {
+function attackEnemy() {  //player attack and kill enemy 
     if (!player.playeratack || !player.attackHitbox) //"player is attacking?"
         return;  
     enemies.forEach(enemy => {
@@ -187,10 +187,20 @@ function checkAttackHits() {
             return;  
         if (hitboxOverlap(player.attackHitbox, enemy)) {
             player.hitEnemies.add(enemy);
-            enemy.takeDamage(player.damage)
+            enemy.takeDamage(player.damage);
+        }
+    });
+};
+
+function attackPlayer() {
+    enemies.forEach(enemy => {
+        if (!enemy.attackHitbox) return;
+        if (hitboxOverlap(enemy.attackHitbox, player)) {
+            player.takeDamage(enemy.damage);
         }
     });
 }
+
 
 function update(){
     //Handles movement logic, collisions, etc.
@@ -249,7 +259,10 @@ function update(){
     killedEnemies += totalLenEnemies - aliveLenEnemies;
 
     //check attack hitbox against all active enemies
-    checkAttackHits();
+    attackEnemy();
+    
+    attackPlayer();
+
 
     //camera follows player
     cameraX = player.position.x - canvas.width/2; //camera centers player horizontally
@@ -286,7 +299,7 @@ function drawPlayer(ctx){
 
 function drawEnemies(ctx){
     enemies.forEach(enemy=>{
-       enemy.update();
+       enemy.update(player);
        enemy.draw(ctx); //depends on cameraX
     });
 }
