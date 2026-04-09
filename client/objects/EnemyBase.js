@@ -46,7 +46,7 @@ class EnemyBase extends AnimatedObject {
   createHitbox(){
       this.attackHitbox = {
         x: this.position.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET,
-        y: this.position.y,
+        y: this.position.y - this.HITBOX_HEIGHT / 2,
         width: this.HITBOX_WIDTH,
         height: this.HITBOX_HEIGHT
       };
@@ -55,7 +55,7 @@ class EnemyBase extends AnimatedObject {
   takeDamage(hit){
     this.hp -= hit;
     if (this.hp <= 0) {
-      this.spriteImage = this.spriteDeath;  //TODO arrerglarla para que salga bien el sprite
+      this.spriteImage = this.spriteDeath;  //TODO setanmation
       this.updateAnimation(500);
       this.hp = 0;
     }

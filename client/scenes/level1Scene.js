@@ -159,7 +159,7 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
 
     drawHealthBar(ctx, 20, 20, 100, 30, player.hp, 100);
     ctx.font = "50px Arial";
-    drawHearts(ctx, 150, 50, 3, 5);
+    drawHearts(ctx, 150, 50, 5, 5);
     pauseBox.draw(ctx);
 }
 //HEALTH BAR
@@ -188,7 +188,10 @@ function drawHearts(ctx, x, y, current, max) { //current from db and max is cons
     const heartValue = 1;
     const totalHearts = max / heartValue;
     const filledHearts = Math.ceil(current / heartValue);
-
+/*
+    if (player.hp <= 0){
+        totalHearts -= 1;
+    }*/
     for (let i = 0; i < totalHearts; i++) {
         ctx.fillStyle = i < filledHearts ? "red" : "gray";
         ctx.fillText("♥", x + i * 50, y);

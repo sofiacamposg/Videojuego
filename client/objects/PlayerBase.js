@@ -1,10 +1,9 @@
 //  Inherits from Animated Object
 import { AnimatedObject } from "../libs/AnimatedObject.js";
-class PlayerBase extends AnimatedObject {
-
+class PlayerBase extends AnimatedObject {  //
   constructor(position){
     super(position, 160, 160,"white","player",6);
-    this.setCollider(40, 120); //player's hitbox
+    this.setCollider(80, 120); //player's hitbox
     this.direction = "right";  //default direction
     //attack
     this.playeratack = false;  //default attack state
@@ -57,6 +56,7 @@ class PlayerBase extends AnimatedObject {
     }
   };
 
+  
   createHitbox(){
     if (this.direction === "right") {
       this.attackHitbox = {
