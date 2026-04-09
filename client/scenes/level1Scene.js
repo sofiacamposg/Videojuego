@@ -283,7 +283,7 @@ function update(){
         }
     });
     //Now we apply ground limit
-    let groundY = 350;
+    let groundY = 370;
     if (player.position.y >= groundY){ //fixed ground level
         player.position.y = groundY;
         player.velocityY = 0;
@@ -353,7 +353,7 @@ function spawnEnemy(){
         for (let i = 0; i < amount; i++){
             enemies.push(  //spwan enemies
                 new EnemyLion(new Vector((worldWidth - (player.position.x + 550))  //safe zone de 150px
-                , 377)));
+                , 370)));
         };
 
     };
@@ -381,8 +381,8 @@ function reset(){
 
     // reset enemies
     enemies = [
-        new EnemyLion(new Vector(900,357)),
-        new EnemyLion(new Vector(800,357))
+        new EnemyLion(new Vector(900,370)),
+        new EnemyLion(new Vector(800,370))
     ];
 
     // reset camera
