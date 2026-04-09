@@ -66,6 +66,7 @@ function setSelectedCharacter(selectedCharacter){
     else if (selectedCharacter === "Pesado"){
         player = new Player3(new Vector(200,350));
     }
+    initPlatforms();
 }
 
 // Enemies, random entities
@@ -78,15 +79,41 @@ let platforms = [];
 let platformImage = new Image();
 platformImage.src = "./assets/Platform.png";
 //HITBOX
-platforms.push({
+/*platforms.push({
     x: 300,
-    y: 300,
-    width: 120,
+    y: 320,
+    width: 100,
     height: 70
-});
+}); */
+function initPlatforms(){
+    platforms = [];
+      for(let i = 0; i < 8; i++){
+        generatePlatform();
+    }
+}
 function drawPlatforms(ctx){
     platforms.forEach(p=>{
-        ctx.drawImage(platformImage, p.x, p.y, p.width + 20, p.height);
+        ctx.drawImage(platformImage, p.x, p.y - 37, p.width, p.height);
+    });
+}
+//This functions avoids running out of platforms
+function generatePlatform(){
+    let x, y;
+    if(platforms.length === 0){
+        x = 300;
+        y = 300;
+    } else {
+        let last = platforms[platforms.length - 1];
+        x = last.x + Math.random() * 150 + 150;
+        y = last.y + (Math.random() - 0.5) * 120;
+        if(y > 350) y = 350;
+        if(y < 180) y = 180;
+    }
+    platforms.push({
+        x: x,
+        y: y,
+        width: 100,
+        height: 70 
     });
 }
 
@@ -103,8 +130,8 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     for(let i = 0; i < worldWidth; i+= canvas.width){
     ctx.drawImage(backgroundImage,i-cameraX,0,canvas.width,canvas.height); //draw background
     }
+    //drawDeckButton(ctx);
     
-
     /*HTML stats (User Stats)
     let delta = time - lastTime;
     lastTime = time;
@@ -120,10 +147,9 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     ctx.translate(-cameraX, 0);
 
     drawPlayer(ctx) //draw player sprite
-    //show
-    drawEnemies(ctx) //draw enemy sprites
     //OBSTACLES
     drawPlatforms(ctx);
+    drawEnemies(ctx) //draw enemy sprites
     spawnTimer++;
     if (spawnTimer >= spawnInterval) {
         spawnEnemy();
@@ -239,7 +265,25 @@ function update(){
     player.position.y += player.velocityY; //vertical movement due to gravity
 
     //Ground limit
-    let groundY = 370;
+    //Jumping on platforms logic, check it first
+    player.isOnGround = false;
+    platforms.forEach(p => {
+        let playerBottom = player.position.y + player.halfSize.y;
+        let isFalling = player.velocityY >= 0;
+        let withinX =
+            player.position.x + player.halfSize.x > p.x &&
+            player.position.x - player.halfSize.x < p.x + p.width;
+        let touchingTop =
+            playerBottom >= p.y &&
+            playerBottom <= p.y + p.height;
+        if (isFalling && withinX && touchingTop) { //If the player is falling but is above the limits of the platform, let the player on top
+            player.position.y = p.y - player.halfSize.y;
+            player.velocityY = 0;
+            player.isOnGround = true;
+        }
+    });
+    //Now we apply ground limit
+    let groundY = 350;
     if (player.position.y >= groundY){ //fixed ground level
         player.position.y = groundY;
         player.velocityY = 0;
@@ -281,23 +325,10 @@ function update(){
     if (cameraX > worldWidth - canvas.width){
         cameraX = worldWidth - canvas.width;
     }
-    //Jumping on platforms logic
-    if(!player.isOnGround){
-    platforms.forEach(p => {
-        let playerBottom = player.position.y + player.halfSize.y;
-        let isFalling = player.velocityY >= 0;
-        let withinX =
-            player.position.x + player.halfSize.x > p.x &&
-            player.position.x - player.halfSize.x < p.x + p.width;
-        let touchingTop =
-            playerBottom >= p.y &&
-            playerBottom <= p.y + p.height;
-        if (isFalling && withinX && touchingTop) { //If the player is falling but is above the limits of the platform, let the player on top
-            player.position.y = p.y - player.halfSize.y;
-            player.velocityY = 0;
-            player.isOnGround = true;
-        }
-        });
+    //Random Platforms
+    let last = platforms[platforms.length - 1];
+    if(player.position.x > last.x - 500){
+        generatePlatform();
     }
 }
 

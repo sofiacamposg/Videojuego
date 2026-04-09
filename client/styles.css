@@ -139,3 +139,23 @@ body {
         width: 80%;
     }
 }
+body {
+    background-color: black;
+    color: white;
+    text-align: center;
+    padding: 40px;
+}
+
+p {
+    max-width: 600px;
+    margin: 20px auto;
+    line-height: 1.6;
+}
+.statsBox {
+    position: absolute;
+    right: 50px;
+    top: 150px;
+    background: black;
+    padding: 20px;
+    border: 2px solid white;
+}
