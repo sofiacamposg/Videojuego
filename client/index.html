@@ -15,6 +15,7 @@
         <div class="tutorial">
             <a href="story.html" class="tutorialButton" target="_blank">Story</a>
             <a href="instructions.html" class="tutorialButton" target="_blank">Instructions</a>
+            <a href="#" class="tutorialButton" onclick="toggleStats()">Player Stats</a>
         </div>
     </header>
 
@@ -39,7 +40,7 @@
         <canvas id="canvas"></canvas>
 
         <!-- RIGHT -->
-        <section class="statsBox">
+        <section class="statsBox" id="statsBox" style="display: none;">
             <h2>Player Stats</h2>
 
             <div class="statRow">
@@ -85,6 +86,15 @@
             const content = document.querySelector('.descriptionContent');
             content.style.display =
                 content.style.display === 'block' ? 'none' : 'block';
+        }
+        function toggleStats() {
+            const stats = document.getElementById("statsBox");
+
+            if (stats.style.display === "none") {
+                stats.style.display = "block";
+            } else {
+                stats.style.display = "none";
+            }
         }
     </script>
 
