@@ -56,7 +56,7 @@ new Card("Damage Boost", "powerup", null, (player) => {  //blade_mars.png
 }, null, blade_mars),
 
 new Card("Heal 1 Heart", "powerup", null, (player) => {  //blessing_venus.png
-    player.health += 20;
+    player.hp += 20;
 }, null, blessing_venus),
 
 new Card("Slow Enemies", "powerup", 5000,  //lions_roar.png
@@ -101,7 +101,7 @@ new Card("Cards Cost HP", "punishment", null, (player) => {  //hunger_plebs.pnga
 }, null, hunger_plebs),
 
 new Card("Lose Heart", "punishment", null, (player) => {  //wrath_jupiter.png
-    player.health -= 20;
+    player.hp -= 20;
 }, null, wrath_jupiter),
 
 // CORRECTO
