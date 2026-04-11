@@ -12,7 +12,8 @@ class cardsOnCanvas {
     }
 
     show(allCards, player, enemies, game = null) {
-        this.offeredCards = allCards.slice(0, 3);  //only show 3
+        this.shuffle = allCards.sort(() => Math.random() - 0.5)
+        this.offeredCards = this.shuffle.slice(0, 3);  //only show 3
         this.selectedIndex = null;
         this.isActive = true;
         this._player = player;  //track player, enemies and level for later
