@@ -4,7 +4,9 @@ import { Player3 } from "../objects/Player3.js";
 import { Vector } from "../libs/Vector.js";
 import { EnemyLion } from "../objects/EnemyLion.js";
 import { MessageBox } from "../objects/MessageBox.js";
-import { hitboxOverlap } from "../libs/game_functions.js";
+import { hitboxOverlap } from "../libs/game_functions.js"; 
+import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
+import { cards } from "../cards/Card.js";
 
 "use strict"
 //* GAME'S LOGIC
@@ -19,6 +21,9 @@ let mouseX = 0
 let mouseY = 0
 
 let player
+
+//Cards
+const cardShown = new cardsOnCanvas();
 
 /* For HTML stats (User stats)
 let levelTime = 0;
@@ -161,6 +166,7 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, 5, 5);
     pauseBox.draw(ctx);
+    cardShown.draw(ctx, canvas);  //draw card screen
 }
 //HEALTH BAR
 function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
@@ -241,6 +247,8 @@ function attackPlayer() {
 
 
 function update(){
+    cardShown.update();  //check if any timed card effects have expired
+
     //Handles movement logic, collisions, etc.
     //Player movement
     player.isMoving = false;
@@ -369,6 +377,11 @@ function handleMouseMove(event,canvas){ //Standard mouse tracking function
 }
 
 function handleClick(){
+    if (cardShown.isActive) {  //track mouse in card acreen 
+        cardShown.handleClick(mouseX, mouseY, canvas);
+        return;
+    }
+
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
@@ -376,11 +389,11 @@ function handleClick(){
 }
 
 function reset(){
-     // reset player
+    // reset player
     player.position.x = 200;
     player.position.y = 350;
     player.velocityY = 0;
-    player.health = 100;
+    player.hp = 100;
 
     // reset enemies
     enemies = [
@@ -417,6 +430,9 @@ function handleKeyDown(event){
             player.playeratack = true;
             player.attackFrames = 0;
         }
+    }
+    if (event.key === "c") {  //show cards
+        cardShown.show(cards, player, enemies);
     }
 }
 
