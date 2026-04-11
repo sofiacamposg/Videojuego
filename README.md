@@ -17,6 +17,9 @@ Proyecto de la materia Construcción de Software ITC 4to Semestre. Requisitos: R
    - Los enemigos atacaran al jugador y bajan hp y corazones *(Avance: 100%)*
    - El jugador puede saltar a las plataformas (falta ajustar la colisión de las mismas)
    - El jugador puede seleccionar las cartas que quiere activar (tiene que seleccionar una obligatoriamente)
+   - No todos los efectos de las cartas están hechos
+   - Aun no hay eventos de elección de cartas por nivel
+   - Hay un bug con el sistema de corazones 
    - Aun no implementamos la lógica de la fama
    - No hay cambio de nivel cuando se cumple la condición, solo dejan de salir enemigos
    - Los cuadros azul y rojo son las hitbox, aún las estamos ajustando
