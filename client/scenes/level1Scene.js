@@ -266,7 +266,7 @@ function update(){
         player.direction = "right";
     }
         //Jump logic
-    if (jumpPressed && player.isOnGround){ //spacebar
+    if (jumpPressed && player.isOnGround && player.canJump){ //spacebar
         player.velocityY = player.jumpStrength;
         player.isOnGround = false;
         jumpPressed = false;

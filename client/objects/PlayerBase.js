@@ -15,11 +15,10 @@ class PlayerBase extends AnimatedObject {  //
     this.HITBOX_OFFSET = -15;  
     this.hitEnemies = new Set();  //tracks enemies already hit in this attack swing  $
 
-    //THIS ARE FOR WHEN WE ENABLE CARD SYSTEM
-    //player.damage = 10;
-    //player.invincible = false;
-    //player.canJump = true;
-    //player.lifeSteal = false;
+    //card system properties
+    this.canJump     = true;
+    this.invincible  = false;
+    this.lifeSteal   = false;
   }
 
   update(){
