@@ -4,7 +4,8 @@ import { Rect } from "../libs/Rect.js";
 class Player3 extends PlayerBase {  //1736 x 470 px
     constructor(position){
         super(position);
-        this.hp = 150; //* TODO: traer esta info de la db
+        this.hp    = 150; //* TODO: traer esta info de la db
+        this.maxHp = 150;
         this.speed = 3; 
         this.damage = 20;  //TODO: cambiar daño en el canvas
 

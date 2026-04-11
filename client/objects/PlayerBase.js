@@ -19,6 +19,10 @@ class PlayerBase extends AnimatedObject {  //
     this.canJump     = true;
     this.invincible  = false;
     this.lifeSteal   = false;
+
+    //hearts system  
+    this.hearts    = 5;  //lives
+    this.maxHearts = 5;
   }
 
   update(){
@@ -77,9 +81,12 @@ class PlayerBase extends AnimatedObject {  //
   takeDamage(hit){
     this.hp -= hit;
     if (this.hp <= 0) {
-      this.spriteImage = this.spriteDeath;  //TODO arrerglarla para que salga bien el sprite
-      this.updateAnimation(500);
-      this.hp = 0;
+      this.hearts--;  //lose a heart
+      if (this.hearts > 0) {
+        this.hp = this.maxHp;  //reset hp for next heart
+      } else {
+        this.hp = 0;  //dead
+      }
     }
   }
 

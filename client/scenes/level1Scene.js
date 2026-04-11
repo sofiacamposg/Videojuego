@@ -162,9 +162,9 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     }
     ctx.restore();
 
-    drawHealthBar(ctx, 20, 20, 100, 30, player.hp, 100);
+    drawHealthBar(ctx, 20, 20, 100, 30, player.hp, player.maxHp);
     ctx.font = "50px Arial";
-    drawHearts(ctx, 150, 50, 5, 5);
+    drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     pauseBox.draw(ctx);
     cardShown.draw(ctx, canvas);  //draw card screen
 }
@@ -189,17 +189,10 @@ function drawHealthBar(ctx, x, y, width, height, current, max) { //current from 
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
 };
-//HEARTS
-function drawHearts(ctx, x, y, current, max) { //current from db and max is const
-    const heartValue = 1;
-    const totalHearts = max / heartValue;
-    const filledHearts = Math.ceil(current / heartValue);
-/*
-    if (player.hp <= 0){
-        totalHearts -= 1;
-    }*/
-    for (let i = 0; i < totalHearts; i++) {
-        ctx.fillStyle = i < filledHearts ? "red" : "gray";
+//HEARTS  
+function drawHearts(ctx, x, y, current, max) {
+    for (let i = 0; i < max; i++) {
+        ctx.fillStyle = i < current ? "red" : "gray";  //gray if heart is lost
         ctx.fillText("♥", x + i * 50, y);
     }
 };
@@ -236,10 +229,10 @@ function attackPlayer() {
     enemies.forEach(enemy => {
         if (!enemy.attackHitbox)  //enemy is attacking?
             return;
-        if (enemy.hitPlayers.has(enemy))  //one hit per swing 
-            return; 
+        if (enemy.hitPlayers.has(player))  //one hit per swing
+            return;
         if (hitboxOverlap(enemy.attackHitbox, player)) {
-            enemy.hitPlayers.add(enemy);
+            enemy.hitPlayers.add(player);
             player.takeDamage(enemy.damage);
         }
     });
@@ -317,15 +310,15 @@ function update(){
         enemy.position.x -= 1;
     });
 
+    //check attack hitbox against all active enemies
+    attackEnemy();  //player attacks enemies first
+
     let totalLenEnemies = enemies.length;
-    enemies = enemies.filter(alive => alive.hp > 0);
+    enemies = enemies.filter(alive => alive.hp > 0);  //remove enemies killed this frame immediately
     let aliveLenEnemies = enemies.length;
     killedEnemies += totalLenEnemies - aliveLenEnemies;
 
-    //check attack hitbox against all active enemies
-    attackEnemy();
-    
-    attackPlayer();
+    attackPlayer();  //only surviving enemies can hit the player
 
 
     //camera follows player
