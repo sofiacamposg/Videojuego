@@ -6,23 +6,25 @@ import { EnemyLion } from "../objects/EnemyLion.js";
 import { MessageBox } from "../objects/MessageBox.js";
 
 "use strict"
-//Lógica del juego
 
-//tamaño del mundo
+
 let worldWidth = 3000;
 let worldHeight = 600;
-let cameraX = 0; //ventana del canvas
+let cameraX = 0;
 
-// Mouse
+// 🖱 mouse
 let mouseX = 0
 let mouseY = 0
 
 let player
 
-let keysDown = {}; //Para poder usar teclado para mover a los jugadores
-let jumpPressed = false; //Para que no salga disparado hasta los cielos cuando salta
+let keysDown = {};
+let jumpPressed = false;
 
-//Esta función es para escoger el sprite de player
+
+let killCount = 0;
+
+
 function setSelectedCharacter(selectedCharacter){
     if (selectedCharacter === "Guerrero"){
         player = new Player1(new Vector(200,350));
@@ -35,12 +37,11 @@ function setSelectedCharacter(selectedCharacter){
     }
 }
 
-// Enemies, igual figuras random
+
 let enemies = [
     new EnemyLion (new Vector(900,377)),
     new EnemyLion (new Vector(800,377))
 ]
-
 
 let backgroundImage = new Image()
 backgroundImage.src = "./assets/Fondo2.png"
@@ -74,9 +75,14 @@ function draw(ctx){
     drawHealthBar(ctx, 20, 20, 100, 30, 50, 100);
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, 3, 5);
+
+    // show kills
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
+    ctx.fillText("Kills: " + killCount, 100, 100);
 }
 
-//HEATH BAR
+// health bar
 function drawHealthBar(ctx, x, y, width, height, current, max) {
     ctx.fillStyle = "gray";
     ctx.fillRect(x, y, width, height);
@@ -90,7 +96,7 @@ function drawHealthBar(ctx, x, y, width, height, current, max) {
     ctx.strokeRect(x, y, width, height);
 }
 
-//HEARTS
+// hearts
 function drawHearts(ctx, x, y, current, max) {
     const heartValue = 1;
     const totalHearts = max / heartValue;
@@ -102,25 +108,9 @@ function drawHearts(ctx, x, y, current, max) {
     }
 }
 
-//DECK BUTTON
-function drawDeckButton(ctx, button) {
-    const left = button.x - button.w / 2;
-    const top = button.y - button.h / 2;
-
-    ctx.fillStyle = "black";
-    ctx.fillRect(left, top, button.w, button.h);
-
-    ctx.strokeStyle = "white";
-    ctx.strokeRect(left, top, button.w, button.h);
-
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    ctx.fillText("DECK", button.x, button.y);
-}
-
+// update
 function update(){
     player.isMoving = false;
-
 
     if (keysDown["ArrowLeft"]) {
         player.position.x -= player.speed;
@@ -134,7 +124,7 @@ function update(){
         player.direction = "right";
     }
 
-    // SALTO
+
     if (jumpPressed && player.isOnGround){
         player.velocityY = player.jumpStrength;
         player.isOnGround = false; 
@@ -151,7 +141,7 @@ function update(){
         player.isOnGround = true;
     }
 
-    // LIMITES
+
     if (player.position.x < player.halfSize.x) {
         player.position.x = player.halfSize.x;
     }
@@ -160,18 +150,39 @@ function update(){
         player.position.x = worldWidth - player.halfSize.x;
     }
 
-    // ENEMIGOS
-    enemies.forEach(enemy=>{
+ 
+    let remainingEnemies = [];
+
+    enemies.forEach(enemy => {
         enemy.position.x -= 1;
+
+        // if the enemy comes out of the screen, the kill doesnt count
+        if (enemy.position.x < -50) {
+            return;
+        }
+
+        // kill + 1
+        if (enemy.isDead) {
+            killCount++;
+            return;
+        }
+
+        remainingEnemies.push(enemy);
     });
 
-    // CÁMARA
-    cameraX = player.position.x - canvas.width/2;
+    enemies = remainingEnemies;
 
-    if (cameraX < 0) {
-        cameraX = 0;
+    // ESTO ES SOLO PARA PROBAR EL ATAQUE, DEBERÍA IR EN EL UPDATE DEL PLAYER
+    if(player.playeratack){
+        enemies.forEach(enemy => {
+            enemy.isDead = true;
+        });
     }
 
+
+    cameraX = player.position.x - canvas.width/2;
+
+    if (cameraX < 0) cameraX = 0;
     if (cameraX > worldWidth - canvas.width){
         cameraX = worldWidth - canvas.width;
     }
@@ -189,7 +200,7 @@ function drawEnemies(ctx){
     });
 }
 
-//SPAWN
+
 let totalSpawned = 0;
 let maxEnemies = 10;
 
@@ -217,14 +228,15 @@ function handleMouseMove(event,canvas){
     mouseY = event.clientY - rect.top
 }
 
-function handleClick(){
- //Aquí podemos meter ataques después
-}
+function handleClick(){}
+
 
 function reset(){
-    enemies = []
-    player.health = 100
+    enemies = [];
+    player.health = 100;
+    killCount = 0; 
 }
+
 
 function handleKeyDown(event){
     if(event.repeat) return;
@@ -234,7 +246,6 @@ function handleKeyDown(event){
     if(event.key === " "){
         jumpPressed = true;
     }
-
 
     if(event.key === "j"){
         if(!player.playeratack){
@@ -252,4 +263,18 @@ function handleKeyUp(event){
     }
 }
 
-export { draw, handleMouseMove, handleClick, reset, handleKeyDown, handleKeyUp, setSelectedCharacter }
+
+function getKillCount(){
+    return killCount;
+}
+
+export { 
+    draw, 
+    handleMouseMove, 
+    handleClick, 
+    reset, 
+    handleKeyDown, 
+    handleKeyUp, 
+    setSelectedCharacter,
+    getKillCount 
+};
