@@ -1,5 +1,6 @@
 import { draw as drawMenu, handleMouseMove as handleMouseMoveMenu, handleClick as handleClickMenu } from "./scenes/menuScene.js";
-import { draw as drawLogIn, handleMouseMove as handleMouseMoveLogIn, handleClick as handleClickLogIn, handleKeyDown as handleKeyDownLogIn, reset as resetLogIn } from "./scenes/logInScene.js";
+import { draw as drawLogIn, handleMouseMove as 
+    , handleClick as handleClickLogIn, handleKeyDown as handleKeyDownLogIn, reset as resetLogIn } from "./scenes/logInScene.js";
 import { draw as drawSelect, handleMouseMove as handleMouseMoveSelect, handleClick as handleClickSelect, reset as resetSelect, getSelectedCharacter } from "./scenes/selectScene.js";
 import { draw as drawLevel1, handleMouseMove as handleMouseMoveLevel1, handleClick as handleClickLevel1, reset as resetLevel1, handleKeyDown as handleKeyDownLevel1,
     handleKeyUp as handleKeyUpLevel1, setSelectedCharacter, goToMenu as goToMenuLevel1 } from "./scenes/level1Scene.js";
@@ -10,7 +11,7 @@ const canvasHeight = 600;
 
 let canvas;
 let ctx;
-
+let oldTime = 0; 
 let currentScene = "menu"; //we start in menuScene at the beginning of any run
 let selectedCharacter = null; 
 
@@ -134,14 +135,17 @@ function main() {
     gameLoop();
 }
 
-function gameLoop() {
+function gameLoop(newTime) {
+    let deltaTime = newTime - oldTime;
+
     if(currentScene === 'menu') drawMenu(ctx,canvas);
     else if(currentScene === 'settings') drawSettings(ctx,canvas);
     else if(currentScene === 'login') drawLogIn(ctx,canvas);
     else if(currentScene === 'createAccount') drawCreateAccount(ctx,canvas);
-    else if(currentScene === 'start') drawSelect(ctx,canvas);   
-    else if(currentScene === 'level1') drawLevel1(ctx,canvas);
+    else if(currentScene === 'start') drawSelect(ctx,canvas);
+    else if(currentScene === 'level1') drawLevel1(ctx,canvas,deltaTime);
 
+    oldTime = newTime;
     requestAnimationFrame(gameLoop);
 }
 
