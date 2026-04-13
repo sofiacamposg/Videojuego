@@ -4,6 +4,8 @@ import { MessageBox } from "../objects/MessageBox.js";
 //? mouse track
 let mouseX = 0;
 let mouseY = 0;
+let registerSuccess = false;
+
 const buttonBack = { //? BACK TO MENU BUTTON
     x: 850,
     y: 70,
@@ -29,13 +31,11 @@ const errorMessage = new MessageBox(  //? error message creation
 let username = "";
 let password = "";
 let name = "";
-let age = "";
 let activeField = null; //username / password / name / age / null
 
 const inputUsername = { x: 540, y: 250, w: 500, h: 60 };
 const inputPassword = { x: 540, y: 325, w: 500, h: 60 };
 const inputName = { x: 540, y: 400, w: 500, h: 60 };
-const inputAge = { x: 540, y: 475, w: 500, h: 60 };
 
 //? background
 let backgroundImage = new Image();
@@ -58,7 +58,6 @@ function draw(ctx, canvas){
     drawInputBox(ctx, inputUsername.x, inputUsername.y, inputUsername.w, inputUsername.h, "USERNAME");
     drawInputBox(ctx, inputPassword.x, inputPassword.y, inputPassword.w, inputPassword.h, "PASSWORD");
     drawInputBox(ctx, inputName.x, inputName.y, inputName.w, inputName.h, "NAME");
-    drawInputBox(ctx, inputAge.x, inputAge.y, inputAge.w, inputAge.h, "AGE");
 
     //? buttons
     drawButton(ctx, buttonConfirm);
@@ -90,7 +89,6 @@ function drawInputBox(ctx, centerX, centerY, w, h, label){  //? draw the labels 
   if (label === "USERNAME") valueToShow = username;
   if (label === "PASSWORD") valueToShow = "*".repeat(password.length);
   if (label === "NAME") valueToShow = name;
-  if (label === "AGE") valueToShow = age;
   
   //? check if any box is active
   if (activeField === label.toLowerCase() && valueToShow.length === 0){  //case 1: active but without text, shows | to let know the user they can type now
@@ -154,6 +152,10 @@ function isMouseOver(element,ctx){  //? handle if mouse is over any botton or bo
            mouseY < element.y + h / 2;
 }
 function handleClick(ctx){  //? handle cliks over any element
+    if(registerSuccess){
+        registerSuccess = false;
+        return "confirm";
+    }
     if (errorMessage.visible) {
         return errorMessage.handleClick(mouseX, mouseY);
     }
@@ -169,10 +171,6 @@ function handleClick(ctx){  //? handle cliks over any element
         activeField = "name"; 
         return "name";
     }
-    if (isMouseOver(inputAge, ctx)){
-        activeField = "age"; 
-        return "age";
-    }
     if (isMouseOver(buttonBack, ctx)){
         return "back";
     }
@@ -180,10 +178,15 @@ function handleClick(ctx){  //? handle cliks over any element
         return "login";
     }
     if (isMouseOver(buttonConfirm, ctx)) {
-        if (username === "" || password === "" || name === "" || age === "") {
+        if (username === "" || password === "" || name === "") {
             errorMessage.show();
             return null;
         }
+        registerUser();
+        return null;
+    }
+    if(registerSuccess){
+        registerSuccess = false;
         return "confirm";
     }
     return null;
@@ -196,7 +199,6 @@ function handleKeyDown(event){
     if (activeField === "username") username = username.slice(0, -1);
     if (activeField === "password") password = password.slice(0, -1);
     if (activeField === "name") name = name.slice(0, -1);
-    if (activeField === "age") age = age.slice(0, -1);
     return;
   }
 
@@ -213,7 +215,6 @@ function handleKeyDown(event){
   if (activeField === "username") username += event.key;  //adds letter to string
   if (activeField === "password") password += event.key;
   if (activeField === "name") name += event.key;
-  if (activeField === "age") age += event.key;
 }
 function getUsername(){  //? getter
   return username;
@@ -222,9 +223,40 @@ function reset(){  //? reset to default values
   username = "";
   password = "";
   name = "";
-  age = "";
   activeField = null;
   mouseX = 0;
   mouseY = 0;
+}
+
+//API CONNECTION
+async function registerUser(){
+    try{
+        const res = await fetch("http://localhost:3000/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+                name: name,
+            })
+        });
+
+        if(!res.ok){
+            const text = await res.text();
+            errorMessage.message = text;
+            errorMessage.show();
+            return;
+        }
+
+        console.log("USER CREATED");
+        registerSuccess = true;
+
+    } catch(error){
+        console.log(error);
+        errorMessage.message = "Connection error";
+        errorMessage.show();
+    }
 }
 export { draw, handleMouseMove, handleClick, handleKeyDown, getUsername, reset };

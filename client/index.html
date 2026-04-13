@@ -43,62 +43,40 @@
         <section class="statsBox" id="statsBox" style="display: none;">
             <h2>Player Stats</h2>
 
-            <div class="statRow">
-                <span class="statLabel">Username</span>
-                <span class="statValue">Player1</span>
-            </div>
-
-            <div class="statRow">
-                <span class="statLabel">Best Score</span>
-                <span class="statValue">1240</span>
-            </div>
-
-            <div class="statRow">
-                <span class="statLabel">Runs Played</span>
-                <span class="statValue">8</span>
-            </div>
-
-            <div class="statRow">
-                <span class="statLabel">Best Level</span>
-                <span class="statValue">3</span>
-            </div>
-
-            <div class="statRow">
-                <span class="statLabel">Current Score</span>
-                <span class="statValue">1239</span>
-            </div>
-
-            <div class="statRow">
-                <span class="statLabel">Highest Fame</span>
-                <span class="statValue">1239</span>
-            </div>
-            <div class="statRow">
-                /*<span id="timer"></span>*/
-                <span class="statLabel">Timer</span>
-                <span class="statValue"></span>
-            </div>
+            <span class="statValue" id="username">Player1</span>
+            <span class="statValue" id="bestScore">1240</span>
+            <span class="statValue" id="runs">8</span>
+            <span class="statValue" id="bestLevel">3</span>
+            <span class="statValue" id="currentScore">1239</span>
+            <span class="statValue" id="fame">1239</span>
         </section>
 
     </main>
 
-    <script>
-        function toggleDescription() {
-            const content = document.querySelector('.descriptionContent');
-            content.style.display =
-                content.style.display === 'block' ? 'none' : 'block';
-        }
-        function toggleStats() {
-            const stats = document.getElementById("statsBox");
+    <script type="module">
+    import { loadPlayerStats } from "./stats.js";
 
-            if (stats.style.display === "none") {
-                stats.style.display = "block";
-            } else {
-                stats.style.display = "none";
-            }
+    function toggleDescription() {
+        const content = document.querySelector('.descriptionContent');
+        content.style.display =
+            content.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleStats() {
+        const stats = document.getElementById("statsBox");
+
+        if (stats.style.display === "none") {
+            stats.style.display = "block";
+            loadPlayerStats(); // 🔥 aquí se llama
+        } else {
+            stats.style.display = "none";
         }
+    }
+    //These are global 
+    window.toggleStats = toggleStats;
+    window.toggleDescription = toggleDescription;
     </script>
 
     <script type="module" src="main.js"></script>
-
 </body>
 </html>

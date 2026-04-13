@@ -71,6 +71,7 @@ function main() {
             }
             if(clicked === 'confirm') {
                 currentScene = 'login';
+                resetLogIn();
             }
         }
         //SELECT CHARACTER
