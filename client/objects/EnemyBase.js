@@ -5,6 +5,8 @@ import { Rect } from "../libs/Rect.js";
 class EnemyBase extends AnimatedObject {
   constructor(position, config = {}) {
     const {
+    //& le decimos al parametro 'config' que es lo que debe tener el config
+    //& que le vamos a pasar desde level1 para que tenga una idea de que esperar, es como el this.hp = hp
       hp        = 100,
       damage    = 20,
       speed     = 4,
@@ -15,13 +17,13 @@ class EnemyBase extends AnimatedObject {
     } = config;
 
     super(position, 575, 608, "white", "enemy", 4);
-    this.setCollider(140, 65);
+    this.setCollider(140, 65);  //hurtbox
     this.scale  = scale;
     this.hp     = hp;
     this.damage = damage;
     this.speed  = speed;
     this.damageBase = damage;
-
+    //sprites, must have the same name to work
     this.spriteWalk = new Image();
     this.spriteWalk.src = walkSrc;
     this.spriteAttack = new Image();
@@ -32,11 +34,11 @@ class EnemyBase extends AnimatedObject {
     this.spriteImage = this.spriteWalk;
     this.spriteRect  = new Rect(0, 0, 575, 608);
     this.setAnimation(0, 3, true, 200);
-
+    //hitbox data
     this.HITBOX_WIDTH  = 60;
     this.HITBOX_HEIGHT = 50;
     this.HITBOX_OFFSET = 70;
-
+    //attack data
     this.attackFrames   = 0;
     this.attackDuration = 300;
     this.attackHitbox = null;
@@ -55,7 +57,7 @@ class EnemyBase extends AnimatedObject {
   }
 
   walk(deltaTime){  //x position 
-    this.position.x -= this.speed * deltaTime;
+    this.position.x -= this.speed;
   }
 
   takeDamage(hit) {  //damage made by player, look Playerbase to understand the whole logic

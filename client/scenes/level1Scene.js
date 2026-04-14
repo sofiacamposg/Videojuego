@@ -1,18 +1,14 @@
-import { Player1 } from "../objects/Player1.js";
-import { Player2 } from "../objects/Player2.js";
-import { Player3 } from "../objects/Player3.js";
+import { PlayerBase } from "../objects/PlayerBase.js";
 import { Vector } from "../libs/Vector.js";
-import { EnemyLion } from "../objects/EnemyLion.js";
+import { EnemyBase } from "../objects/EnemyBase.js";
 import { MessageBox } from "../objects/MessageBox.js";
-import { hitboxOverlap } from "../libs/game_functions.js"; 
 import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
 import { cards } from "../cards/Card.js";
 
 "use strict"
-//* GAME'S LOGIC
 
 //world size
-let worldWidth = 3000;
+let worldWidth = 2000;
 let worldHeight = 600;
 let cameraX = 0; //canvas viewport
 
@@ -28,11 +24,50 @@ const cardShown = new cardsOnCanvas();
 /* For HTML stats (User stats)
 let levelTime = 0;
 let lastTome = 0; */
+//---player data---
+const guerreroConfig = {
+    hp: 120, maxHp: 120, speed: 5, damage: 20,
+    walkRightSrc:   "./assets/player1/1.png",
+    walkLeftSrc:    "./assets/player1/2.png",
+    jumpRightSrc:   "./assets/player1/3.png",
+    jumpLeftSrc:    "./assets/player1/4.png",
+    attackRightSrc: "./assets/player1/attackright.png",
+    attackLeftSrc:  "./assets/player1/attackleft.png",
+};
 
+const lanceroConfig = {
+    hp: 100, maxHp: 100, speed: 6, damage: 25,
+    walkRightSrc:   "./assets/player2/5.png",
+    walkLeftSrc:    "./assets/player2/6.png",
+    jumpRightSrc:   "./assets/player2/7.png",
+    jumpLeftSrc:    "./assets/player2/8.png",
+    attackRightSrc: "./assets/player2/attackright.png",
+    attackLeftSrc:  "./assets/player2/attackleft.png",
+};
+
+const pesadoConfig = {
+    hp: 150, maxHp: 150, speed: 3, damage: 20,
+    walkRightSrc:   "./assets/player3/9.png",
+    walkLeftSrc:    "./assets/player3/10.png",
+    jumpRightSrc:   "./assets/player3/11.png",
+    jumpLeftSrc:    "./assets/player3/12.png",
+    attackRightSrc: "./assets/player3/attackright.png",
+    attackLeftSrc:  "./assets/player3/attackleft.png",
+};
 let keysDown = {}; //To track keyboard input for player movement
 let jumpPressed = false; //Prevents continuous jumping when holding the key
 
-//ENEMY VARIABLES
+//---enemy data ----
+//config for every enemy, all the data that is only for this enemy, should change between levels
+const lionConfig = {
+    hp: 100, 
+    damage: 5,
+    speed: 4,
+    scale: 0.8,
+    walkSrc: "./assets/enemy1/walk.png",
+    attackSrc: "./assets/enemy1/attack.png",
+    deathSrc: "./assets/enemy1/death.png",
+};
 let killedEnemies = 0;
 const conditionEnemies = 20;
 
@@ -63,21 +98,21 @@ pauseBox.addButton("Home", 440, 390, 120, 35, () => {
 //This function selects the player sprite
 function setSelectedCharacter(selectedCharacter){
     if (selectedCharacter === "Guerrero"){
-        player = new Player1(new Vector(200,350));
+        player = new PlayerBase(new Vector(200, 450), guerreroConfig);
     }
     else if (selectedCharacter === "Lancero"){
-        player = new Player2(new Vector(200,350));
+        player = new PlayerBase(new Vector(200, 450), lanceroConfig);
     }
     else if (selectedCharacter === "Pesado"){
-        player = new Player3(new Vector(200,350));
+        player = new PlayerBase(new Vector(200, 450), pesadoConfig);
     }
     initPlatforms();
 }
 
-// Enemies, random entities
+//enemies, random entities, position, config 
 let enemies = [
-    new EnemyLion (new Vector(900,370)),
-    new EnemyLion (new Vector(1100,370))
+    new EnemyBase(new Vector(900,450), lionConfig),
+    new EnemyBase(new Vector(1100,450), lionConfig),
 ]
 //Obstacles, also random entities
 let platforms = [];
@@ -127,47 +162,84 @@ let backgroundImage = new Image()
 backgroundImage.src = "./assets/fondo2.png"; 
 
 let spawnTimer = 0;
-let spawnInterval = 200; // 2000 ms = 2 seconds
+let spawnInterval = 2000; // 2000 ms = 2 seconds
 
-function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
+function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     //Clear → update → draw objects
-    ctx.clearRect(0,0,canvas.width,canvas.height) //clear canvas
-    for(let i = 0; i < worldWidth; i+= canvas.width){
-    ctx.drawImage(backgroundImage,i-cameraX,0,canvas.width,canvas.height); //draw background
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for(let i = 0; i < worldWidth; i += canvas.width){
+        ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); //draw background
     }
-    //drawDeckButton(ctx);
-    
-    /*HTML stats (User Stats)
-    let delta = time - lastTime;
-    lastTime = time;
-    levelTime += delta;
-    document.getElementById("timer").textContent =
-    (levelTime / 1000).toFixed(1) + "s"; */
 
-    if(!isPaused){
-    update() //call update defined below
+    if(!isPaused){  //if it is not paused update the game
+        update(canvas, deltaTime);
     }
 
     ctx.save();  //keeps character within screen
     ctx.translate(-cameraX, 0);
 
-    drawPlayer(ctx) //draw player sprite
-    //OBSTACLES
-    drawPlatforms(ctx);
-    drawEnemies(ctx) //draw enemy sprites
-    spawnTimer++;
-    if (spawnTimer >= spawnInterval) {
-        spawnEnemy();
-        spawnTimer = 0;
-    }
+    player.draw(ctx);  //draw player sprite
+    drawPlatforms(ctx);  //obstacles
+    enemies.forEach(enemy => enemy.draw(ctx));  //draw enemy sprites
+
     ctx.restore();
 
     drawHealthBar(ctx, 20, 20, 100, 30, player.hp, player.maxHp);
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     pauseBox.draw(ctx);
-    cardShown.draw(ctx, canvas);  //draw card screen
+    cardShown.draw(ctx, canvas);
 }
+
+function update(canvas, deltaTime){
+    cardShown.update();  //check if any timed card effects have expired
+
+    //---player ----
+    const goLeft  = keysDown["ArrowLeft"] || keysDown['a'];
+    const goRight = keysDown["ArrowRight"] || keysDown['d'];
+    const groundY = 450;
+
+    player.update(goLeft, goRight, jumpPressed, platforms, groundY);  
+    jumpPressed = false;  //reset after player jumped
+
+    //Limit player position inside the world
+    if (player.position.x < player.halfSize.x)
+        player.position.x = player.halfSize.x;
+    if (player.position.x > worldWidth - player.halfSize.x)
+        player.position.x = worldWidth - player.halfSize.x;
+
+    //---enemy ---
+    enemies.forEach(enemy => {
+        enemy.update(player, deltaTime);
+        if (enemy.position.x <= 0 || enemy.position.x >= worldWidth)
+            enemy.bounce();
+    });
+
+    player.attackEnemy(enemies);  //player attacks enemies
+
+    let totalLenEnemies = enemies.length;
+    enemies = enemies.filter(alive => alive.hp > 0);  //remove dead enemies
+    killedEnemies += totalLenEnemies - enemies.length;
+
+    //---camara ----
+    cameraX = player.position.x - canvas.width / 2;
+    if (cameraX < 0) cameraX = 0;
+    if (cameraX > worldWidth - canvas.width) cameraX = worldWidth - canvas.width;
+
+    //---platforms ---
+    let last = platforms[platforms.length - 1];
+    if (player.position.x > last.x - 500) generatePlatform();
+
+    //---spawn ---
+    spawnTimer += deltaTime;
+    if (spawnTimer >= spawnInterval) {
+        if (killedEnemies != conditionEnemies) {
+            enemies.push(new EnemyBase(new Vector(worldWidth - (player.position.x + 500), 450), lionConfig));
+        }
+        spawnTimer = 0;
+    }
+}
+
 //HEALTH BAR
 function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
     // background (lost health)
@@ -212,156 +284,6 @@ function drawDeckButton(ctx, button) {
     ctx.fillText("DECK", button.x, button.y);
 };
 
-function attackEnemy() {  //player attack and kill enemy 
-    if (!player.playeratack || !player.attackHitbox) //"player is attacking?"
-        return;  
-    enemies.forEach(enemy => {
-        if (player.hitEnemies.has(enemy))  //single attack doesnt hit the same enemy more than once
-            return;  
-        if (hitboxOverlap(player.attackHitbox, enemy)) {
-            player.hitEnemies.add(enemy);
-            enemy.takeDamage(player.damage);
-        }
-    });
-};
-
-function attackPlayer() {
-    enemies.forEach(enemy => {
-        if (!enemy.attackHitbox)  //enemy is attacking?
-            return;
-        if (enemy.hitPlayers.has(player))  //one hit per swing
-            return;
-        if (hitboxOverlap(enemy.attackHitbox, player)) {
-            enemy.hitPlayers.add(player);
-            player.takeDamage(enemy.damage);
-        }
-    });
-}
-
-
-function update(){
-    cardShown.update();  //check if any timed card effects have expired
-
-    //Handles movement logic, collisions, etc.
-    //Player movement
-    player.isMoving = false;
-    //variables to know which keys are pressed
-    const goLeft  = keysDown["ArrowLeft"] || keysDown['a'];
-    const goRight = keysDown["ArrowRight"] || keysDown['d'];
-
-    if (goLeft && !goRight) {  //case 1: only left keys are pressed
-        player.position.x -= player.speed;
-        player.isMoving = true;
-        player.direction = "left";
-    } else if (goRight && !goLeft) {  //case 2: only right keys are pressed
-        player.position.x += player.speed;
-        player.isMoving = true;
-        player.direction = "right";
-    }
-        //Jump logic
-    if (jumpPressed && player.isOnGround && player.canJump){ //spacebar
-        player.velocityY = player.jumpStrength;
-        player.isOnGround = false;
-        jumpPressed = false;
-    }
-    
-    player.velocityY += player.gravity;
-    player.position.y += player.velocityY; //vertical movement due to gravity
-
-    //Ground limit
-    //Jumping on platforms logic, check it first
-    player.isOnGround = false;
-    platforms.forEach(p => {
-        let playerBottom = player.position.y + player.halfSize.y;
-        let isFalling = player.velocityY >= 0;
-        let withinX =
-            player.position.x + player.halfSize.x > p.x &&
-            player.position.x - player.halfSize.x < p.x + p.width;
-        let touchingTop =
-            playerBottom >= p.y &&
-            playerBottom <= p.y + p.height;
-        if (isFalling && withinX && touchingTop) { //If the player is falling but is above the limits of the platform, let the player on top
-            player.position.y = p.y - player.halfSize.y;
-            player.velocityY = 0;
-            player.isOnGround = true;
-        }
-    });
-    //Now we apply ground limit
-    let groundY = 370;
-    if (player.position.y >= groundY){ //fixed ground level
-        player.position.y = groundY;
-        player.velocityY = 0;
-        player.isOnGround = true;
-    }
-
-    //Limit player position inside the canvas
-    if (player.position.x < player.halfSize.x) {
-        player.position.x = player.halfSize.x;
-    }
-
-    if (player.position.x > worldWidth - player.halfSize.x) {
-        player.position.x = worldWidth - player.halfSize.x;
-    }
-
-
-//-----ENEMY--------
-    //enemy movement: simple movement towards player
-    enemies.forEach(enemy=>{
-        enemy.position.x -= 1;
-    });
-
-    //check attack hitbox against all active enemies
-    attackEnemy();  //player attacks enemies first
-
-    let totalLenEnemies = enemies.length;
-    enemies = enemies.filter(alive => alive.hp > 0);  //remove enemies killed this frame immediately
-    let aliveLenEnemies = enemies.length;
-    killedEnemies += totalLenEnemies - aliveLenEnemies;
-
-    attackPlayer();  //only surviving enemies can hit the player
-
-
-    //camera follows player
-    cameraX = player.position.x - canvas.width/2; //camera centers player horizontally
-    if (cameraX < 0) { //prevent camera from going outside world
-        cameraX = 0;
-    }
-    if (cameraX > worldWidth - canvas.width){
-        cameraX = worldWidth - canvas.width;
-    }
-    //Random Platforms
-    let last = platforms[platforms.length - 1];
-    if(player.position.x > last.x - 500){
-        generatePlatform();
-    }
-}
-
-function drawPlayer(ctx){
-    player.update();
-    player.draw(ctx); //depends on cameraX
-}
-
-function drawEnemies(ctx){
-    enemies.forEach(enemy=>{
-       enemy.update(player);
-       enemy.draw(ctx); //depends on cameraX
-    });
-}
-
-function spawnEnemy(){
-   let min = 1;
-    let max = 25;
-    let amount = Math.floor(Math.random() * (max - min + 1)) + min;
-
-    if (killedEnemies != conditionEnemies) {  //"win" condition 
-        for (let i = 0; i < amount; i++){
-            enemies.push(  //spwan enemies
-                new EnemyLion(new Vector((worldWidth - (player.position.x + 550))  //safe zone de 150px
-                , 370)));
-        };
-
-    };
-}
 
 function handleMouseMove(event,canvas){ //Standard mouse tracking function
     const rect = canvas.getBoundingClientRect()
@@ -386,13 +308,17 @@ function reset(){
     player.position.x = 200;
     player.position.y = 350;
     player.velocityY = 0;
-    player.hp = 100;
+    player.hp = player.maxHp;
 
     // reset enemies
     enemies = [
-        new EnemyLion(new Vector(900,370)),
-        new EnemyLion(new Vector(800,370))
+        new EnemyBase(new Vector(900,450), lionConfig),
+        new EnemyBase(new Vector(800,450), lionConfig),
     ];
+    killedEnemies = 0;
+
+    //reset platforms
+    initPlatforms();
 
     // reset camera
     cameraX = 0;
