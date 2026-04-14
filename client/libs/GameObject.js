@@ -110,7 +110,7 @@ class GameObject {
         // A transparent layer on top
         ctx.fillStyle = "rgb(0.5, 0.5, 0.5, 0.3)";
         ctx.fillRect((this.position.x - this.halfSize.x * this.scale),
-                     (this.position.y - this.halfSize.y * this.scale),
+                     (this.position.y - this.size.y * this.scale),
                      this.size.x * this.scale,
                      this.size.y * this.scale);
         // Return to default composition type
@@ -120,7 +120,7 @@ class GameObject {
         ctx.strokeStyle = "red";
         ctx.beginPath();
         ctx.rect((this.position.x - this.halfSize.x * this.scale),
-                 (this.position.y - this.halfSize.y * this.scale),
+                 (this.position.y - this.size.y * this.scale),
                  this.size.x * this.scale,
                  this.size.y * this.scale);
         ctx.stroke();
