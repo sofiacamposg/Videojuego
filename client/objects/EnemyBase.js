@@ -4,67 +4,43 @@ import { Rect } from "../libs/Rect.js";
 
 class EnemyBase extends AnimatedObject {
   constructor(position, config = {}) {
-    const {  
-    //& le decimos al parametro 'config' que es lo que debe tener el config
-    //& que le vamos a pasar desde level1 para que tenga una idea de que esperar, es como el this.hp = hp
-    //enemy info  
-      hp = 100,
-      damage = 20,
-      speed = 4,
-      scale = 1.0,
-    //animation info
-      sheetCols = 4,  //same value for all enemies
-      frameWidth = 575,  //same value for all enemies
-      frameHeight = 608,  //same value for all enemies
-      animMinFrame = 0,  //same value for all enemies
-      animMaxFrame = 3,  //same value for all enemies 
-      animDuration = 200,  //same value for all enemies
-    //sprites info
-      walkSrc = "",
+    const {
+      hp        = 100,
+      damage    = 20,
+      speed     = 4,
+      scale     = 1.0,
+      walkSrc   = "",
       attackSrc = "",
-      deathSrc = "",
-    //hurtbox
-      colliderWidth = 140,  //same value for all enemies
-      colliderHeight = 65,  //same value for all enemies
-    //hitbox
-      hitboxWidth = 60,  //same value for all enemies
-      hitboxHeight = 50,  //same value for all enemies
-      hitboxOffset = 70,  //same value for all enemies
-      attackDuration = 300,  //same value for all enemies, miliseconds
+      deathSrc  = "",
     } = config;
 
-    super(position, frameWidth, frameHeight, "white", "enemy", sheetCols);
-    this.setCollider(colliderWidth, colliderHeight);  //hurtbox
-    this.scale = scale;
-    this.hp = hp;
+    super(position, 575, 608, "white", "enemy", 4);
+    this.setCollider(140, 65);
+    this.scale  = scale;
+    this.hp     = hp;
     this.damage = damage;
-    this.speed = speed;
-    this.damageBase = damage;  //intial damage stored for later
+    this.speed  = speed;
+    this.damageBase = damage;
 
-    // Sprites, they must have the same name in order to work
     this.spriteWalk = new Image();
     this.spriteWalk.src = walkSrc;
-
     this.spriteAttack = new Image();
     this.spriteAttack.src = attackSrc;
-
     this.spriteDeath = new Image();
     this.spriteDeath.src = deathSrc;
 
     this.spriteImage = this.spriteWalk;
-    this.spriteRect = new Rect(0, 0, frameWidth, frameHeight);
-    this.setAnimation(animMinFrame, animMaxFrame, true, animDuration);
+    this.spriteRect  = new Rect(0, 0, 575, 608);
+    this.setAnimation(0, 3, true, 200);
 
-    //hitbox
-    this.HITBOX_WIDTH = hitboxWidth;
-    this.HITBOX_HEIGHT = hitboxHeight;
-    this.HITBOX_OFFSET = hitboxOffset;
+    this.HITBOX_WIDTH  = 60;
+    this.HITBOX_HEIGHT = 50;
+    this.HITBOX_OFFSET = 70;
 
-    //attack data
-    this.attackFrames = 0;
-    this.attackDuration = attackDuration;
+    this.attackFrames   = 0;
+    this.attackDuration = 300;
     this.attackHitbox = null;
-    this.hitPlayers = new Set();
+    this.hasHitPlayer = false;  //flag to limit only one hit per swing
   }
 
   update(player, deltaTime) {  //manage movement, hurtbox, attack
@@ -110,7 +86,7 @@ class EnemyBase extends AnimatedObject {
       if (this.attackFrames >= this.attackDuration) {  //if enemy already hit the player
         this.attackFrames = 0;  //reset everything
         this.attackHitbox = null;
-        this.hitPlayers.clear();
+        this.hasHitPlayer = false;
       }
     } else {  //keep walking
       this.spriteImage = this.spriteWalk;
@@ -119,14 +95,13 @@ class EnemyBase extends AnimatedObject {
   }
 
   attackPlayer(player) {  //logic only for attack, apply damage to player
-    if (!enemy.attackHitbox)  //enemy is attacking?
+    if (!this.attackHitbox)  //enemy is attacking?
         return;
-    if (enemy.hitPlayers.has(player))  //one hit per swing
+    if (this.hasHitPlayer)  //one hit per swing
         return;
-    if (hitboxOverlap(enemy.attackHitbox, player)) { 
-        enemy.hitPlayers.add(player);
-        console.log(`enemy ${enemy} hit player for ${enemy.damage}`);
-        player.takeDamage(enemy.damage);
+    if (hitboxOverlap(this.attackHitbox, player)) { 
+        this.hasHitPlayer = true;
+        player.takeDamage(this.damage);
     }
   }
 
