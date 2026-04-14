@@ -47,10 +47,10 @@ function hitboxOverlap(hitbox, obj) {
     const T1 = hitbox.y;
     const B1 = hitbox.y + hitbox.height;
 
-    const L2 = obj.position.x - obj.halfSize.x;
-    const R2 = obj.position.x + obj.halfSize.x;
-    const T2 = obj.position.y - obj.halfSize.y;
-    const B2 = obj.position.y + obj.halfSize.y;
+    const L2 = obj.collider.x;
+    const R2 = obj.collider.x + obj.collider.width;
+    const T2 = obj.collider.y;
+    const B2 = obj.collider.y + obj.collider.height;
 
     return (L1 < R2 && R1 > L2 && T1 < B2 && B1 > T2);
 }
