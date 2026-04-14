@@ -1,4 +1,3 @@
-//Inherits from Animated Object
 import { AnimatedObject } from "../libs/AnimatedObject.js";
 import { hitboxOverlap } from "../libs/game_functions.js";
 import { Rect } from "../libs/Rect.js";
@@ -68,7 +67,7 @@ class EnemyBase extends AnimatedObject {
     this.hitPlayers = new Set();
   }
 
-  update(player, deltaTime) {
+  update(player, deltaTime) {  //manage movement, hurtbox, attack
     this.walk(deltaTime);  //movement in x
 
     this.updateCollider();  //move de hurtbox with the enemy position
@@ -79,7 +78,7 @@ class EnemyBase extends AnimatedObject {
     this.attackPlayer(player);  //my hitbox hit the player hurtbox?
   }
 
-  walk(deltaTime){
+  walk(deltaTime){  //x position 
     this.position.x -= this.speed * deltaTime;
   }
 
@@ -150,7 +149,7 @@ class EnemyBase extends AnimatedObject {
     }
     this.speed *= direction;  //assign direction
   }
-  
+
   draw(ctx) {  //draw enemies, attack and death on canvas
     super.draw(ctx);
 
