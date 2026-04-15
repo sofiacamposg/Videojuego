@@ -30,6 +30,9 @@ let keysDown = {}; //To track keyboard input for player movement
 let jumpPressed = false; //Prevents continuous jumping when holding the key
 
 //========================= CARD SYSTEM =========================
+let playerDeck = []; 
+let isDeckOpen = false;
+let selectedDeckIndex = -1;
 
 let kills = 10;
 let triggerPoint = 10; // when event triggers
@@ -188,17 +191,87 @@ let cardBox = new MessageBox(
     "Select one card",
     200, 100, 600, 350
 );
+let deckBox = new MessageBox(
+    "DECK",
+    "Choose a card",
+    150, 50,   // posición
+    700, 500   // tamaño
+);
+deckBox.addButton("CONFIRM", 440, 480, 120, 50, () => {});
+
 //API CONNECTION
-async function generateCardOptions(){
+//====PLAYER'S DECK====
+function addCardToDeck(card){
+    playerDeck.push(card);
+}
+function onLevelComplete(){
 
-    try{
-        const res = await fetch("http://localhost:3000/cards/random");
-        const data = await res.json();
+    // example, 2 cards reward
+    let rewards = getRandomCards(2);
 
-        cardOptions = data;
+    rewards.forEach(card => {
+        addCardToDeck(card);
+    });
+}
+function drawDeckCards(ctx){
 
-    } catch(error){
-        console.log("Error fetching cards:", error);
+    let startX = deckBox.x + 80;
+    let startY = deckBox.y + 110;
+
+    let cols = 3;
+    let spacingX = 220;
+    let spacingY = 160;
+
+    let maxSlots = 6; //CHANGE FOR MAX CARDS LIMIT
+
+    for(let i = 0; i < maxSlots; i++){
+
+        let col = i % cols;
+        let row = Math.floor(i / cols);
+
+        let x = startX + col * spacingX;
+        let y = startY + row * spacingY;
+
+        // shadow
+        ctx.fillStyle = "rgba(0,0,0,0.4)";
+        ctx.fillRect(x + 5, y + 5, 140, 200);
+
+    
+        ctx.strokeStyle = "rgba(255,255,255,0.3)";
+        ctx.strokeRect(x, y, 100, 150);
+
+        // =========================
+        // If there is card
+        // =========================
+        if(i < playerDeck.length){
+
+            let card = playerDeck[i];
+
+            // card background
+            ctx.fillStyle = "#2c2c2c";
+            ctx.fillRect(x, y, 100, 150);
+
+            ctx.strokeStyle = "white";
+            ctx.strokeRect(x, y, 140, 200);
+
+            // image
+            if(card.image){
+                ctx.drawImage(card.image, x + 10, y + 10, 120, 80);
+            }
+
+            // name
+            ctx.fillStyle = "white";
+            ctx.font = "12px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(card.card_name, x + 70, y + 110);
+
+            // selection
+            if(selectedDeckIndex === i){
+                ctx.strokeStyle = "gold";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(x - 2, y - 2, 144, 204);
+            }
+        }
     }
 }
 async function triggerCardEvent(){
@@ -325,7 +398,7 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight){
         );
     }
 }
-function applyCard(card){
+function applyCard(card){ //random deck effect
 
     if(card.effect_type === "POWER_UP"){
 
@@ -383,6 +456,11 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     if(!isPaused && !isCardActive){
         update() //call update defined below
     }
+    if(isDeckOpen){
+        deckBox.draw(ctx);
+        drawDeckCards(ctx);
+        return;
+    }
 
     ctx.save();  //keeps character within screen
     ctx.translate(-cameraX, 0);
@@ -408,6 +486,11 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     if(isCardActive){
         cardBox.draw(ctx);
         drawCardsInBox(ctx);
+    }
+    if(isDeckOpen){
+        deckBox.draw(ctx);
+        drawDeckCards(ctx);
+        return;
     }
 }
 
@@ -439,25 +522,10 @@ function drawHearts(ctx, x, y, current, max) { //current from db and max is cons
     }
 }
 
-//DECK BUTTON
-function drawDeckButton(ctx, button) {
-    const left = button.x - button.w / 2;
-    const top = button.y - button.h / 2;
-
-    ctx.fillStyle = "black";
-    ctx.fillRect(left, top, button.w, button.h);
-
-    ctx.strokeStyle = "white";
-    ctx.strokeRect(left, top, button.w, button.h);
-
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    ctx.fillText("DECK", button.x, button.y);
-}
-
-
 //========================= UPDATE LOGIC =========================
 function update(){
+    if(isDeckOpen) return;
+
     if (!cardEventTriggered && kills >= triggerPoint) {
         cardEventTriggered = true;
         triggerCardEvent();
@@ -578,7 +646,51 @@ function handleClick(){
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
+    //Player's Deck
+    if(isDeckOpen){
 
+        let startX = deckBox.x + 60;
+        let startY = deckBox.y + 80;
+        let cols = 4;
+        let spacingX = 150;
+        let spacingY = 220;
+        for(let i = 0; i < playerDeck.length; i++){
+            let col = i % cols;
+            let row = Math.floor(i / cols);
+            let x = startX + col * spacingX;
+            let y = startY + row * spacingY;
+            if(
+                mouseX > x && mouseX < x + 140 &&
+                mouseY > y && mouseY < y + 200
+            ){
+                selectedDeckIndex = i;
+                return;
+            }
+        }
+        // CONFIRM BUTTON
+    let confirmX = 350;
+    let confirmY = 450;
+    let confirmW = 120;
+    let confirmH = 50;
+
+    if(
+        mouseX > confirmX &&
+        mouseX < confirmX + confirmW &&
+        mouseY > confirmY &&
+        mouseY < confirmY + confirmH
+    ){
+        if(selectedDeckIndex !== -1){
+            let card = playerDeck[selectedDeckIndex];
+            applyCard(card);
+            playerDeck.splice(selectedDeckIndex, 1);
+            deckBox.hide();
+            isDeckOpen = false;
+            selectedDeckIndex = -1;
+        }
+    }
+        return;
+    }
+    //Random Deck
     if(isCardActive){
         if(selectedIndex !== -1) return;
         if(cardOptions.length === 0) return;
@@ -625,6 +737,7 @@ function handleKeyDown(event){
 
     keysDown[event.key] = true;
 
+    //PauseMessage
     if(event.key === "Escape"){
         isPaused = !isPaused;
 
@@ -634,11 +747,21 @@ function handleKeyDown(event){
             pauseBox.hide();
         }
     }
-
+    //Open Player's Deck
+    if(event.key === "c" || event.key === "C"){
+        isDeckOpen = !isDeckOpen;
+        selectedDeckIndex = -1;
+    }
+    if(isDeckOpen){
+        deckBox.show();
+    }else{
+        deckBox.hide();
+    }
+    //Jump
     if(event.key === " "){
         jumpPressed = true;
     }
-
+    //Attack
     if(event.key === "j"){
         if(!player.playeratack){
             player.playeratack = true;

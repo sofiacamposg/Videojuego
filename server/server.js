@@ -9,7 +9,10 @@ const db = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "Doguita2012*",
-    database: "gladiator"
+    database: "gladiator",
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 db.connect((err) => {
@@ -19,11 +22,12 @@ db.connect((err) => {
     }
     console.log("MySQL conectado");
 });
+
 app.get("/players", (req, res) => {
-    console.log("🔥 ENTRÓ A /players");
+    console.log("ENTRÓ A /players");
     db.query("SELECT * FROM Player", (err, result) => {
         if (err) {
-            console.log("🔥 ERROR:", err);
+            console.log("ERROR:", err);
             res.send(err.message);
             return;
         }
@@ -31,8 +35,8 @@ app.get("/players", (req, res) => {
     });
 });
 app.listen(3000, () => {
-    console.log("Servidor en http://localhost:3000");
-});
+    console.log("Servidor en ");
+});http://localhost:3000
 //GET CARD FOR RANDOM CARD EVENT EFFECT
 app.get("/cards/random", (req, res) => {
 
