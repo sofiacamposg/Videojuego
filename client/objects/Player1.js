@@ -1,11 +1,14 @@
 import { PlayerBase } from "./PlayerBase.js";
 import { Rect } from "../libs/Rect.js";
 
-class Player1 extends PlayerBase {  //1736 x 608 px
+class Player1 extends PlayerBase {  //1736 x 470 px
     constructor(position){
         super(position);
-        this.health = 120; //* TODO: get this info from the db
+        this.hp    = 120; //* TODO: get this info from the db
+        this.maxHp = 120;
         this.speed = 5; 
+        this.damage = 20;
+        
         this.sheetCols = 4;
         this.setAnimation(0, 3, true, 200);  
         //From here down, these properties allow the character to stay idle when not moving and to be able to jump
@@ -33,7 +36,7 @@ class Player1 extends PlayerBase {  //1736 x 608 px
 
         //initial sprite
         this.spriteImage = this.spriteRight;
-        this.spriteRect = new Rect(0, 0, 434, 608);
+        this.spriteRect = new Rect(0, 0, 434, 470);
     }
 }
 export { Player1 };

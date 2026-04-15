@@ -10,7 +10,7 @@ const canvasHeight = 600;
 
 let canvas;
 let ctx;
-
+let oldTime = 0; 
 let currentScene = "menu"; //we start in menuScene at the beginning of any run
 let selectedCharacter = null; 
 
@@ -135,14 +135,17 @@ function main() {
     gameLoop();
 }
 
-function gameLoop() {
+function gameLoop(newTime) {
+    let deltaTime = newTime - oldTime;
+
     if(currentScene === 'menu') drawMenu(ctx,canvas);
     else if(currentScene === 'settings') drawSettings(ctx,canvas);
     else if(currentScene === 'login') drawLogIn(ctx,canvas);
     else if(currentScene === 'createAccount') drawCreateAccount(ctx,canvas);
-    else if(currentScene === 'start') drawSelect(ctx,canvas);   
-    else if(currentScene === 'level1') drawLevel1(ctx,canvas);
+    else if(currentScene === 'start') drawSelect(ctx,canvas);
+    else if(currentScene === 'level1') drawLevel1(ctx,canvas,deltaTime);
 
+    oldTime = newTime;
     requestAnimationFrame(gameLoop);
 }
 

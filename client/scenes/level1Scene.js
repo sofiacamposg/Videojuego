@@ -3,8 +3,10 @@ import { Player1 } from "../objects/Player1.js";
 import { Player2 } from "../objects/Player2.js";
 import { Player3 } from "../objects/Player3.js";
 import { Vector } from "../libs/Vector.js";
-import { EnemyLion } from "../objects/EnemyLion.js";
+import { EnemyBase } from "../objects/EnemyBase.js";
 import { MessageBox } from "../objects/MessageBox.js";
+import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
+import { cards } from "../cards/Card.js";
 
 "use strict"
 
@@ -12,7 +14,7 @@ import { MessageBox } from "../objects/MessageBox.js";
 //* GAME'S LOGIC
 
 //world size
-let worldWidth = 3000;
+let worldWidth = 2000;
 let worldHeight = 600;
 let cameraX = 0; //canvas viewport
 
@@ -22,10 +24,42 @@ let mouseY = 0
 
 let player
 
+//Cards
+const cardShown = new cardsOnCanvas();
+
 /* For HTML stats (User stats)
 let levelTime = 0;
 let lastTome = 0; */
+//---player data---
+const guerreroConfig = {
+    hp: 120, maxHp: 120, speed: 5, damage: 20,
+    walkRightSrc:   "./assets/player1/1.png",
+    walkLeftSrc:    "./assets/player1/2.png",
+    jumpRightSrc:   "./assets/player1/3.png",
+    jumpLeftSrc:    "./assets/player1/4.png",
+    attackRightSrc: "./assets/player1/attackright.png",
+    attackLeftSrc:  "./assets/player1/attackleft.png",
+};
 
+const lanceroConfig = {
+    hp: 100, maxHp: 100, speed: 6, damage: 25,
+    walkRightSrc:   "./assets/player2/5.png",
+    walkLeftSrc:    "./assets/player2/6.png",
+    jumpRightSrc:   "./assets/player2/7.png",
+    jumpLeftSrc:    "./assets/player2/8.png",
+    attackRightSrc: "./assets/player2/attackright.png",
+    attackLeftSrc:  "./assets/player2/attackleft.png",
+};
+
+const pesadoConfig = {
+    hp: 150, maxHp: 150, speed: 3, damage: 20,
+    walkRightSrc:   "./assets/player3/9.png",
+    walkLeftSrc:    "./assets/player3/10.png",
+    jumpRightSrc:   "./assets/player3/11.png",
+    jumpLeftSrc:    "./assets/player3/12.png",
+    attackRightSrc: "./assets/player3/attackright.png",
+    attackLeftSrc:  "./assets/player3/attackleft.png",
+};
 let keysDown = {}; //To track keyboard input for player movement
 let jumpPressed = false; //Prevents continuous jumping when holding the key
 
@@ -78,13 +112,13 @@ pauseBox.addButton("Home", 440, 390, 120, 35, () => {
 //This function selects the player sprite
 function setSelectedCharacter(selectedCharacter){
     if (selectedCharacter === "Guerrero"){
-        player = new Player1(new Vector(200,350));
+        player = new PlayerBase(new Vector(200, 450), guerreroConfig);
     }
     else if (selectedCharacter === "Lancero"){
-        player = new Player2(new Vector(200,350));
+        player = new PlayerBase(new Vector(200, 450), lanceroConfig);
     }
     else if (selectedCharacter === "Pesado"){
-        player = new Player3(new Vector(200,350));
+        player = new PlayerBase(new Vector(200, 450), pesadoConfig);
     }
     initPlatforms();
 }
@@ -93,8 +127,8 @@ function setSelectedCharacter(selectedCharacter){
 //========================= ENEMIES =========================
 // Enemies, random entities
 let enemies = [
-    new EnemyLion (new Vector(900,357)),
-    new EnemyLion (new Vector(800,357))
+    new EnemyBase(new Vector(900,450), lionConfig),
+    new EnemyBase(new Vector(1100,450), lionConfig),
 ]
 
 
@@ -643,6 +677,11 @@ function handleMouseMove(event,canvas){ //Standard mouse tracking function
 }
 
 function handleClick(){
+    if (cardShown.isActive) {  //track mouse in card acreen 
+        cardShown.handleClick(mouseX, mouseY, canvas);
+        return;
+    }
+
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
@@ -786,13 +825,17 @@ function reset(){
     player.position.x = 200;
     player.position.y = 350;
     player.velocityY = 0;
-    player.health = 100;
+    player.hp = player.maxHp;
 
     // reset enemies
     enemies = [
-        new EnemyLion(new Vector(900,357)),
-        new EnemyLion(new Vector(800,357))
+        new EnemyBase(new Vector(900,450), lionConfig),
+        new EnemyBase(new Vector(800,450), lionConfig),
     ];
+    killedEnemies = 0;
+
+    //reset platforms
+    initPlatforms();
 
     // reset camera
     cameraX = 0;
