@@ -4,9 +4,14 @@ async function loadPlayerStats() {
 
     const player = data[0];
 
-    document.getElementById("username").textContent = player.username;
     document.getElementById("runs").textContent = player.total_runs;
-    document.getElementById("bestScore").textContent = player.total_wins; // ejemplo
-    document.getElementById("fame").textContent = player.total_losses; // ejemplo
+    document.getElementById("wins").textContent = player.total_wins;
+    document.getElementById("defeats").textContent = player.total_losses;
+
+    // placeholders (porque no existen aún en backend)
+    document.getElementById("archetype").textContent = "N/A";
+    document.getElementById("card").textContent = "N/A";
+    document.getElementById("avgTime").textContent = "N/A";
 }
-export {loadPlayerStats};
+
+export { loadPlayerStats };

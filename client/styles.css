@@ -7,7 +7,21 @@
     box-sizing: border-box;
 }
 
-/*PIXEL TEXT*/
+/* BODY */
+body {
+    background: radial-gradient(circle at top, #1a0e07, #000);
+    color: white;
+    font-family: 'Cinzel', serif;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    min-height: 100vh;
+
+}
+
+/* PIXEL TITLE */
 .pixelText {
     font-family: 'VT323', monospace;
     font-weight: 900;
@@ -15,16 +29,6 @@
     letter-spacing: 6px;
     color: #ffd166;
     text-shadow: 3px 3px 0px #000, 0 0 15px rgba(255, 209, 102, 0.6);
-}
-
-/* BODY */
-body {
-    background: radial-gradient(circle at top, #1a0e07, #000);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: white;
-    font-family: 'Cinzel', serif;
 }
 
 /* HEADER */
@@ -56,6 +60,7 @@ body {
     border-radius: 12px;
     font-weight: bold;
     transition: 0.25s;
+    display: inline-block;
 }
 
 .tutorialButton:hover {
@@ -66,12 +71,12 @@ body {
 /* MAIN LAYOUT */
 .layout {
     display: grid;
-    grid-template-columns: 300px auto 300px;
-    gap: 40px;
+    grid-template-columns: 240px 1fr 240px; 
+    gap: 30px; 
     align-items: start;
     justify-content: center;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1400px;
     margin-top: 20px;
 }
 
@@ -83,6 +88,12 @@ body {
     border-radius: 15px;
     padding: 15px;
     box-shadow: 0 0 15px rgba(0,0,0,0.8);
+}
+
+/* STATS BOX FIX */
+.statsBox {
+    width: 100%;
+    min-width: 0;
 }
 
 /* DROPDOWN */
@@ -106,12 +117,15 @@ body {
     line-height: 1.5;
 }
 
-/* STATS */
-.statRow {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+/* STATS TEXT */
+.statsBox h2 {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.statsBox p {
+    margin: 8px 0;
+    font-size: 16px;
 }
 
 .statValue {
@@ -124,6 +138,7 @@ body {
     border: 3px solid rgb(255, 187, 86);
     border-radius: 10px;
     box-shadow: 0 0 25px rgba(255, 187, 86, 0.5);
+    display: block;
 }
 
 /* RESPONSIVE */
@@ -138,24 +153,4 @@ body {
     .statsBox {
         width: 80%;
     }
-}
-body {
-    background-color: black;
-    color: white;
-    text-align: center;
-    padding: 40px;
-}
-
-p {
-    max-width: 600px;
-    margin: 20px auto;
-    line-height: 1.6;
-}
-.statsBox {
-    position: absolute;
-    right: 50px;
-    top: 150px;
-    background: black;
-    padding: 20px;
-    border: 2px solid white;
 }
