@@ -13,14 +13,15 @@
         <p>Fight, survive, and earn glory in the Roman Colosseum</p>
 
         <div class="tutorial">
-            <a href="tutorial.html" class="tutorialButton">Tutorial</a>
-            <a href="instructions.html" class="tutorialButton">Instructions</a>
+            <a href="story.html" class="tutorialButton" target="_blank">Story</a>
+            <a href="instructions.html" class="tutorialButton" target="_blank">Instructions</a>
+            <a href="#" class="tutorialButton" onclick="toggleStats()">Player Stats</a>
         </div>
     </header>
 
     <main class="layout">
 
-        <!-- IZQUIERDA -->
+        <!-- LEFT -->
         <section class="descriptionBox">
             <button class="dropdownButton" onclick="toggleDescription()">
                 About the Game
@@ -35,55 +36,47 @@
             </div>
         </section>
 
-        <!-- CENTRO -->
+        <!-- CENTER -->
         <canvas id="canvas"></canvas>
 
-        <!-- DERECHA -->
-        <section class="statsBox">
+        <!-- RIGHT -->
+        <section class="statsBox" id="statsBox" style="display: none;">
             <h2>Player Stats</h2>
 
-            <div class="statRow">
-                <span class="statLabel">Username</span>
-                <span class="statValue">Player1</span>
-            </div>
-
-            <div class="statRow">
-                <span class="statLabel">Best Score</span>
-                <span class="statValue">1240</span>
-            </div>
-
-            <div class="statRow">
-                <span class="statLabel">Runs Played</span>
-                <span class="statValue">8</span>
-            </div>
-
-            <div class="statRow">
-                <span class="statLabel">Best Level</span>
-                <span class="statValue">3</span>
-            </div>
-
-            <div class="statRow">
-                <span class="statLabel">Current Score</span>
-                <span class="statValue">1239</span>
-            </div>
-
-            <div class="statRow">
-                <span class="statLabel">Highest Fame</span>
-                <span class="statValue">1239</span>
-            </div>
+            <span class="statValue" id="username">Player1</span>
+            <span class="statValue" id="bestScore">1240</span>
+            <span class="statValue" id="runs">8</span>
+            <span class="statValue" id="bestLevel">3</span>
+            <span class="statValue" id="currentScore">1239</span>
+            <span class="statValue" id="fame">1239</span>
         </section>
 
     </main>
 
-    <script>
-        function toggleDescription() {
-            const content = document.querySelector('.descriptionContent');
-            content.style.display =
-                content.style.display === 'block' ? 'none' : 'block';
+    <script type="module">
+    import { loadPlayerStats } from "./stats.js";
+
+    function toggleDescription() {
+        const content = document.querySelector('.descriptionContent');
+        content.style.display =
+            content.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleStats() {
+        const stats = document.getElementById("statsBox");
+
+        if (stats.style.display === "none") {
+            stats.style.display = "block";
+            loadPlayerStats(); // 🔥 aquí se llama
+        } else {
+            stats.style.display = "none";
         }
+    }
+    //These are global 
+    window.toggleStats = toggleStats;
+    window.toggleDescription = toggleDescription;
     </script>
 
     <script type="module" src="main.js"></script>
-
 </body>
 </html>

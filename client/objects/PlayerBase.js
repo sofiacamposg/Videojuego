@@ -1,4 +1,3 @@
-//Hereda de Animated Object
 import { AnimatedObject } from "../libs/AnimatedObject.js";
 
 class PlayerBase extends AnimatedObject {
@@ -20,7 +19,15 @@ class PlayerBase extends AnimatedObject {
     this.attackHitbox = null;
   }
 
-  update(){
+  update(goLeft, goRight, jumpPressed, platforms, groundY){  //manage movement, hurtbox, attack
+    this.isMoving = false;
+    this.walk(goLeft, goRight);
+    this.jump(jumpPressed);
+    this.applyGravity();
+    this.checkPlatforms(platforms, groundY);
+    this.updateCollider();
+
+    //sprites depending on status (jump, walk, attack, ...)
     if (!this.isOnGround) {
 
       // SALTO
@@ -49,7 +56,6 @@ class PlayerBase extends AnimatedObject {
       this.spriteImage = (this.direction === "right") ? this.spriteRight : this.spriteLeft;
       this.updateAnimation(20);
       this.attackHitbox = null;
-
     } else {
 
       // QUIETO

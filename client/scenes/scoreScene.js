@@ -15,7 +15,7 @@ const buttonAgain = {
     text: "START AGAIN"
 };
 
-// Imagen de fondo
+// Background image
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
@@ -64,9 +64,9 @@ function handleMouseMove(event, canvas) {
     mouseY = event.clientY - rect.top;
 }
 
-//Esta función es para poder saber que botón se clickeo y asi movernos a otra escena
+//This function is used to detect which button was clicked so we can move to another scene
 function isMouseOverButton(button) {
-  //usa el mismo font y tamaño que usas para dibujar
+  //uses the same font and size as used for drawing
   const dummyCanvas = document.createElement("canvas");
   const dummyCtx = dummyCanvas.getContext("2d");
   dummyCtx.font = "25px 'VT323'";
@@ -82,13 +82,12 @@ function isMouseOverButton(button) {
   return mouseX > left && mouseX < right && mouseY > top && mouseY < bottom;
 }
 
-//Esta función solo revisa el resultado de la anterior y hace return
+//This function only checks the result of the previous one and returns it
 function handleClick() {
-  // revisa si el mouse está encima de START, SETTINGS o LOG IN
+  //checks if the mouse is over EXIT or START AGAIN
   if (isMouseOverButton(buttonExit)) return "exit";
   if (isMouseOverButton(buttonAgain)) return "again";
   return null;
 }
 
 export { draw, handleMouseMove, handleClick };
-

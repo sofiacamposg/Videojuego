@@ -83,7 +83,6 @@ Exit Button
 Background of the Colosseum
 Crown ambience audio
 
-<<<<<<< HEAD
 SETTINGS:
 Master Volume slider
 Music On/Off toggle

@@ -7,7 +7,7 @@
     box-sizing: border-box;
 }
 
-/*TEXTO PIXEL*/
+/*PIXEL TEXT*/
 .pixelText {
     font-family: 'VT323', monospace;
     font-weight: 900;
@@ -42,7 +42,7 @@ body {
     opacity: 0.8;
 }
 
-/* BOTONES */
+/* BUTTONS */
 .tutorial {
     margin-top: 15px;
 }
@@ -63,7 +63,7 @@ body {
     background: #ffe08a;
 }
 
-/* LAYOUT PRINCIPAL */
+/* MAIN LAYOUT */
 .layout {
     display: grid;
     grid-template-columns: 300px auto 300px;
@@ -75,7 +75,7 @@ body {
     margin-top: 20px;
 }
 
-/* CAJAS */
+/* BOXES */
 .descriptionBox,
 .statsBox {
     background: rgba(20, 10, 5, 0.85);
@@ -138,4 +138,24 @@ body {
     .statsBox {
         width: 80%;
     }
+}
+body {
+    background-color: black;
+    color: white;
+    text-align: center;
+    padding: 40px;
+}
+
+p {
+    max-width: 600px;
+    margin: 20px auto;
+    line-height: 1.6;
+}
+.statsBox {
+    position: absolute;
+    right: 50px;
+    top: 150px;
+    background: black;
+    padding: 20px;
+    border: 2px solid white;
 }

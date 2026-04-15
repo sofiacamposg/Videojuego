@@ -1,15 +1,18 @@
 import { PlayerBase } from "./PlayerBase.js";
 import { Rect } from "../libs/Rect.js";
 
-class Player2 extends PlayerBase {  //1736 x 608 px
+class Player2 extends PlayerBase {  //1736 x 470 px
     constructor(position){
         super(position);
-        this.health = 100; //* TODO: traer esta info de la db
-        this.speed = 4; 
+        this.hp    = 100; //* TODO: get this info from the db
+        this.maxHp = 100;
+        this.speed = 6; 
+        this.damage = 25;
+
         this.sheetCols = 4;
-        this.setAnimation(0, 3, true, 200);  //le puse 2 porque si no se mueve raro
-        //De aquí para abajo las propiedades son para que pueda quedarse quieto si no está en movimiento y que pueda saltar
-        this.velocityY = 0; //qué tan rápido brinca
+        this.setAnimation(0, 3, true, 200);  //I set it to 2 because otherwise it moves weirdly
+        //From here down, these properties allow the character to stay idle when not moving and to be able to jump
+        this.velocityY = 0; //how fast it jumps
         this.gravity = 0.8; 
         this.jumpStrength = -14;
         this.isOnGround = true;
@@ -33,7 +36,7 @@ class Player2 extends PlayerBase {  //1736 x 608 px
 
         //initial sprite
         this.spriteImage = this.spriteRight;
-        this.spriteRect = new Rect(0, 0, 434, 608);
+        this.spriteRect = new Rect(0, 0, 434, 470);
     }
 }
 export { Player2 };
