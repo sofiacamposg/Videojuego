@@ -64,8 +64,10 @@ const lionConfig = {
     damage: 5,
     speed: 4,
     scale: 0.8,
-    walkSrc: "./assets/enemy1/walk.png",
-    attackSrc: "./assets/enemy1/attack.png",
+    walkRightSrc:   "./assets/enemy1/walkRight.png",
+    walkLeftSrc:    "./assets/enemy1/walkLeft.png",
+    attackRightSrc: "./assets/enemy1/attackRight.png",
+    attackLeftSrc:  "./assets/enemy1/attackLeft.png",
     deathSrc: "./assets/enemy1/death.png",
 };
 let killedEnemies = 0;

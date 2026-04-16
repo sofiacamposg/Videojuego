@@ -7,33 +7,39 @@ class EnemyBase extends AnimatedObject {
     const {
     //& le decimos al parametro 'config' que es lo que debe tener el config
     //& que le vamos a pasar desde level1 para que tenga una idea de que esperar, es como el this.hp = hp
-      hp        = 100,
-      damage    = 20,
-      speed     = 4,
-      scale     = 1.0,
-      walkSrc   = "",
-      attackSrc = "",
-      deathSrc  = "",
+      hp = 100,
+      damage = 20,
+      speed = 4,
+      scale = 1.0,
+      walkRightSrc = "",
+      walkLeftSrc = "",
+      attackRightSrc = "",
+      attackLeftSrc = "",
+      deathSrc = "",
     } = config;
 
     super(position, 200, 200, "white", "enemy", 4);
     this.setCollider(140, 65);  //hurtbox
-    this.scale  = scale;
-    this.hp     = hp;
+    this.scale = scale;
+    this.hp = hp;
     this.damage = damage;
-    this.speed  = speed;
+    this.speed = speed;
     this.speedBase = speed;
     this.damageBase = damage;
     //sprites, must have the same name to work
-    this.spriteWalk = new Image();
-    this.spriteWalk.src = walkSrc;
-    this.spriteAttack = new Image();
-    this.spriteAttack.src = attackSrc;
+    this.spriteRight = new Image(); 
+    this.spriteRight.src = walkRightSrc;
+    this.spriteLeft = new Image(); 
+    this.spriteLeft.src = walkLeftSrc;
+    this.attackRight = new Image(); 
+    this.attackRight.src = attackRightSrc;
+    this.attackLeft = new Image(); 
+    this.attackLeft.src = attackLeftSrc;
     this.spriteDeath = new Image();
     this.spriteDeath.src = deathSrc;
 
-    this.spriteImage = this.spriteWalk;
-    this.spriteRect  = new Rect(0, 0, 575, 608);
+    this.spriteImage = this.spriteLeft;
+    this.spriteRect = new Rect(0, 0, 575, 608);
     this.setAnimation(0, 3, true, 200);
     //hitbox data
     this.HITBOX_WIDTH = 60;
@@ -41,7 +47,7 @@ class EnemyBase extends AnimatedObject {
     this.HITBOX_OFFSET = 70;
     //attack data
     this.attackFrames = 0;
-    this.attackDuration = 1000;
+    this.attackDuration = 2000;
     this.attackHitbox = null;
     this.hasHitPlayer = false;  //flag to limit only one hit per swing
   }
@@ -58,6 +64,8 @@ class EnemyBase extends AnimatedObject {
   }
 
   walk(){  //x position 
+    this.spriteImage = (this.speed < 0) ? this.spriteRight : this.spriteLeft;
+    this.updateAnimation(20);
     this.position.x -= this.speed;
   }
 
@@ -82,7 +90,7 @@ class EnemyBase extends AnimatedObject {
   shouldAttack(player, deltaTime){  //logic to know when to attack
     //is my hitbox and his hurtbox touhing and is infront of me?
     if (hitboxOverlap(this.collider, player)) {
-      this.spriteImage = this.spriteAttack;  //attack sprite
+      this.spriteImage = (this.speed < 0) ? this.attackRight : this.attackLeft;
       this.updateAnimation(20);
       this.createHitbox();  //ememy hitbox to attack
       this.attackFrames += deltaTime;  
@@ -92,7 +100,7 @@ class EnemyBase extends AnimatedObject {
         this.hasHitPlayer = false;
       }
     } else {  //keep walking
-      this.spriteImage = this.spriteWalk;
+      this.spriteImage = (this.speed < 0) ? this.spriteRight : this.spriteLeft;
       this.updateAnimation(20);
     }
   }
