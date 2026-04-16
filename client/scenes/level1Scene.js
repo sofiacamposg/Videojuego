@@ -1,10 +1,9 @@
-//========================= IMPORTS =========================
-import { Player1 } from "../objects/Player1.js";
-import { Player2 } from "../objects/Player2.js";
-import { Player3 } from "../objects/Player3.js";
+import { PlayerBase } from "../objects/PlayerBase.js";
 import { Vector } from "../libs/Vector.js";
-import { EnemyLion } from "../objects/EnemyLion.js";
+import { EnemyBase } from "../objects/EnemyBase.js";
 import { MessageBox } from "../objects/MessageBox.js";
+import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
+import { cards } from "../cards/Card.js";
 
 "use strict"
 
@@ -32,9 +31,54 @@ let randomEventTime = Math.random() * (40 - 20) + 20;
 /* For HTML stats (User stats)
 let levelTime = 0;
 let lastTome = 0; */
+//---player data---
+const guerreroConfig = {
+    hp: 120, maxHp: 120, speed: 300, damage: 20,
+    walkRightSrc:   "./assets/player1/1.png",
+    walkLeftSrc:    "./assets/player1/2.png",
+    jumpRightSrc:   "./assets/player1/3.png",
+    jumpLeftSrc:    "./assets/player1/4.png",
+    attackRightSrc: "./assets/player1/attackright.png",
+    attackLeftSrc:  "./assets/player1/attackleft.png",
+};
 
+const lanceroConfig = {
+    hp: 100, maxHp: 100, speed: 420, damage: 25,
+    walkRightSrc:   "./assets/player2/5.png",
+    walkLeftSrc:    "./assets/player2/6.png",
+    jumpRightSrc:   "./assets/player2/7.png",
+    jumpLeftSrc:    "./assets/player2/8.png",
+    attackRightSrc: "./assets/player2/attackright.png",
+    attackLeftSrc:  "./assets/player2/attackleft.png",
+};
+
+const pesadoConfig = {
+    hp: 150, maxHp: 150, speed: 180, damage: 20,
+    walkRightSrc:   "./assets/player3/9.png",
+    walkLeftSrc:    "./assets/player3/10.png",
+    jumpRightSrc:   "./assets/player3/11.png",
+    jumpLeftSrc:    "./assets/player3/12.png",
+    attackRightSrc: "./assets/player3/attackright.png",
+    attackLeftSrc:  "./assets/player3/attackleft.png",
+};
 let keysDown = {}; //To track keyboard input for player movement
 let jumpPressed = false; //Prevents continuous jumping when holding the key
+
+//---enemy data ----
+//config for every enemy, all the data that is only for this enemy, should change between levels
+const lionConfig = {
+    hp: 100, 
+    damage: 5,
+    speed: 4,
+    scale: 0.8,
+    walkRightSrc:   "./assets/enemy1/walkRight.png",
+    walkLeftSrc:    "./assets/enemy1/walkLeft.png",
+    attackRightSrc: "./assets/enemy1/attackRight.png",
+    attackLeftSrc:  "./assets/enemy1/attackLeft.png",
+    deathSrc: "./assets/enemy1/death.png",
+};
+let killedEnemies = 0;
+const conditionEnemies = 20;
 
 //========================= CARD SYSTEM =========================
 let playerDeck = []; 
@@ -52,7 +96,6 @@ let isCardActive = false;
 let cardBackImage = new Image();
 cardBackImage.src = "./assets/cards/powerup/BaseCard.png";
 
-
 //========================= PAUSE SYSTEM =========================
 let isPaused = false;
 let goToMenu = false;
@@ -65,7 +108,6 @@ let pauseBox = new MessageBox(
 
 pauseBox.addButton("Continue", 440, 290, 120, 35, () => {
     isPaused = false;
-    console.log('continue');
     pauseBox.hide();
 });
 
@@ -85,23 +127,21 @@ pauseBox.addButton("Home", 440, 390, 120, 35, () => {
 //This function selects the player sprite
 function setSelectedCharacter(selectedCharacter){
     if (selectedCharacter === "Guerrero"){
-        player = new Player1(new Vector(200,350));
+        player = new PlayerBase(new Vector(200, 450), guerreroConfig);
     }
     else if (selectedCharacter === "Lancero"){
-        player = new Player2(new Vector(200,350));
+        player = new PlayerBase(new Vector(200, 450), lanceroConfig);
     }
     else if (selectedCharacter === "Pesado"){
-        player = new Player3(new Vector(200,350));
+        player = new PlayerBase(new Vector(200, 450), pesadoConfig);
     }
     initPlatforms();
 }
 
-
-//========================= ENEMIES =========================
-// Enemies, random entities
+//enemies, random entities, position, config 
 let enemies = [
-    new EnemyLion (new Vector(900,357)),
-    new EnemyLion (new Vector(800,357))
+    new EnemyBase(new Vector(900,450), lionConfig),
+    new EnemyBase(new Vector(1100,450), lionConfig),
 ]
 
 
@@ -112,14 +152,6 @@ let platforms = [];
 let platformImage = new Image();
 platformImage.src = "./assets/Platform.png";
 
-//HITBOX
-/*platforms.push({
-    x: 300,
-    y: 320,
-    width: 100,
-    height: 70
-}); */
-
 function initPlatforms(){
     platforms = [];
     for(let i = 0; i < 8; i++){
@@ -129,7 +161,7 @@ function initPlatforms(){
 
 function drawPlatforms(ctx){
     platforms.forEach(p=>{
-        ctx.drawImage(platformImage, p.x, p.y - 37, p.width, p.height);
+        ctx.drawImage(platformImage, p.x, p.y - 70, p.width, p.height);
     });
 }
 
@@ -149,8 +181,8 @@ function generatePlatform(){
         x = last.x + Math.random() * (maxGap - minGap) + minGap;
         y = last.y + (Math.random() - 0.5) * 120;
 
-        if(y > 340) y = 340;
-        if(y < 200) y = 200;
+        if(y > 420) y = 420;
+        if(y < 350) y = 350;
     }
 
     platforms.push({
@@ -169,32 +201,8 @@ backgroundImage.src = "./assets/fondo2.png";
 
 //========================= SPAWN SYSTEM =========================
 let spawnTimer = 0;
-let spawnInterval = 2000; // 2000 ms = 2 seconds
+let spawnInterval = 4000; // 2000 ms = 2 seconds
 
-//FIX THIS FUNCTION
-let totalSpawned = 0;
-let maxEnemies = 10;
-
-function spawnEnemy(){
-    let min = 1;
-    let max = 15;
-    let amount = Math.floor(Math.random() * (max - min + 1)) + min;
-
-    for(let i = 0; i < amount; i++){
-        if(totalSpawned >= maxEnemies) return;
-
-        enemies.push(
-            new EnemyLion(
-                new Vector(
-                    Math.random() * (worldWidth - player.halfSize.x - 200) + 200,
-                    377
-                )
-            )
-        );
-
-        totalSpawned++;
-    }
-}
 //========================= CARD SYSTEM =======================
 let cardBox = new MessageBox(
     "CHOOSE YOUR FATE",
@@ -495,20 +503,10 @@ function applyCard(card){ //random deck effect
 function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     if (!player) return; //avoids crash
     //Clear → update → draw objects
-    ctx.clearRect(0,0,canvas.width,canvas.height) //clear canvas
-
-    for(let i = 0; i < worldWidth; i+= canvas.width){
-        ctx.drawImage(backgroundImage,i-cameraX,0,canvas.width,canvas.height); //draw background
-    }
-
-    //drawDeckButton(ctx);
-    
-    /*HTML stats (User Stats)
-    let delta = time - lastTime;
-    lastTime = time;
-    levelTime += delta;
-    document.getElementById("timer").textContent =
-    (levelTime / 1000).toFixed(1) + "s"; */
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for(let i = 0; i < worldWidth; i += canvas.width){
+        ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); //draw background
+    }   
 
     if(!isPaused && !isCardActive){
         update(deltaTime);
@@ -517,25 +515,16 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     ctx.save();  //keeps character within screen
     ctx.translate(-cameraX, 0);
 
-    drawPlayer(ctx) //draw player sprite
-    drawPlatforms(ctx);
-    drawEnemies(ctx) //draw enemy sprites
-
-    spawnTimer += deltaTime;
-    if (spawnTimer >= spawnInterval) {
-        spawnEnemy();
-        spawnTimer = 0;
-    }
+    player.draw(ctx);  //draw player sprite
+    drawPlatforms(ctx);  //obstacles
+    enemies.forEach(enemy => enemy.draw(ctx));  //draw enemy sprites
 
     ctx.restore();
 
-    drawHealthBar(ctx, 20, 20, 100, 30, 50, 100);
-
+    drawHealthBar(ctx, 20, 20, 100, 30, player.hp, player.maxHp);
     ctx.font = "50px Arial";
-    drawHearts(ctx, 150, 50, 3, 5);
-
+    drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     pauseBox.draw(ctx);
-
     if(isCardActive){
         cardBox.draw(ctx);
         drawCardsInBox(ctx);
@@ -546,10 +535,14 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     }
 }
 
-
-//========================= UI =========================
 //HEALTH BAR
 function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
+    // background (lost health)
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText("HP: " + player.hp, 20, 70);
+
+
     ctx.fillStyle = "gray";
     ctx.fillRect(x, y, width, height);
 
@@ -560,16 +553,11 @@ function drawHealthBar(ctx, x, y, width, height, current, max) { //current from 
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
-}
-
-//HEARTS
-function drawHearts(ctx, x, y, current, max) { //current from db and max is const
-    const heartValue = 1;
-    const totalHearts = max / heartValue;
-    const filledHearts = Math.ceil(current / heartValue);
-
-    for (let i = 0; i < totalHearts; i++) {
-        ctx.fillStyle = i < filledHearts ? "red" : "gray";
+};
+//HEARTS  
+function drawHearts(ctx, x, y, current, max) {
+    for (let i = 0; i < max; i++) {
+        ctx.fillStyle = i < current ? "red" : "gray";  //gray if heart is lost
         ctx.fillText("♥", x + i * 50, y);
     }
 }
@@ -587,76 +575,46 @@ function update(deltaTime){
     //Player movement
     player.isMoving = false;
 
-    const goLeft  = keysDown["ArrowLeft"] || keysDown['a'];
-    const goRight = keysDown["ArrowRight"] || keysDown['d'];
-
-    if (goLeft && !goRight) {
-        player.position.x -= player.speed * deltaTime;
-        player.isMoving = true;
-        player.direction = "left";
-
-    } else if (goRight && !goLeft) {
-        player.position.x += player.speed * deltaTime;
-        player.isMoving = true;
-        player.direction = "right";
-    }
-
-    //Jump logic
-    if (jumpPressed && player.isOnGround){
-        player.velocityY = player.jumpStrength;
-        player.isOnGround = false;
-        jumpPressed = false;
-    }
+    const goLeft  = keysDown["ArrowLeft"];
+    const goRight = keysDown["ArrowRight"];
+    const groundY = 450;
     
-    player.velocityY += player.gravity * deltaTime;
-    player.position.y += player.velocityY * deltaTime;
+    player.update(goLeft, goRight, jumpPressed, platforms, groundY, deltaTime);  
+    jumpPressed = false;  //reset after player jumped
 
-    //Platform collision
-    player.isOnGround = false;
-
-    platforms.forEach(p => {
-        let playerBottom = player.position.y + player.halfSize.y;
-        let prevBottom = (player.position.y - player.velocityY * deltaTime) + player.halfSize.y;
-        let isFalling = player.velocityY >= 0;
-
-        let footOffset = 20;
-        let withinX =
-            player.position.x + player.halfSize.x - footOffset > p.x &&
-            player.position.x - player.halfSize.x + footOffset < p.x + p.width;
-
-        let crossingTop =
-            prevBottom <= p.y &&
-            playerBottom >= p.y;
-
-        if (isFalling && withinX && crossingTop) {
-            player.position.y = p.y - player.halfSize.y;
-            player.velocityY = 0;
-            player.isOnGround = true;
-        }
-    });
-
-    //Ground limit
-    let groundY = 350;
-
-    if (player.position.y >= groundY){
-        player.position.y = groundY;
-        player.velocityY = 0;
-        player.isOnGround = true;
-    }
-
-    //World limits
-    if (player.position.x < player.halfSize.x) {
+    //Limit player position inside the world
+    if (player.position.x < player.halfSize.x)
         player.position.x = player.halfSize.x;
-    }
-
-    if (player.position.x > worldWidth - player.halfSize.x) {
+    if (player.position.x > worldWidth - player.halfSize.x)
         player.position.x = worldWidth - player.halfSize.x;
-    }
 
     //enemy movement
-    enemies.forEach(enemy=>{
-        enemy.position.x -= 1 * deltaTime;
+    enemies.forEach(enemy => {
+        enemy.update(player, deltaTime);
+        //& avoid infinite loop, bounce only if it´s on the border
+        if (enemy.position.x - enemy.halfSize.x <= 0 && enemy.speed > 0)
+            enemy.bounce();  
+        else if (enemy.position.x + enemy.halfSize.x >= worldWidth && enemy.speed < 0)
+            enemy.bounce(); 
     });
+
+    player.attackEnemy(enemies);  //player attacks enemies
+
+    let totalLenEnemies = enemies.length;
+    enemies = enemies.filter(alive => alive.hp > 0);  //remove dead enemies
+    killedEnemies += totalLenEnemies - enemies.length;  //update killed enemies
+
+    //---spawn ---
+    spawnTimer += deltaTime;
+    //console.log(`spawntimer: ${spawnTimer}`)
+    if (spawnTimer >= spawnInterval) {
+        if (killedEnemies != conditionEnemies) {
+            //& agrega un enemigo justo afuera del borde de la camara, asi parece que parecen fuera del mundo
+            enemies.push(new EnemyBase(new Vector(cameraX + canvas.width + 100, 450), lionConfig));
+        }
+        console.log(`enemies: ${enemies.length}`);
+        spawnTimer = 0;
+    }
 
     //camera follows player
     cameraX = player.position.x - canvas.width/2;
@@ -676,21 +634,6 @@ function update(deltaTime){
     }
 }
 
-
-//========================= DRAW ENTITIES =========================
-function drawPlayer(ctx){
-    player.update();
-    player.draw(ctx);
-}
-
-function drawEnemies(ctx){
-    enemies.forEach(enemy=>{
-        enemy.update();
-        enemy.draw(ctx);
-    });
-}
-
-
 //========================= INPUT HANDLERS =========================
 function handleMouseMove(event,canvas){ //Standard mouse tracking function
     const rect = canvas.getBoundingClientRect()
@@ -699,6 +642,7 @@ function handleMouseMove(event,canvas){ //Standard mouse tracking function
 }
 
 function handleClick(){
+
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
@@ -841,18 +785,21 @@ function handleKeyUp(event){
 
 //========================= RESET =========================
 function reset(){
-
-    // reset player
+     // reset player
     player.position.x = 200;
     player.position.y = 350;
     player.velocityY = 0;
-    player.health = 100;
+    player.hp = player.maxHp;
 
     // reset enemies
     enemies = [
-        new EnemyLion(new Vector(900,357)),
-        new EnemyLion(new Vector(800,357))
+        new EnemyBase(new Vector(900,450), lionConfig),
+        new EnemyBase(new Vector(800,450), lionConfig),
     ];
+    killedEnemies = 0;
+
+    //reset platforms
+    initPlatforms();
 
     // reset camera
     cameraX = 0;
