@@ -29,7 +29,7 @@ let levelTime = 0;
 let lastTome = 0; */
 //---player data---
 const guerreroConfig = {
-    hp: 120, maxHp: 120, speed: 5, damage: 20,
+    hp: 120, maxHp: 120, speed: 0.5, damage: 20,
     walkRightSrc:   "./assets/player1/1.png",
     walkLeftSrc:    "./assets/player1/2.png",
     jumpRightSrc:   "./assets/player1/3.png",
@@ -39,7 +39,7 @@ const guerreroConfig = {
 };
 
 const lanceroConfig = {
-    hp: 100, maxHp: 100, speed: 6, damage: 25,
+    hp: 100, maxHp: 100, speed: 0.6, damage: 25,
     walkRightSrc:   "./assets/player2/5.png",
     walkLeftSrc:    "./assets/player2/6.png",
     jumpRightSrc:   "./assets/player2/7.png",
@@ -49,7 +49,7 @@ const lanceroConfig = {
 };
 
 const pesadoConfig = {
-    hp: 150, maxHp: 150, speed: 3, damage: 20,
+    hp: 150, maxHp: 150, speed: 0.3, damage: 20,
     walkRightSrc:   "./assets/player3/9.png",
     walkLeftSrc:    "./assets/player3/10.png",
     jumpRightSrc:   "./assets/player3/11.png",
@@ -65,7 +65,7 @@ let jumpPressed = false; //Prevents continuous jumping when holding the key
 const lionConfig = {
     hp: 100, 
     damage: 5,
-    speed: 4,
+    speed: 0.4,
     scale: 0.8,
     walkRightSrc:   "./assets/enemy1/walkRight.png",
     walkLeftSrc:    "./assets/enemy1/walkLeft.png",
@@ -155,7 +155,6 @@ let platforms = [];
 let platformImage = new Image();
 platformImage.src = "./assets/Platform.png";
 
-//HITBOX
 /*platforms.push({
     x: 300,
     y: 320,
@@ -163,6 +162,7 @@ platformImage.src = "./assets/Platform.png";
     height: 70
 }); */
 
+//begining with 8 platforms
 function initPlatforms(){
     platforms = [];
     for(let i = 0; i < 8; i++){
@@ -170,28 +170,32 @@ function initPlatforms(){
     }
 }
 
+//el -37 alinea la imagen con su hitbox
 function drawPlatforms(ctx){
     platforms.forEach(p=>{
         ctx.drawImage(platformImage, p.x, p.y - 37, p.width, p.height);
     });
 }
 
-//This functions avoids running out of platforms
 function generatePlatform(){
     let x, y;
 
+    //fixed position platform
     if(platforms.length === 0){
         x = 300;
-        y = 300;
+        y = 350;
     } else {
         let last = platforms[platforms.length - 1];
 
         let minGap = 200;
         let maxGap = 300;
 
+        //separación horizontal aleatoria entre min y max
         x = last.x + Math.random() * (maxGap - minGap) + minGap;
+        //variación vertical aleatoria respecto a la anterior
         y = last.y + (Math.random() - 0.5) * 120;
 
+        //clamp para que las plataformas no salgan del rango jugable
         if(y > 340) y = 340;
         if(y < 200) y = 200;
     }
@@ -200,7 +204,7 @@ function generatePlatform(){
         x: x,
         y: y,
         width: 100,
-        height: 70 
+        height: 70
     });
 }
 
@@ -272,7 +276,7 @@ function update(canvas, deltaTime){
     const goRight = keysDown["ArrowRight"] || keysDown['d'];
     const playerGroundY = 450;
 
-    player.update(goLeft, goRight, jumpPressed, platforms, playerGroundY);
+    player.update(goLeft, goRight, jumpPressed, platforms, playerGroundY, deltaTime);
     jumpPressed = false;  //reset after player jumped
 
     //Limit player position inside the world
@@ -314,38 +318,6 @@ function update(canvas, deltaTime){
             enemies.push(new EnemyBase(new Vector(cameraX + canvas.width + 100, 450), lionConfig));
         }
         spawnTimer = 0;
-    }
-
-    //Platform collision
-    player.isOnGround = false;
-
-    platforms.forEach(p => {
-        let playerBottom = player.position.y + player.halfSize.y;
-        let prevBottom = (player.position.y - player.velocityY * deltaTime) + player.halfSize.y;
-        let isFalling = player.velocityY >= 0;
-
-        let footOffset = 20;
-        let withinX =
-            player.position.x + player.halfSize.x - footOffset > p.x &&
-            player.position.x - player.halfSize.x + footOffset < p.x + p.width;
-
-        let crossingTop =
-            prevBottom <= p.y &&
-            playerBottom >= p.y;
-
-        if (isFalling && withinX && crossingTop) {
-            player.position.y = p.y - player.halfSize.y;
-            player.velocityY = 0;
-            player.isOnGround = true;
-        }
-    });
-
-    //Ground limit
-    const groundCollisionY = 350;
-    if (player.position.y >= groundCollisionY){
-        player.position.y = groundCollisionY;
-        player.velocityY = 0;
-        player.isOnGround = true;
     }
 
     //Active card effects (timed removal)

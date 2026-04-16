@@ -53,7 +53,7 @@ class EnemyBase extends AnimatedObject {
   }
 
   update(player, deltaTime) {  //manage movement, hurtbox, attack
-    this.walk();  //movement in x
+    this.walk(deltaTime);  //movement in x
     this.updateCollider();  //move de hurtbox with the enemy position
     this.attackHitbox = null;  //hitbox not activated
 
@@ -62,10 +62,10 @@ class EnemyBase extends AnimatedObject {
     this.attackPlayer(player);  //my hitbox hit the player hurtbox?
   }
 
-  walk(){  //x position 
+  walk(deltaTime){  //x position 
     this.spriteImage = (this.speed < 0) ? this.spriteRight : this.spriteLeft;
     this.updateAnimation(20);
-    this.position.x -= this.speed;
+    this.position.x -= this.speed * deltaTime;
   }
 
   takeDamage(hit) {  //damage made by player, look Playerbase to understand the whole logic
@@ -123,13 +123,13 @@ class EnemyBase extends AnimatedObject {
     this.damage = Math.abs(randomRange(maxDamage - minDamage +1, minDamage));
     if (this.damage < this.damageBase){  //if its damage is smaller than initial
       this.scale = 0.6;  //smaller
-      let minSpeed = this.speedBase + 1;  //faster
-      let maxSpeed = this.speedBase + 3;
+      let minSpeed = this.speedBase + 0.1;  //faster
+      let maxSpeed = this.speedBase + 0.3;
       this.speed = randomRange(maxSpeed - minSpeed +1, minSpeed);
     } else {  //if its damage is bigger than initial
       this.scale = 1.0;  //bigger
-      let minSpeed = this.speedBase - 3;  //slower
-      let maxSpeed = this.speedBase - 1;
+      let minSpeed = this.speedBase - 0.3;  //slower
+      let maxSpeed = this.speedBase - 0.1;
       this.speed = randomRange(maxSpeed - minSpeed +1, minSpeed);  //from gamefunctions.js
     }
     this.speed *= direction;  //assign direction

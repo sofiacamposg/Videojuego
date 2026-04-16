@@ -68,9 +68,9 @@ class PlayerBase extends AnimatedObject {
     this.maxHearts = 5;
   }
 
-  update(goLeft, goRight, jumpPressed, platforms, groundY){  //manage movement, hurtbox, attack
+  update(goLeft, goRight, jumpPressed, platforms, groundY, deltaTime){  //manage movement, hurtbox, attack
     this.isMoving = false;
-    this.walk(goLeft, goRight);
+    this.walk(goLeft, goRight, deltaTime);
     this.jump(jumpPressed);
     this.applyGravity();
     this.checkPlatforms(platforms, groundY);
@@ -109,13 +109,13 @@ class PlayerBase extends AnimatedObject {
     }
   };
 
-  walk(goLeft, goRight){  //x position
+  walk(goLeft, goRight, deltaTime){  //x position
     if (goLeft && !goRight) {  //case 1: only left keys are pressed
-        this.position.x -= this.speed;
+        this.position.x -= this.speed * deltaTime;
         this.isMoving = true;
         this.direction = "left";
     } else if (goRight && !goLeft) {  //case 2: only right keys are pressed
-        this.position.x += this.speed;
+        this.position.x += this.speed * deltaTime;
         this.isMoving = true;
         this.direction = "right";
     }
@@ -137,13 +137,12 @@ class PlayerBase extends AnimatedObject {
     this.isOnGround = false;
     platforms.forEach(p => {
         let isFalling = this.velocityY >= 0;
+        let prevY = this.position.y - this.velocityY;
         let withinX =
             this.position.x + this.halfSize.x > p.x &&
             this.position.x - this.halfSize.x < p.x + p.width;
-        let touchingTop =
-            this.position.y >= p.y &&
-            this.position.y <= p.y + p.height;
-        if (isFalling && withinX && touchingTop) { //If the player is falling but is above the limits of the platform, let the player on top
+        let crossingTop = prevY <= p.y && this.position.y >= p.y;
+        if (isFalling && withinX && crossingTop) {
             this.position.y = p.y;
             this.velocityY = 0;
             this.isOnGround = true;
