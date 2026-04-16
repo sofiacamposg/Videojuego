@@ -5,13 +5,13 @@ class Player1 extends PlayerBase {  //1736 x 608 px
     constructor(position){
         super(position);
         this.health = 120; //* TODO: get this info from the db
-        this.speed = 5; 
+        this.speed = 300;  //5 * 60 px/s
         this.sheetCols = 4;
         this.setAnimation(0, 3, true, 200);  
         //From here down, these properties allow the character to stay idle when not moving and to be able to jump
         this.velocityY = 0; //how fast it jumps
-        this.gravity = 0.8;
-        this.jumpStrength = -14;
+        this.gravity = 2800; //0.8 x 60 x 60 px/s^2
+        this.jumpStrength = -840; //-14 *60 px/s
         this.isOnGround = true;
         this.isMoving = false;
 

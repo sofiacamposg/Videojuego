@@ -12,7 +12,7 @@ import { MessageBox } from "../objects/MessageBox.js";
 //* GAME'S LOGIC
 
 //world size
-let worldWidth = 3000;
+let worldWidth = 2000;
 let worldHeight = 600;
 let cameraX = 0; //canvas viewport
 
@@ -143,10 +143,13 @@ function generatePlatform(){
     } else {
         let last = platforms[platforms.length - 1];
 
-        x = last.x + Math.random() * 150 + 150;
+        let minGap = 200;
+        let maxGap = 300;
+
+        x = last.x + Math.random() * (maxGap - minGap) + minGap;
         y = last.y + (Math.random() - 0.5) * 120;
 
-        if(y > 350) y = 350;
+        if(y > 320) y = 320;
         if(y < 180) y = 180;
     }
 
@@ -472,12 +475,6 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     drawPlatforms(ctx);
     drawEnemies(ctx) //draw enemy sprites
 
-    if(isDeckOpen){
-        deckBox.draw(ctx);
-        drawDeckCards(ctx);
-        return;
-    } 
-
     spawnTimer += deltaTime;
     if (spawnTimer >= spawnInterval) {
         spawnEnemy();
@@ -573,17 +570,19 @@ function update(deltaTime){
 
     platforms.forEach(p => {
         let playerBottom = player.position.y + player.halfSize.y;
+        let prevBottom = (player.position.y - player.velocityY * deltaTime) + player.halfSize.y;
         let isFalling = player.velocityY >= 0;
 
+        let footOffset = 20;
         let withinX =
-            player.position.x + player.halfSize.x > p.x &&
-            player.position.x - player.halfSize.x < p.x + p.width;
+            player.position.x + player.halfSize.x - footOffset > p.x &&
+            player.position.x - player.halfSize.x + footOffset < p.x + p.width;
 
-        let touchingTop =
-            playerBottom >= p.y &&
-            playerBottom <= p.y + p.height;
+        let crossingTop =
+            prevBottom <= p.y &&
+            playerBottom >= p.y;
 
-        if (isFalling && withinX && touchingTop) {
+        if (isFalling && withinX && crossingTop) {
             player.position.y = p.y - player.halfSize.y;
             player.velocityY = 0;
             player.isOnGround = true;
@@ -660,11 +659,11 @@ function handleClick(){
     //Player's Deck
     if(isDeckOpen){
 
-        let startX = deckBox.x + 60;
-        let startY = deckBox.y + 80;
-        let cols = 4;
-        let spacingX = 150;
-        let spacingY = 220;
+        let startX = deckBox.x + 80;
+        let startY = deckBox.y + 110;
+        let cols = 3;
+        let spacingX = 220;
+        let spacingY = 160;
         for(let i = 0; i < playerDeck.length; i++){
             let col = i % cols;
             let row = Math.floor(i / cols);

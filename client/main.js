@@ -139,7 +139,7 @@ let oldTime = 0;
 
 function gameLoop(newTime) {
 
-    let deltaTime = (newTime - oldTime) / 10;
+    let deltaTime = (newTime - oldTime) / 1000;
     oldTime = newTime;
 
     if (deltaTime > 50) deltaTime = 50; 

@@ -8,7 +8,11 @@ class PlayerBase extends AnimatedObject {
     this.playeratack = false;  //default attack state
     this.attackFrames = 0;  //frames counter
     this.attackDuration = 25;  //frames the attack lasts
-
+    //hitbox for platform colission
+    this.hitbox = {
+        width: 40,   // AJUSTA esto
+        height: 80   // AJUSTA esto
+    };
     //THIS ARE FOR WHEN WE ENABLE CARD SYSTEM
     //player.damage = 10;
     //player.range = 50;
