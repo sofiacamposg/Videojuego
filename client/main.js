@@ -4,7 +4,7 @@ import { draw as drawSelect, handleClick as handleClickSelect, reset as resetSel
 import { draw as drawLevel1, handleClick as handleClickLevel1, reset as resetLevel1, handleKeyDown as handleKeyDownLevel1,
     handleKeyUp as handleKeyUpLevel1, setSelectedCharacter, goToMenu as goToMenuLevel1 } from "./scenes/level1Scene.js";
 import { draw as drawCreateAccount, handleClick as handleClickCreateAccount, handleKeyDown as handleKeyDownCreateAccount, reset as resetCreateAccount } from "./scenes/createAccountScene.js";
-import { draw as drawSettings, handleDrag, handleClick as handleClickSettings, startDragging, stopDragging, reset as resetSettings } from "./scenes/settingsScene.js";
+import { draw as drawSettings, handleDrag, handleClick as handleClickSettings, reset as resetSettings } from "./scenes/settingsScene.js";
 import { handleMouseMove } from "./libs/game_functions.js";
 
 //& dimensiones fijas del canvas
@@ -106,19 +106,18 @@ function main() {
         }
     });
 
-    //& slider de settings inicia el arrastre
     canvas.addEventListener("mousedown", () => {
-        if(currentScene === "settings") startDragging();
+        if(currentScene === "settings") handleDrag('down');
     });
 
     canvas.addEventListener("mouseup", () => {
-        if(currentScene === "settings") stopDragging();
+        if(currentScene === "settings") handleDrag('up');
     });
 
     //& mousemove actualiza mouseX/mouseY globalmente; settings también actualiza el slider
     canvas.addEventListener("mousemove", (event) => {
         handleMouseMove(event, canvas);
-        if(currentScene === 'settings') handleDrag();
+        if(currentScene === 'settings') handleDrag('move');
     });
 
     //& keydown se despacha solo a las escenas que necesitan input de teclado

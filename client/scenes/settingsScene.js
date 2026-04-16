@@ -102,9 +102,19 @@ function drawButton(ctx, button){
     ctx.fillText(button.text, button.x, button.y);
 }
 
-//actualiza el slider de volumen si se está arrastrando
-function handleDrag(){
-    if(draggingVolume){
+//controls 3 states of the sliding bar
+function handleDrag(type){
+    if(type === 'down'){  //case1: there's a click on the bar
+        if(volumeOn &&
+           mouseX > volumeBar.x - volumeBar.w/2 &&
+           mouseX < volumeBar.x + volumeBar.w/2 &&
+           mouseY > volumeBar.y &&
+           mouseY < volumeBar.y + volumeBar.h){
+            draggingVolume = true;
+        }
+    } else if(type === 'up'){  //case 2: no one has touch the bar
+        draggingVolume = false;
+    } else if(type === 'move' && draggingVolume){  //case 3: is moving
         const left = volumeBar.x - volumeBar.w/2;
         const pos = mouseX - left;
         volumeLevel = Math.min(Math.max(Math.floor((pos / volumeBar.w) * 100),0),100);
@@ -150,22 +160,6 @@ function handleClick(){
     }
 }
 
-// Empieza a arrastrar la barra
-function startDragging(){
-    if(volumeOn &&
-       mouseX > volumeBar.x - volumeBar.w/2 &&
-       mouseX < volumeBar.x + volumeBar.w/2 &&
-       mouseY > volumeBar.y &&
-       mouseY < volumeBar.y + volumeBar.h){
-        draggingVolume = true;
-    }
-}
-
-// Deja de arrastrar
-function stopDragging(){
-    draggingVolume = false;
-}
-
 // Se ejecuta cuando entras a settings
 function reset(){
     draggingVolume = false;
@@ -174,4 +168,4 @@ function reset(){
     volumeLevel = savedVolumeLevel;
 }
 
-export { draw, handleDrag, handleClick, startDragging, stopDragging, reset };
+export { draw, handleDrag, handleClick, reset };
