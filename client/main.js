@@ -132,16 +132,24 @@ function main() {
         }
     });
 
-    gameLoop();
+    requestAnimationFrame(gameLoop); 
 }
 
-function gameLoop() {
+let oldTime = 0;
+
+function gameLoop(newTime) {
+
+    let deltaTime = (newTime - oldTime) / 10;
+    oldTime = newTime;
+
+    if (deltaTime > 50) deltaTime = 50; 
+
     if(currentScene === 'menu') drawMenu(ctx,canvas);
     else if(currentScene === 'settings') drawSettings(ctx,canvas);
     else if(currentScene === 'login') drawLogIn(ctx,canvas);
     else if(currentScene === 'createAccount') drawCreateAccount(ctx,canvas);
     else if(currentScene === 'start') drawSelect(ctx,canvas);   
-    else if(currentScene === 'level1') drawLevel1(ctx,canvas);
+    else if(currentScene === 'level1') drawLevel1(ctx,canvas, deltaTime);
 
     requestAnimationFrame(gameLoop);
 }

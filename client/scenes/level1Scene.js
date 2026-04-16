@@ -22,6 +22,13 @@ let mouseY = 0
 
 let player
 
+//LEVEL TIMER
+let levelTimer = 0;
+
+// random trigger between 20s and 40s (considering 1 minute per level)
+let randomEventTime = Math.random() * (40000 - 20000) + 20000;
+
+
 /* For HTML stats (User stats)
 let levelTime = 0;
 let lastTome = 0; */
@@ -192,12 +199,11 @@ let cardBox = new MessageBox(
     200, 100, 600, 350
 );
 let deckBox = new MessageBox(
-    "DECK",
-    "Choose a card",
+    "CHOOSE A CARD",
+    "",
     150, 50,   // posición
     700, 500   // tamaño
 );
-deckBox.addButton("CONFIRM", 440, 480, 120, 50, () => {});
 
 //API CONNECTION
 //====PLAYER'S DECK====
@@ -232,13 +238,15 @@ function drawDeckCards(ctx){
         let x = startX + col * spacingX;
         let y = startY + row * spacingY;
 
+        let cardWidth = 100;
+        let cardHeight = 150;
         // shadow
         ctx.fillStyle = "rgba(0,0,0,0.4)";
-        ctx.fillRect(x + 5, y + 5, 140, 200);
+        ctx.fillRect(x + 5, y + 5, cardWidth, cardHeight);
 
     
         ctx.strokeStyle = "rgba(255,255,255,0.3)";
-        ctx.strokeRect(x, y, 100, 150);
+        ctx.strokeRect(x, y, cardWidth, cardHeight);
 
         // =========================
         // If there is card
@@ -435,8 +443,8 @@ function applyCard(card){ //random deck effect
     }
 }
 //========================= DRAW LOOP =========================
-function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
-
+function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
+    if (!player) return; //avoids crash
     //Clear → update → draw objects
     ctx.clearRect(0,0,canvas.width,canvas.height) //clear canvas
 
@@ -454,12 +462,7 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     (levelTime / 1000).toFixed(1) + "s"; */
 
     if(!isPaused && !isCardActive){
-        update() //call update defined below
-    }
-    if(isDeckOpen){
-        deckBox.draw(ctx);
-        drawDeckCards(ctx);
-        return;
+        update(deltaTime);
     }
 
     ctx.save();  //keeps character within screen
@@ -469,7 +472,13 @@ function draw(ctx, canvas){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     drawPlatforms(ctx);
     drawEnemies(ctx) //draw enemy sprites
 
-    spawnTimer++;
+    if(isDeckOpen){
+        deckBox.draw(ctx);
+        drawDeckCards(ctx);
+        return;
+    } 
+
+    spawnTimer += deltaTime;
     if (spawnTimer >= spawnInterval) {
         spawnEnemy();
         spawnTimer = 0;
@@ -523,10 +532,12 @@ function drawHearts(ctx, x, y, current, max) { //current from db and max is cons
 }
 
 //========================= UPDATE LOGIC =========================
-function update(){
-    if(isDeckOpen) return;
+function update(deltaTime){
+    if (!player) return; //avoids crash
+     levelTimer += deltaTime;
 
-    if (!cardEventTriggered && kills >= triggerPoint) {
+    //Time Based random card event
+    if (!cardEventTriggered && levelTimer >= randomEventTime) {
         cardEventTriggered = true;
         triggerCardEvent();
     }
@@ -537,12 +548,12 @@ function update(){
     const goRight = keysDown["ArrowRight"] || keysDown['d'];
 
     if (goLeft && !goRight) {
-        player.position.x -= player.speed;
+        player.position.x -= player.speed * deltaTime;
         player.isMoving = true;
         player.direction = "left";
 
     } else if (goRight && !goLeft) {
-        player.position.x += player.speed;
+        player.position.x += player.speed * deltaTime;
         player.isMoving = true;
         player.direction = "right";
     }
@@ -554,8 +565,8 @@ function update(){
         jumpPressed = false;
     }
     
-    player.velocityY += player.gravity;
-    player.position.y += player.velocityY;
+    player.velocityY += player.gravity * deltaTime;
+    player.position.y += player.velocityY * deltaTime;
 
     //Platform collision
     player.isOnGround = false;
@@ -599,7 +610,7 @@ function update(){
 
     //enemy movement
     enemies.forEach(enemy=>{
-        enemy.position.x -= 1;
+        enemy.position.x -= 1 * deltaTime;
     });
 
     //camera follows player
@@ -749,14 +760,15 @@ function handleKeyDown(event){
     }
     //Open Player's Deck
     if(event.key === "c" || event.key === "C"){
-        isDeckOpen = !isDeckOpen;
-        selectedDeckIndex = -1;
-    }
+    isDeckOpen = !isDeckOpen;
+    selectedDeckIndex = -1;
+
     if(isDeckOpen){
         deckBox.show();
-    }else{
+    } else {
         deckBox.hide();
     }
+}
     //Jump
     if(event.key === " "){
         jumpPressed = true;
@@ -799,6 +811,10 @@ function reset(){
 
     // reset spawn
     spawnTimer = 0;
+
+    levelTimer = 0;
+    randomEventTime = Math.random() * (40000 - 20000) + 20000;
+    cardEventTriggered = false;
 }
 
 
