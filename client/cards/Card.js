@@ -7,6 +7,10 @@ class Card {
         this.applyEffect = applyEffect;
         this.removeEffect = removeEffect;
         this.image = image;
+/*
+        const cardBackImage = new Image();
+        cardBackImage.src = "./assets/cards/powerup/BaseCard.png";  
+        this.spriteImage = this.cardBackImage;*/
     }
 }
 
@@ -81,13 +85,13 @@ new Card("Range Boost", "powerup", null, (player) => {  //colosseums_fury.png
 }, null, colosseums_fury),
 
 new Card("Reveal Card", "powerup", null, (player, game) => {  //eye_emperor.png
-    game.revealNextCard = true;
+    game.revealNextCard = true;  //TODO arreglar propiedad
 }, null, eye_emperor),
 
 //Punishment
 new Card("Spawn Enemies", "punishment", null, (player, enemies) => {  //imperial_decreee.png
-    enemies.push(/* spawn extra */);
-    enemies.push(/* spawn extra */);
+    enemies.push(new EnemyBase(new Vector(900,450), lionConfig));  //TODO hacer una funcion para llamar dependiendo del enemigo del nivel
+    enemies.push(new EnemyBase(new Vector(900,450), lionConfig));
 }, imperial_decree),
 
 new Card("No Jump", "punishment", 10000, (player) => {  //chains_caesar.png

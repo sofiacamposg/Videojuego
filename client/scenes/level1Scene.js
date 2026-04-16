@@ -2,11 +2,13 @@ import { PlayerBase } from "../objects/PlayerBase.js";
 import { Vector } from "../libs/Vector.js";
 import { EnemyBase } from "../objects/EnemyBase.js";
 import { MessageBox } from "../objects/MessageBox.js";
-import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
 import { cards } from "../cards/Card.js";
 import { mouseX, mouseY } from "../libs/game_functions.js";
 
 "use strict"
+
+//========================= GAME CORE VARIABLES =========================
+//* GAME'S LOGIC
 
 //world size
 let worldWidth = 2000;
@@ -15,8 +17,12 @@ let cameraX = 0; //canvas viewport
 
 let player
 
-//Cards
-const cardShown = new cardsOnCanvas();
+//LEVEL TIMER
+let levelTimer = 0;
+
+// random trigger between 20s and 40s (considering 1 minute per level)
+let randomEventTime = Math.random() * (40 - 20) + 20;
+
 
 /* For HTML stats (User stats)
 let levelTime = 0;
@@ -70,14 +76,38 @@ const lionConfig = {
 let killedEnemies = 0;
 const conditionEnemies = 20;
 
-//Pause
+//========================= CARD SYSTEM =========================
+let playerDeck = []; 
+let isDeckOpen = false;
+let selectedDeckIndex = -1;
+
+let kills = 10; //$$
+let triggerPoint = 10; // when event triggers $$
+let cardEventTriggered = false;
+
+let cardOptions = []; // the 3 cards
+let selectedCard = null;
+let selectedIndex = -1;
+let isCardActive = false;
+let cardBackImage = new Image();
+cardBackImage.src = "./assets/cards/BaseCard.png";
+
+let activeEffects = [];
+
+let cardBox = new MessageBox("Choose a Card", "", 80, 60, 840, 500);
+let deckBox = new MessageBox("Your Deck", "", 80, 60, 840, 500);
+
+
+//========================= PAUSE SYSTEM =========================
 let isPaused = false;
 let goToMenu = false;
+
 let pauseBox = new MessageBox(
     "PAUSED",
     "Game is paused",
     250, 150, 500, 300
 );
+
 pauseBox.addButton("Continue", 440, 290, 120, 35, () => {
     isPaused = false;
     pauseBox.hide();
@@ -88,11 +118,14 @@ pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
     isPaused = false;
     pauseBox.hide();
 });
+
 //DOESN´T WORK, MUST CONNECT WITH SWITCH SCENE
 pauseBox.addButton("Home", 440, 390, 120, 35, () => {
     goToMenu = true;
 });
 
+
+//========================= PLAYER SELECTION =========================
 //This function selects the player sprite
 function setSelectedCharacter(selectedCharacter){
     if (selectedCharacter === "Guerrero"){
@@ -107,15 +140,21 @@ function setSelectedCharacter(selectedCharacter){
     initPlatforms();
 }
 
-//enemies, random entities, position, config 
+
+//========================= ENEMIES =========================
+// Enemies, random entities
 let enemies = [
     new EnemyBase(new Vector(900,450), lionConfig),
     new EnemyBase(new Vector(1100,450), lionConfig),
 ]
+
+//========================= PLATFORMS =========================
 //Obstacles, also random entities
 let platforms = [];
+
 let platformImage = new Image();
 platformImage.src = "./assets/Platform.png";
+
 //HITBOX
 /*platforms.push({
     x: 300,
@@ -123,30 +162,40 @@ platformImage.src = "./assets/Platform.png";
     width: 100,
     height: 70
 }); */
+
 function initPlatforms(){
     platforms = [];
-      for(let i = 0; i < 8; i++){
+    for(let i = 0; i < 8; i++){
         generatePlatform();
     }
 }
+
 function drawPlatforms(ctx){
     platforms.forEach(p=>{
         ctx.drawImage(platformImage, p.x, p.y - 37, p.width, p.height);
     });
 }
+
 //This functions avoids running out of platforms
 function generatePlatform(){
     let x, y;
+
     if(platforms.length === 0){
         x = 300;
         y = 300;
     } else {
         let last = platforms[platforms.length - 1];
-        x = last.x + Math.random() * 150 + 150;
+
+        let minGap = 200;
+        let maxGap = 300;
+
+        x = last.x + Math.random() * (maxGap - minGap) + minGap;
         y = last.y + (Math.random() - 0.5) * 120;
-        if(y > 350) y = 350;
-        if(y < 180) y = 180;
+
+        if(y > 340) y = 340;
+        if(y < 200) y = 200;
     }
+
     platforms.push({
         x: x,
         y: y,
@@ -155,12 +204,15 @@ function generatePlatform(){
     });
 }
 
-// Background
+
+//========================= BACKGROUND =========================
 let backgroundImage = new Image()
 backgroundImage.src = "./assets/fondo2.png"; 
 
+
+//========================= SPAWN SYSTEM =========================
 let spawnTimer = 0;
-let spawnInterval = 4000; // 2000 ms = 2 seconds
+let spawnInterval = 2000; // 2000 ms = 2 seconds
 
 function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     //Clear → update → draw objects
@@ -169,7 +221,16 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); //draw background
     }
 
-    if(!isPaused){  //if it is not paused update the game
+    //drawDeckButton(ctx);
+    
+    /*HTML stats (User Stats)
+    let delta = time - lastTime;
+    lastTime = time;
+    levelTime += delta;
+    document.getElementById("timer").textContent =
+    (levelTime / 1000).toFixed(1) + "s"; */
+
+    if(!isPaused && !isCardActive){
         update(canvas, deltaTime);
     }
 
@@ -186,18 +247,32 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     pauseBox.draw(ctx);
-    cardShown.draw(ctx, canvas);
+
+    if(isCardActive){
+        cardBox.draw(ctx);
+        drawCardsInBox(ctx);
+    }
+    if(isDeckOpen){
+        deckBox.draw(ctx);
+        drawDeckCards(ctx);
+    }
 }
 
 function update(canvas, deltaTime){
-    cardShown.update();  //check if any timed card effects have expired
+    levelTimer += deltaTime;
+    //Time Based random card event
+    if (!cardEventTriggered && levelTimer >= randomEventTime) {
+        console.log("EVENT TRIGGERED");
+        cardEventTriggered = true;
+        triggerCardEvent();
+    }
 
     //---player ----
     const goLeft  = keysDown["ArrowLeft"] || keysDown['a'];
     const goRight = keysDown["ArrowRight"] || keysDown['d'];
-    const groundY = 450;
+    const playerGroundY = 450;
 
-    player.update(goLeft, goRight, jumpPressed, platforms, groundY);  
+    player.update(goLeft, goRight, jumpPressed, platforms, playerGroundY);
     jumpPressed = false;  //reset after player jumped
 
     //Limit player position inside the world
@@ -211,9 +286,9 @@ function update(canvas, deltaTime){
         enemy.update(player, deltaTime);
         //& solo bounce si está en el borde Y moviéndose hacia esa pared (evita el bounce infinito)
         if (enemy.position.x - enemy.halfSize.x <= 0 && enemy.speed > 0)
-            enemy.bounce();  
+            enemy.bounce();
         else if (enemy.position.x + enemy.halfSize.x >= worldWidth && enemy.speed < 0)
-            enemy.bounce(); 
+            enemy.bounce();
     });
 
     player.attackEnemy(enemies);  //player attacks enemies
@@ -222,7 +297,7 @@ function update(canvas, deltaTime){
     enemies = enemies.filter(alive => alive.hp > 0);  //remove dead enemies
     killedEnemies += totalLenEnemies - enemies.length;  //update killed enemies
 
-    //---camara ----
+    //---camera ----
     cameraX = player.position.x - canvas.width / 2;
     if (cameraX < 0) cameraX = 0;
     if (cameraX > worldWidth - canvas.width) cameraX = worldWidth - canvas.width;
@@ -240,6 +315,41 @@ function update(canvas, deltaTime){
         }
         spawnTimer = 0;
     }
+
+    //Platform collision
+    player.isOnGround = false;
+
+    platforms.forEach(p => {
+        let playerBottom = player.position.y + player.halfSize.y;
+        let prevBottom = (player.position.y - player.velocityY * deltaTime) + player.halfSize.y;
+        let isFalling = player.velocityY >= 0;
+
+        let footOffset = 20;
+        let withinX =
+            player.position.x + player.halfSize.x - footOffset > p.x &&
+            player.position.x - player.halfSize.x + footOffset < p.x + p.width;
+
+        let crossingTop =
+            prevBottom <= p.y &&
+            playerBottom >= p.y;
+
+        if (isFalling && withinX && crossingTop) {
+            player.position.y = p.y - player.halfSize.y;
+            player.velocityY = 0;
+            player.isOnGround = true;
+        }
+    });
+
+    //Ground limit
+    const groundCollisionY = 350;
+    if (player.position.y >= groundCollisionY){
+        player.position.y = groundCollisionY;
+        player.velocityY = 0;
+        player.isOnGround = true;
+    }
+
+    //Active card effects (timed removal)
+    updateActiveEffects();
 }
 
 //HEALTH BAR
@@ -253,12 +363,10 @@ function drawHealthBar(ctx, x, y, width, height, current, max) { //current from 
     ctx.fillStyle = "gray";
     ctx.fillRect(x, y, width, height);
 
-    // current health
     const healthWidth = (current / max) * width;
     ctx.fillStyle = "green";
     ctx.fillRect(x, y, healthWidth, height);
 
-    // border
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
@@ -270,7 +378,7 @@ function drawHearts(ctx, x, y, current, max) {
         ctx.fillText("♥", x + i * 50, y);
     }
 };
-//DECK BUTTON
+/*//DECK BUTTON
 function drawDeckButton(ctx, button) {
     const left = button.x - button.w / 2;
     const top = button.y - button.h / 2;
@@ -284,27 +392,257 @@ function drawDeckButton(ctx, button) {
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.fillText("DECK", button.x, button.y);
-};
+};*/
+
+
+//========================= CARD FUNCTIONS =========================
+function triggerCardEvent() {
+    let shuffled = [...cards].sort(() => Math.random() - 0.5);
+    cardOptions = shuffled.slice(0, 3);
+    isCardActive = true;
+    cardBox.show();
+}
+
+function applyCard(card) {
+    card.applyEffect(player, enemies, null);
+    if (card.duration && card.removeEffect) {
+        activeEffects.push({
+            card,
+            endTime: Date.now() + card.duration
+        });
+    }
+}
+
+function updateActiveEffects() {
+    const now = Date.now();
+    activeEffects = activeEffects.filter(effect => {
+        if (now >= effect.endTime) {
+            effect.card.removeEffect(player, enemies);
+            return false;
+        }
+        return true;
+    });
+}
+
+function drawCardsInBox(ctx) {
+    if (cardOptions.length === 0) return;
+    let startX = cardBox.x + 60;
+    let y = cardBox.y + 100;
+    let width = 140;
+    let height = 200;
+    let spacing = 160;
+
+    for (let i = 0; i < cardOptions.length; i++) {
+        let card = cardOptions[i];
+        let x = startX + i * spacing;
+
+        if (card.image && card.image.complete && card.image.naturalWidth > 0) {
+            ctx.drawImage(card.image, x, y, width, height);
+        } else {
+            ctx.drawImage(cardBackImage, x, y, width, height);
+        }
+
+        if (selectedIndex === i) {
+            ctx.strokeStyle = card.type === "powerup" ? "#D4A537" : "#C0392B";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, width, height);
+        }
+
+        ctx.fillStyle = "white";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(card.name, x + width / 2, y + height + 16);
+        ctx.textAlign = "left";
+    }
+}
+
+function drawDeckCards(ctx) {
+    if (playerDeck.length === 0) return;
+    let startX = deckBox.x + 80;
+    let startY = deckBox.y + 110;
+    let cols = 3;
+    let spacingX = 220;
+    let spacingY = 160;
+
+    for (let i = 0; i < playerDeck.length; i++) {
+        let card = playerDeck[i];
+        let col = i % cols;
+        let row = Math.floor(i / cols);
+        let x = startX + col * spacingX;
+        let y = startY + row * spacingY;
+
+        if (card.image && card.image.complete && card.image.naturalWidth > 0) {
+            ctx.drawImage(card.image, x, y, 140, 200);
+        } else {
+            ctx.drawImage(cardBackImage, x, y, 140, 200);
+        }
+
+        if (selectedDeckIndex === i) {
+            ctx.strokeStyle = "#D4A537";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, 140, 200);
+        }
+
+        ctx.fillStyle = "white";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(card.name, x + 70, y + 216);
+        ctx.textAlign = "left";
+    }
+}
 
 
 function handleClick(){
-    if (cardShown.isActive) {  //track mouse in card acreen 
-        cardShown.handleClick(mouseX, mouseY, canvas);
-        return;
-    }
-
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
- //Handles attacks, cards, and powerups
+    //Player's Deck
+    if(isDeckOpen){
+
+        let startX = deckBox.x + 80;
+        let startY = deckBox.y + 110;
+        let cols = 3;
+        let spacingX = 220;
+        let spacingY = 160;
+        for(let i = 0; i < playerDeck.length; i++){
+            let col = i % cols;
+            let row = Math.floor(i / cols);
+            let x = startX + col * spacingX;
+            let y = startY + row * spacingY;
+            if(
+                mouseX > x && mouseX < x + 140 &&
+                mouseY > y && mouseY < y + 200
+            ){
+                selectedDeckIndex = i;
+                return;
+            }
+        }
+        // CONFIRM BUTTON
+    let confirmX = 350;
+    let confirmY = 450;
+    let confirmW = 120;
+    let confirmH = 50;
+
+    if(
+        mouseX > confirmX &&
+        mouseX < confirmX + confirmW &&
+        mouseY > confirmY &&
+        mouseY < confirmY + confirmH
+    ){
+        if(selectedDeckIndex !== -1){
+            let card = playerDeck[selectedDeckIndex];
+            applyCard(card);
+            playerDeck.splice(selectedDeckIndex, 1);
+            deckBox.hide();
+            isDeckOpen = false;
+            selectedDeckIndex = -1;
+        }
+    }
+        return;
+    }
+    //Random Deck
+    if(isCardActive){
+        if(selectedIndex !== -1) return;
+        if(cardOptions.length === 0) return;
+        let startX = cardBox.x + 60;
+        let y = cardBox.y + 100;
+
+        let width = 140;
+        let height = 200;
+        let spacing = 160;
+
+        for(let i = 0; i < 3; i++){
+
+            let cardX = startX + i * spacing;
+
+            if(
+                mouseX > cardX &&
+                mouseX < cardX + width &&
+                mouseY > y &&
+                mouseY < y + height
+            ){
+                selectedIndex = i;
+                selectedCard = cardOptions[i];
+
+                if(!selectedCard) return;
+
+                applyCard(selectedCard);
+
+                setTimeout(() => {
+                    isCardActive = false;
+                    cardBox.hide();
+                    selectedIndex = -1;
+                    selectedCard = null;
+                    cardOptions = [];
+                }, 5000); //5 seconds to see the card you've chosen
+
+                return;
+            }
+        }
+    }
+
+    //Handles attacks, cards, and powerups
 }
 
+function handleKeyDown(event){
+    if(event.repeat) return;
+
+    //PauseMessage — must be checked before the isPaused guard so Escape can unpause
+    if(event.key === "Escape"){
+        isPaused = !isPaused;
+
+        if(isPaused){
+            pauseBox.show();
+        } else {
+            pauseBox.hide();
+        }
+        return;
+    }
+
+    if(isPaused) return;
+
+    keysDown[event.key] = true;
+    //Open Player's Deck
+    if(event.key === "c" || event.key === "C"){
+    isDeckOpen = !isDeckOpen;
+    selectedDeckIndex = -1;
+
+    if(isDeckOpen){
+        deckBox.show();
+    } else {
+        deckBox.hide();
+    }
+}
+    //Jump
+    if(event.key === " "){
+        jumpPressed = true;
+    }
+    //Attack
+    if(event.key === "j"){
+        if(!player.playeratack){
+            player.playeratack = true;
+            player.attackFrames = 0;
+        }
+    }
+}
+
+function handleKeyUp(event){
+    keysDown[event.key] = false;
+
+    if(event.key === " "){
+        jumpPressed = false;
+    }
+}
+
+
+//========================= RESET =========================
 function reset(){
     // reset player
     player.position.x = 200;
     player.position.y = 350;
     player.velocityY = 0;
     player.hp = player.maxHp;
+    player.hearts = player.maxHearts;
 
     // reset enemies
     enemies = [
@@ -321,41 +659,29 @@ function reset(){
 
     // reset spawn
     spawnTimer = 0;
+
+    //reset 
+
+    levelTimer = 0;
+    randomEventTime = Math.random() * (40 - 20) + 20;
+    cardEventTriggered = false;
+    cardOptions = [];
+    isCardActive = false;
+    activeEffects = [];
+    selectedIndex = -1;
+    selectedCard = null;
+    cardBox.hide();
+    deckBox.hide();
 }
 
-function handleKeyDown(event){
-    if(event.repeat) return; //prevents looping when holding spacebar
-    if(isPaused) return; 
-        keysDown[event.key] = true;
 
-        if(event.key === "Escape"){ //PauseMessage
-        isPaused = !isPaused;
-
-        if(isPaused){
-            pauseBox.show();
-        } else {
-            pauseBox.hide();
-        }
-    }
-    if(event.key === " "){ //spacebar for jump
-        jumpPressed = true;
-    }
-    if(event.key === "j"){ //J for attack
-        if(!player.playeratack){
-            player.playeratack = true;
-            player.attackFrames = 0;
-        }
-    }
-    if (event.key === "c") {  //show cards
-        cardShown.show(cards, player, enemies);
-    }
+//========================= EXPORTS =========================
+export { 
+    draw, 
+    handleClick, 
+    reset, 
+    handleKeyDown, 
+    handleKeyUp, 
+    setSelectedCharacter, 
+    goToMenu 
 }
-
-function handleKeyUp(event){
-    keysDown[event.key] = false;
-    if(event.key === " "){ //spacebar for jump
-        jumpPressed = false;
-    }
-}
-
-export { draw, handleClick, reset, handleKeyDown, handleKeyUp, setSelectedCharacter, goToMenu }

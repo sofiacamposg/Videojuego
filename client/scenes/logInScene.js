@@ -1,6 +1,7 @@
 import { MessageBox } from "../objects/MessageBox.js";
 import { mouseX, mouseY } from "../libs/game_functions.js";
 "use strict"
+let loginSuccess = false;
 const buttonBack = { //? BACK TO MENU BUTTON
     x: 150,
     y: 70,
@@ -136,6 +137,10 @@ function isMouseOver(element,ctx){  //? handle if mouse is over any botton or bo
            mouseY < element.y + h / 2;
 }
 function handleClick(ctx){  //? handle cliks over any element
+    if(loginSuccess){
+        loginSuccess = false;
+        return "confirm";
+    }
     if (errorMessage.visible) {
         return errorMessage.handleClick(mouseX, mouseY);
     }
@@ -158,10 +163,16 @@ function handleClick(ctx){  //? handle cliks over any element
             errorMessage.show();
             return null;
         }
+        loginUser();
+        return null;
+    }
+    if(loginSuccess){
+        loginSuccess = false; // reset
         return "confirm";
     }
     return null;
 }
+
 //Tenemos que hacer esta función para darle valor a la variable activeField
 function handleKeyDown(event){  //? handles user's input
   if (activeField === null) return; //case 1: no active field
@@ -189,5 +200,37 @@ function reset() {  //? reset to default values
   username = "";
   password = "";
   activeField = null;
+}
+
+//API CONNECTION
+async function loginUser(){
+    try{
+        const res = await fetch("http://localhost:3000/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
+
+        if(!res.ok){
+            errorMessage.message = "Wrong username or password";
+            errorMessage.show();
+            return;
+        }
+
+        const data = await res.json();
+        console.log("USER LOGGED:", data);
+
+        loginSuccess = true; 
+
+    } catch(error){
+        console.log(error);
+        errorMessage.message = "Connection error";
+        errorMessage.show();
+    }
 }
 export { draw, handleClick, handleKeyDown, getUsername, reset };
