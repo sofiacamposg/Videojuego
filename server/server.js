@@ -55,7 +55,7 @@ app.get("/cards/random", (req, res) => {
         JOIN Effect e ON c.effect_id = e.effect_id
 
         ORDER BY RAND()
-        LIMIT 3
+        LIMIT 20   // 🔥 CAMBIA ESTO
     `;
 
     db.query(query, (err, result) => {
@@ -66,67 +66,5 @@ app.get("/cards/random", (req, res) => {
         }
 
         res.json(result);
-    });
-});
-//LOG IN SCENE, TEST USERNAME AND PASSWORD
-app.post("/login", (req, res) => {
-
-    const { username, password } = req.body;
-
-    const query = `
-        SELECT * FROM Player
-        WHERE username = ? AND password = ?
-    `;
-
-    db.query(query, [username, password], (err, result) => {
-
-        if (err) {
-            console.log(err);
-            return res.status(500).send("Server error");
-        }
-
-        if (result.length === 0) {
-            return res.status(401).send("Invalid credentials");
-        }
-
-        res.json(result[0]); // user encontrado
-    });
-});
-//CREATE ACCOUNT 
-app.post("/register", (req, res) => {
-
-    const { username, password } = req.body;
-
-    // check if user exists
-    const checkQuery = `
-        SELECT * FROM Player WHERE username = ?
-    `;
-
-    db.query(checkQuery, [username], (err, result) => {
-
-        if (err) {
-            console.log(err);
-            return res.status(500).send("Server error");
-        }
-
-        if (result.length > 0) {
-            return res.status(400).send("User already exists");
-        }
-
-        // insert new user
-        const insertQuery = `
-            INSERT INTO Player (name, username, password, total_runs, total_losses, total_wins)
-            VALUES (?, ?, ?, 0, 0, 0)
-        `;
-
-        db.query(insertQuery, [username, username, password], (err, result) => {
-
-            if (err) {
-                console.log(err);
-                return res.status(500).send("Insert error");
-            }
-
-            res.json({ success: true });
-        });
     });
 });

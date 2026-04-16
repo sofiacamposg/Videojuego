@@ -26,7 +26,7 @@ let player
 let levelTimer = 0;
 
 // random trigger between 20s and 40s (considering 1 minute per level)
-let randomEventTime = Math.random() * (40000 - 20000) + 20000;
+let randomEventTime = Math.random() * (40 - 20) + 20;
 
 
 /* For HTML stats (User stats)
@@ -149,8 +149,8 @@ function generatePlatform(){
         x = last.x + Math.random() * (maxGap - minGap) + minGap;
         y = last.y + (Math.random() - 0.5) * 120;
 
-        if(y > 320) y = 320;
-        if(y < 180) y = 180;
+        if(y > 340) y = 340;
+        if(y < 200) y = 200;
     }
 
     platforms.push({
@@ -263,7 +263,7 @@ function drawDeckCards(ctx){
             ctx.fillRect(x, y, 100, 150);
 
             ctx.strokeStyle = "white";
-            ctx.strokeRect(x, y, 140, 200);
+            ctx.strokeRect(x, y, 100, 150);
 
             // image
             if(card.image){
@@ -285,13 +285,65 @@ function drawDeckCards(ctx){
         }
     }
 }
+async function generateCardOptions(){
+
+    try{
+        const response = await fetch("http://localhost:3000/cards/random");
+
+        if(!response.ok){
+            throw new Error("API failed");
+        }
+
+        const data = await response.json();
+
+        // separate types
+        let powerUps = data.filter(c => c.effect_type === "POWER_UP");
+        let punishments = data.filter(c => c.effect_type === "PUNISHMENT");
+
+        // shuffle
+        const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+
+        powerUps = shuffle(powerUps);
+        punishments = shuffle(punishments);
+
+        // validation
+        if(powerUps.length < 2 || punishments.length < 1){
+            throw new Error("Not enough cards");
+        }
+
+        // LEVEL 1 LOGIC
+        let selected = [
+            powerUps[0],
+            powerUps[1],
+            punishments[0]
+        ];
+
+        cardOptions = shuffle(selected);
+
+        selectedIndex = -1;
+        selectedCard = null;
+
+    }catch(err){
+        console.log("ERROR:", err);
+
+//FALLBACK, if anything fails these are safe options
+        cardOptions = [
+            { card_name: "People Favor", effect_name: "People Favor", effect_type: "POWER_UP" },
+            { card_name: "Mars Blade", effect_name: "Mars Blade", effect_type: "POWER_UP" },
+            { card_name: "Jupiter Wrath", effect_name: "Jupiter Wrath", effect_type: "PUNISHMENT" }
+        ];
+    }
+}
 async function triggerCardEvent(){
+
+    console.log("EVENT TRIGGERED");
 
     isCardActive = true;
 
     await generateCardOptions();
+
     assignCardImages();
-    console.log("CARD OPTIONS:", cardOptions);
+
     cardBox.show();
 }
 //MISSING in the database, thats why i didnt put them here
@@ -364,18 +416,12 @@ function drawCardsInBox(ctx){
         // if selected = show
         // =========================
         else{
-            ctx.textAlign = "center";
-            ctx.textBaseline = "top";
             if(card.image){
-                ctx.drawImage(card.image, x + 10, y + 10, 120, 80);
-            }
-
-            ctx.fillStyle = "white";
-            ctx.font = "12px Arial";
-            ctx.fillText(card.card_name || "Unknown", x + width/2, y + 100);
-
-            if(card.card_description){
-                wrapText(ctx, card.card_description, x + width/2, y + 125, 120, 14);
+                ctx.drawImage(
+                    card.image,
+                    0, 0, card.image.width, card.image.height,
+                    x, y, width, height
+                );
             }
         }
     }
@@ -489,6 +535,7 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     drawHearts(ctx, 150, 50, 3, 5);
 
     pauseBox.draw(ctx);
+
     if(isCardActive){
         cardBox.draw(ctx);
         drawCardsInBox(ctx);
@@ -532,9 +579,9 @@ function drawHearts(ctx, x, y, current, max) { //current from db and max is cons
 function update(deltaTime){
     if (!player) return; //avoids crash
      levelTimer += deltaTime;
-
     //Time Based random card event
     if (!cardEventTriggered && levelTimer >= randomEventTime) {
+        console.log("EVENT TRIGGERED");
         cardEventTriggered = true;
         triggerCardEvent();
     }
@@ -707,8 +754,8 @@ function handleClick(){
         let startX = cardBox.x + 60;
         let y = cardBox.y + 100;
 
-        let width = 120;
-        let height = 180;
+        let width = 140;
+        let height = 200;
         let spacing = 160;
 
         for(let i = 0; i < 3; i++){
@@ -731,7 +778,10 @@ function handleClick(){
                 setTimeout(() => {
                     isCardActive = false;
                     cardBox.hide();
-                }, 3000); // 3 seconds to see the chosen card
+                    selectedIndex = -1;
+                    selectedCard = null;
+                    cardOptions = [];
+                }, 5000); //5 seconds to see the card you've chosen
 
                 return;
             }
@@ -812,7 +862,7 @@ function reset(){
     spawnTimer = 0;
 
     levelTimer = 0;
-    randomEventTime = Math.random() * (40000 - 20000) + 20000;
+    randomEventTime = Math.random() * (40 - 20) + 20;
     cardEventTriggered = false;
 }
 
