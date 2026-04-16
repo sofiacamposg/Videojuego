@@ -5,10 +5,27 @@ const cors = require("cors");
 app.use(cors());
 app.use(express.json());
 
+/* entra a mysql desde la terminal (sudo mysql) y pon los comandos:
+* CREATE USER 'gladiator'@'localhost' IDENTIFIED BY 'gladiator123';
+que hace? crea un usuario llamado gladiator que se conecta desde esta misma computadora, con contraseña gladiator123
+* GRANT ALL PRIVILEGES ON gladiator.* TO 'gladiator'@'localhost';
+que hace? dale todos los permisos sobre la base de datos gladiator 
+(el .* es "todas las tablas de esa base de datos") al usuario gladiator
+* FLUSH PRIVILEGES;
+que hace? aplica los cambios de permisos inmediatamente 
+* exit;
+que hace? sal de MySQL y regresa a la terminal normal
+* sudo mysql < ~/ruta/a/su/proyecto/server/db/gladiador_codigo2.sql
+que hace? carga el schema (cambian la ruta por la suya)
+y ya luego encienden la api
+* cd ~/ruta/a/su/proyecto/server
+* node server.js
+si jala tiene que salir lo de Servidor en 'link' MySQL conectado
+*/
 const db = mysql.createConnection({
     host: "localhost",
-    user: "root",
-    password: "Doguita2012*",
+    user: "gladiator",  //general user
+    password: "gladiator123",  //general password
     database: "gladiator",
     waitForConnections: true,
     connectionLimit: 10,
