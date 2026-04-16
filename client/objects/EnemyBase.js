@@ -41,7 +41,7 @@ class EnemyBase extends AnimatedObject {
     this.HITBOX_OFFSET = 70;
     //attack data
     this.attackFrames = 0;
-    this.attackDuration = 30;
+    this.attackDuration = 1000;
     this.attackHitbox = null;
     this.hasHitPlayer = false;  //flag to limit only one hit per swing
   }
@@ -83,7 +83,7 @@ class EnemyBase extends AnimatedObject {
     //is my hitbox and his hurtbox touhing and is infront of me?
     if (hitboxOverlap(this.collider, player)) {
       this.spriteImage = this.spriteAttack;  //attack sprite
-      this.updateAnimation(2);
+      this.updateAnimation(20);
       this.createHitbox();  //ememy hitbox to attack
       this.attackFrames += deltaTime;  
       if (this.attackFrames >= this.attackDuration) {  //if enemy already hit the player
@@ -111,18 +111,19 @@ class EnemyBase extends AnimatedObject {
   bounce(){  //logic to change speed and damage everytime the enemy bounce
     let direction = this.speed > 0 ? -1 : 1;  //change direction
     //random damage after bounce
-    let minDamage = this.damage - 5;
-    let maxDamage = this.damage + 5;
-    this.damage = randomRange(maxDamage - minDamage +1, minDamage);
+    let minDamage = this.damage - 3;
+    let maxDamage = this.damage + 3;
+    this.damage = Math.abs(randomRange(maxDamage - minDamage +1, minDamage));
+    //console.log(`lion's damage ${this.damage}`);
     if (this.damage < this.damageBase){  //if its damage is smaller than initial
       this.scale = 0.6;  //smaller
-      let minSpeed = this.speedBase + 5;  //faster
-      let maxSpeed = this.speedBase + 10;
+      let minSpeed = this.speedBase + 1;  //faster
+      let maxSpeed = this.speedBase + 3;
       this.speed = randomRange(maxSpeed - minSpeed +1, minSpeed);
     } else {  //if its damage is bigger than initial
       this.scale = 1.0;  //bigger
-      let minSpeed = this.speedBase - 10;  //slower
-      let maxSpeed = this.speedBase - 5;
+      let minSpeed = this.speedBase - 3;  //slower
+      let maxSpeed = this.speedBase - 1;
       this.speed = randomRange(maxSpeed - minSpeed +1, minSpeed);  //from gamefunctions.js
     }
     this.speed *= direction;  //assign direction
