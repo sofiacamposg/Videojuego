@@ -1,5 +1,5 @@
 import { AnimatedObject } from "../libs/AnimatedObject.js";
-import { hitboxOverlap } from "../libs/game_functions.js";
+import { hitboxOverlap, randomRange } from "../libs/game_functions.js";
 import { Rect } from "../libs/Rect.js";
 
 class EnemyBase extends AnimatedObject {
@@ -16,12 +16,13 @@ class EnemyBase extends AnimatedObject {
       deathSrc  = "",
     } = config;
 
-    super(position, 575, 608, "white", "enemy", 4);
+    super(position, 200, 200, "white", "enemy", 4);
     this.setCollider(140, 65);  //hurtbox
     this.scale  = scale;
     this.hp     = hp;
     this.damage = damage;
     this.speed  = speed;
+    this.speedBase = speed;
     this.damageBase = damage;
     //sprites, must have the same name to work
     this.spriteWalk = new Image();
@@ -35,19 +36,19 @@ class EnemyBase extends AnimatedObject {
     this.spriteRect  = new Rect(0, 0, 575, 608);
     this.setAnimation(0, 3, true, 200);
     //hitbox data
-    this.HITBOX_WIDTH  = 60;
+    this.HITBOX_WIDTH = 60;
     this.HITBOX_HEIGHT = 50;
     this.HITBOX_OFFSET = 70;
     //attack data
-    this.attackFrames   = 0;
-    this.attackDuration = 300;
+    this.attackFrames = 0;
+    this.attackDuration = 30;
     this.attackHitbox = null;
     this.hasHitPlayer = false;  //flag to limit only one hit per swing
   }
 
   update(player, deltaTime) {  //manage movement, hurtbox, attack
-    this.walk(deltaTime);  //movement in x
-
+    this.walk();  //movement in x
+    //console.log(`Delta: ${deltaTime}`); 
     this.updateCollider();  //move de hurtbox with the enemy position
     this.attackHitbox = null;  //hitbox not activated
 
@@ -56,7 +57,7 @@ class EnemyBase extends AnimatedObject {
     this.attackPlayer(player);  //my hitbox hit the player hurtbox?
   }
 
-  walk(deltaTime){  //x position 
+  walk(){  //x position 
     this.position.x -= this.speed;
   }
 
@@ -72,7 +73,7 @@ class EnemyBase extends AnimatedObject {
   createHitbox() {  //data hitbox
     this.attackHitbox = {
       x: this.position.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET,
-      y: this.position.y - this.HITBOX_HEIGHT / 2,
+      y: this.position.y - this.HITBOX_HEIGHT * 1.5,
       width: this.HITBOX_WIDTH,
       height: this.HITBOX_HEIGHT,
     };
@@ -80,7 +81,7 @@ class EnemyBase extends AnimatedObject {
 
   shouldAttack(player, deltaTime){  //logic to know when to attack
     //is my hitbox and his hurtbox touhing and is infront of me?
-    if (hitboxOverlap(this.collider, player) && player.position.x < this.position.x) {
+    if (hitboxOverlap(this.collider, player)) {
       this.spriteImage = this.spriteAttack;  //attack sprite
       this.updateAnimation(2);
       this.createHitbox();  //ememy hitbox to attack
@@ -112,17 +113,17 @@ class EnemyBase extends AnimatedObject {
     //random damage after bounce
     let minDamage = this.damage - 5;
     let maxDamage = this.damage + 5;
-    this.damage = Math.floor(Math.random() * (maxDamage - minDamage + 1)) + minDamage;
+    this.damage = randomRange(maxDamage - minDamage +1, minDamage);
     if (this.damage < this.damageBase){  //if its damage is smaller than initial
       this.scale = 0.6;  //smaller
-      let minSpeed = Math.abs(this.speed) + 5;  //faster
-      let maxSpeed = Math.abs(this.speed) + 10;
-      this.speed = Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed;
+      let minSpeed = this.speedBase + 5;  //faster
+      let maxSpeed = this.speedBase + 10;
+      this.speed = randomRange(maxSpeed - minSpeed +1, minSpeed);
     } else {  //if its damage is bigger than initial
       this.scale = 1.0;  //bigger
-      let minSpeed = Math.abs(this.speed) - 10;  //slower
-      let maxSpeed = Math.abs(this.speed) - 5;
-      this.speed = Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed;
+      let minSpeed = this.speedBase - 10;  //slower
+      let maxSpeed = this.speedBase - 5;
+      this.speed = randomRange(maxSpeed - minSpeed +1, minSpeed);  //from gamefunctions.js
     }
     this.speed *= direction;  //assign direction
   }

@@ -81,7 +81,6 @@ let pauseBox = new MessageBox(
 );
 pauseBox.addButton("Continue", 440, 290, 120, 35, () => {
     isPaused = false;
-    console.log('continue');
     pauseBox.hide();
 });
 
@@ -162,7 +161,7 @@ let backgroundImage = new Image()
 backgroundImage.src = "./assets/fondo2.png"; 
 
 let spawnTimer = 0;
-let spawnInterval = 2000; // 2000 ms = 2 seconds
+let spawnInterval = 4000; // 2000 ms = 2 seconds
 
 function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     //Clear → update → draw objects
@@ -211,15 +210,18 @@ function update(canvas, deltaTime){
     //---enemy ---
     enemies.forEach(enemy => {
         enemy.update(player, deltaTime);
-        if (enemy.position.x <= 0 || enemy.position.x >= worldWidth)
-            enemy.bounce();
+        //& solo bounce si está en el borde Y moviéndose hacia esa pared (evita el bounce infinito)
+        if (enemy.position.x - enemy.halfSize.x <= 0 && enemy.speed > 0)
+            enemy.bounce();  
+        else if (enemy.position.x + enemy.halfSize.x >= worldWidth && enemy.speed < 0)
+            enemy.bounce(); 
     });
 
     player.attackEnemy(enemies);  //player attacks enemies
 
     let totalLenEnemies = enemies.length;
     enemies = enemies.filter(alive => alive.hp > 0);  //remove dead enemies
-    killedEnemies += totalLenEnemies - enemies.length;
+    killedEnemies += totalLenEnemies - enemies.length;  //update killed enemies
 
     //---camara ----
     cameraX = player.position.x - canvas.width / 2;
@@ -232,9 +234,11 @@ function update(canvas, deltaTime){
 
     //---spawn ---
     spawnTimer += deltaTime;
+    //console.log(`spawntimer: ${spawnTimer}`)
     if (spawnTimer >= spawnInterval) {
         if (killedEnemies != conditionEnemies) {
-            enemies.push(new EnemyBase(new Vector(worldWidth - (player.position.x + 500), 450), lionConfig));
+            //& agrega un enemigo justo afuera del borde de la camara, asi parece que parecen fuera del mundo
+            enemies.push(new EnemyBase(new Vector(cameraX + canvas.width + 100, 450), lionConfig));
         }
         spawnTimer = 0;
     }

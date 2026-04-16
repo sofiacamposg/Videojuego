@@ -5,96 +5,98 @@ import { draw as drawLevel1, handleMouseMove as handleMouseMoveLevel1, handleCli
     handleKeyUp as handleKeyUpLevel1, setSelectedCharacter, goToMenu as goToMenuLevel1 } from "./scenes/level1Scene.js";
 import { draw as drawCreateAccount, handleMouseMove as handleMouseMoveCreateAccount, handleClick as handleClickCreateAccount, handleKeyDown as handleKeyDownCreateAccount, reset as resetCreateAccount } from "./scenes/createAccountScene.js";
 import { draw as drawSettings, handleMouseMove as handleMouseMoveSettings, handleClick as handleClickSettings, startDragging, stopDragging, reset as resetSettings } from "./scenes/settingsScene.js";
+
+//& dimensiones fijas del canvas
 const canvasWidth = 1000;
 const canvasHeight = 600;
 
 let canvas;
 let ctx;
-let oldTime = 0; 
-let currentScene = "menu"; //we start in menuScene at the beginning of any run
-let selectedCharacter = null; 
+let oldTime = 0; //& guarda el tiempo del frame anterior para calcular deltaTime
+let currentScene = "menu"; //& escena activa, controla qué se dibuja y qué eventos se manejan
+let selectedCharacter = null; //& personaje elegido en selectScene, se pasa a level1
 
 function main() {
+    //& obtiene el elemento canvas del DOM y le asigna dimensiones
     canvas = document.getElementById("canvas");
-
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
-    ctx = canvas.getContext("2d");
+    ctx = canvas.getContext("2d"); 
 
-    let clicked;
+    let clicked; //& guarda el resultado del click según la escena actual
 
     canvas.addEventListener("click", (event) => {
         //MENU SCENE
         if(currentScene === 'menu'){
-            clicked = handleClickMenu(); //function defined in menuScene that returns which button was clicked
+            clicked = handleClickMenu(); //& detecta qué botón se presionó en el menú
 
-            //start now goes to loginScene, this start comes from menuScene
         if (clicked === 'start'){
-            currentScene = 'login'; //Start leads to selectScene where you choose your character
+            currentScene = 'login';
         }
         if (clicked === 'settings'){
-            currentScene = 'settings';
+            currentScene = 'settings'; 
         }
         }
         //SETTINGS SCENE
         else if(currentScene === 'settings') {
             clicked = handleClickSettings();
             if(clicked === 'back' || clicked === 'confirm') {
-                resetSettings();
+                resetSettings(); //TODO esto resetea settings incluso si son modificados?
                 currentScene = 'menu';
             }
         }
         //LOG IN SCENE
         else if (currentScene === 'login'){
-            clicked = handleClickLogIn(ctx); //function defined in loginScene that returns which button was clicked
+            clicked = handleClickLogIn(ctx); 
             if(clicked === 'back'){
-                resetLogIn();
+                resetLogIn(); //& limpia los campos del login antes de volver
                 currentScene = 'menu';
             }
             if (clicked === 'create'){
-                currentScene = 'createAccount'
+                currentScene = 'createAccount'; 
             }
             if(clicked === 'confirm'){
-                currentScene = 'start'; //this start refers to currentScene
+                currentScene = 'start'; 
             }
         }
         //CREATE ACCOUNT SCENE
         else if(currentScene === 'createAccount') {
             clicked = handleClickCreateAccount(ctx);
             if(clicked === 'back') {
-                resetCreateAccount();
+                resetCreateAccount(); //& limpia los campos antes de volver al menú
                 currentScene = 'menu';
             }
             if(clicked === 'login') {
-                currentScene = 'login';
+                currentScene = 'login'; 
             }
             if(clicked === 'confirm') {
-                currentScene = 'login';
+                currentScene = 'login'; 
             }
         }
         //SELECT CHARACTER
         else if (currentScene === 'start'){
-            clicked = handleClickSelect(); //function defined in selectScene that returns which button was clicked
+            clicked = handleClickSelect(); 
             if(clicked === 'back'){
-                resetSelect();
-                currentScene = 'menu'; 
+                resetSelect(); 
+                currentScene = 'menu';
             }
             if (clicked === 'selectedCharacter'){
-                selectedCharacter = getSelectedCharacter();
+                selectedCharacter = getSelectedCharacter(); //& actualiza el personaje resaltado al hacer click
             }
-           //Here we store the character in a variable, this variable is passed as a parameter to a function in level1Scene
+           //& al confirmar, se guarda el personaje y se lo pasa a level1 antes de cambiar de escena
             if (clicked === 'confirm'){
                 selectedCharacter = getSelectedCharacter();
-                setSelectedCharacter(selectedCharacter); //character selection
+                setSelectedCharacter(selectedCharacter); //& pone el personaje seleccionado en level1Scene
                 currentScene = 'level1';
             }
         }
         //LEVEL 1 SCENE
         else if (currentScene === 'level1'){
-            clicked = handleClickLevel1();   //NOT NEEDED YET
+            clicked = handleClickLevel1(); //& manejo de clicks en level1 (aún no implementado)
 
             if(goToMenuLevel1){
+                //& si level1 pide volver al menú, resetea todas las escenas involucradas
                 resetLogIn();
                 resetSelect();
                 resetLevel1();
@@ -102,7 +104,8 @@ function main() {
             }
         }
     });
-    //SETTINGS SLIDER
+
+    //& slider de settings inicia el arrastre
     canvas.addEventListener("mousedown", () => {
         if(currentScene === "settings") startDragging();
     });
@@ -110,7 +113,9 @@ function main() {
     canvas.addEventListener("mouseup", () => {
         if(currentScene === "settings") stopDragging();
     });
-     canvas.addEventListener("mousemove", (event) => {
+
+    //& mousemove despacha el evento a la escena activa para hover y arrastre
+    canvas.addEventListener("mousemove", (event) => {
         if(currentScene === 'menu') handleMouseMoveMenu(event,canvas);
         if(currentScene === 'settings') handleMouseMoveSettings(event,canvas);
         if(currentScene === 'login') handleMouseMoveLogIn(event,canvas);
@@ -119,24 +124,26 @@ function main() {
         if(currentScene === 'level1') handleMouseMoveLevel1(event,canvas);
     });
 
+    //& keydown se despacha solo a las escenas que necesitan input de teclado
     window.addEventListener("keydown", (event) => {
         if (currentScene === "login") handleKeyDownLogIn(event);
         if(currentScene === "level1") handleKeyDownLevel1(event);
-        if(currentScene === "createAccount") handleKeyDownCreateAccount(event); 
+        if(currentScene === "createAccount") handleKeyDownCreateAccount(event);
     });
 
+    //& keyup se usa en level1 para detectar cuando el jugador suelta una tecla de movimiento
     window.addEventListener("keyup", (event)=>{
         if(currentScene === "level1"){
             handleKeyUpLevel1(event);
         }
     });
 
-    gameLoop();
+    gameLoop(0); //& arranca el game loop con tiempo inicial 0
 }
 
 function gameLoop(newTime) {
-    let deltaTime = newTime - oldTime;
-
+    let deltaTime = newTime - oldTime; //& tiempo transcurrido entre frames en ms
+    //& dibuja la escena activa
     if(currentScene === 'menu') drawMenu(ctx,canvas);
     else if(currentScene === 'settings') drawSettings(ctx,canvas);
     else if(currentScene === 'login') drawLogIn(ctx,canvas);
@@ -144,8 +151,8 @@ function gameLoop(newTime) {
     else if(currentScene === 'start') drawSelect(ctx,canvas);
     else if(currentScene === 'level1') drawLevel1(ctx,canvas,deltaTime);
 
-    oldTime = newTime;
-    requestAnimationFrame(gameLoop);
+    oldTime = newTime; //& actualiza oldTime para el siguiente frame
+    requestAnimationFrame(gameLoop); //& solicita el siguiente frame al navegador
 }
 
-main();
+main(); //& punto de entrada, inicializa canvas y arranca el juego
