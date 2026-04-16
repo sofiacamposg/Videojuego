@@ -1,10 +1,11 @@
-import { draw as drawMenu, handleMouseMove as handleMouseMoveMenu, handleClick as handleClickMenu } from "./scenes/menuScene.js";
-import { draw as drawLogIn, handleMouseMove as handleMouseMoveLogIn, handleClick as handleClickLogIn, handleKeyDown as handleKeyDownLogIn, reset as resetLogIn } from "./scenes/logInScene.js";
-import { draw as drawSelect, handleMouseMove as handleMouseMoveSelect, handleClick as handleClickSelect, reset as resetSelect, getSelectedCharacter } from "./scenes/selectScene.js";
-import { draw as drawLevel1, handleMouseMove as handleMouseMoveLevel1, handleClick as handleClickLevel1, reset as resetLevel1, handleKeyDown as handleKeyDownLevel1,
+import { draw as drawMenu, handleClick as handleClickMenu } from "./scenes/menuScene.js";
+import { draw as drawLogIn, handleClick as handleClickLogIn, handleKeyDown as handleKeyDownLogIn, reset as resetLogIn } from "./scenes/logInScene.js";
+import { draw as drawSelect, handleClick as handleClickSelect, reset as resetSelect, getSelectedCharacter } from "./scenes/selectScene.js";
+import { draw as drawLevel1, handleClick as handleClickLevel1, reset as resetLevel1, handleKeyDown as handleKeyDownLevel1,
     handleKeyUp as handleKeyUpLevel1, setSelectedCharacter, goToMenu as goToMenuLevel1 } from "./scenes/level1Scene.js";
-import { draw as drawCreateAccount, handleMouseMove as handleMouseMoveCreateAccount, handleClick as handleClickCreateAccount, handleKeyDown as handleKeyDownCreateAccount, reset as resetCreateAccount } from "./scenes/createAccountScene.js";
-import { draw as drawSettings, handleMouseMove as handleMouseMoveSettings, handleClick as handleClickSettings, startDragging, stopDragging, reset as resetSettings } from "./scenes/settingsScene.js";
+import { draw as drawCreateAccount, handleClick as handleClickCreateAccount, handleKeyDown as handleKeyDownCreateAccount, reset as resetCreateAccount } from "./scenes/createAccountScene.js";
+import { draw as drawSettings, handleDrag, handleClick as handleClickSettings, startDragging, stopDragging, reset as resetSettings } from "./scenes/settingsScene.js";
+import { handleMouseMove } from "./libs/game_functions.js";
 
 //& dimensiones fijas del canvas
 const canvasWidth = 1000;
@@ -114,14 +115,10 @@ function main() {
         if(currentScene === "settings") stopDragging();
     });
 
-    //& mousemove despacha el evento a la escena activa para hover y arrastre
+    //& mousemove actualiza mouseX/mouseY globalmente; settings también actualiza el slider
     canvas.addEventListener("mousemove", (event) => {
-        if(currentScene === 'menu') handleMouseMoveMenu(event,canvas);
-        if(currentScene === 'settings') handleMouseMoveSettings(event,canvas);
-        if(currentScene === 'login') handleMouseMoveLogIn(event,canvas);
-        if(currentScene === 'createAccount') handleMouseMoveCreateAccount(event,canvas);
-        if(currentScene === 'start') handleMouseMoveSelect(event,canvas);
-        if(currentScene === 'level1') handleMouseMoveLevel1(event,canvas);
+        handleMouseMove(event, canvas);
+        if(currentScene === 'settings') handleDrag();
     });
 
     //& keydown se despacha solo a las escenas que necesitan input de teclado

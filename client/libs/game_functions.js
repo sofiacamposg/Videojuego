@@ -69,4 +69,14 @@ function randomRange(size, start) {  //random del tamaño de la caja
     return Math.floor(Math.random() * size) + ((start === undefined) ? 0 : start);
 }
 
-export { boxOverlap, hitboxOverlap, randomRange };
+//data needed to manage mouse in every screen
+export let mouseX = 0;  
+export let mouseY = 0;
+
+function handleMouseMove(event, canvas) {  //base function used in every js
+    const rect = canvas.getBoundingClientRect();
+    mouseX = event.clientX - rect.left;
+    mouseY = event.clientY - rect.top;
+}
+
+export { boxOverlap, hitboxOverlap, randomRange, handleMouseMove };

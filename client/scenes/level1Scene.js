@@ -4,6 +4,7 @@ import { EnemyBase } from "../objects/EnemyBase.js";
 import { MessageBox } from "../objects/MessageBox.js";
 import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
 import { cards } from "../cards/Card.js";
+import { mouseX, mouseY } from "../libs/game_functions.js";
 
 "use strict"
 
@@ -11,10 +12,6 @@ import { cards } from "../cards/Card.js";
 let worldWidth = 2000;
 let worldHeight = 600;
 let cameraX = 0; //canvas viewport
-
-// Mouse
-let mouseX = 0
-let mouseY = 0
 
 let player
 
@@ -290,12 +287,6 @@ function drawDeckButton(ctx, button) {
 };
 
 
-function handleMouseMove(event,canvas){ //Standard mouse tracking function
-    const rect = canvas.getBoundingClientRect()
-    mouseX = event.clientX - rect.left
-    mouseY = event.clientY - rect.top
-}
-
 function handleClick(){
     if (cardShown.isActive) {  //track mouse in card acreen 
         cardShown.handleClick(mouseX, mouseY, canvas);
@@ -367,4 +358,4 @@ function handleKeyUp(event){
     }
 }
 
-export { draw, handleMouseMove, handleClick, reset, handleKeyDown, handleKeyUp, setSelectedCharacter, goToMenu }
+export { draw, handleClick, reset, handleKeyDown, handleKeyUp, setSelectedCharacter, goToMenu }

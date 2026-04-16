@@ -1,7 +1,6 @@
 "use strict"
+import { mouseX, mouseY } from "../libs/game_functions.js";
 
-let mouseX = 0;
-let mouseY = 0;
 let draggingVolume = false;
 
 // Botones de navegación
@@ -103,13 +102,8 @@ function drawButton(ctx, button){
     ctx.fillText(button.text, button.x, button.y);
 }
 
-// Detecta movimiento del mouse
-function handleMouseMove(event, canvas){
-    const rect = canvas.getBoundingClientRect();
-    mouseX = event.clientX - rect.left;
-    mouseY = event.clientY - rect.top;
-
-    // Si arrastras la barra, cambia el volumen
+//actualiza el slider de volumen si se está arrastrando
+function handleDrag(){
     if(draggingVolume){
         const left = volumeBar.x - volumeBar.w/2;
         const pos = mouseX - left;
@@ -175,12 +169,9 @@ function stopDragging(){
 // Se ejecuta cuando entras a settings
 function reset(){
     draggingVolume = false;
-    mouseX = 0;
-    mouseY = 0;
-
     // Carga los valores guardados
     volumeOn = savedVolumeOn;
     volumeLevel = savedVolumeLevel;
 }
 
-export { draw, handleMouseMove, handleClick, startDragging, stopDragging, reset };
+export { draw, handleDrag, handleClick, startDragging, stopDragging, reset };

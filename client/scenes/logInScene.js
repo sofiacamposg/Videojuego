@@ -1,9 +1,6 @@
-import { MessageBox } from "../objects/MessageBox.js";  
+import { MessageBox } from "../objects/MessageBox.js";
+import { mouseX, mouseY } from "../libs/game_functions.js";
 "use strict"
-
-//? mouse track
-let mouseX = 0;
-let mouseY = 0;
 const buttonBack = { //? BACK TO MENU BUTTON
     x: 150,
     y: 70,
@@ -123,11 +120,6 @@ function drawButton(ctx, button){  //? draw buttons
         ctx.stroke();
     }
 }
-function handleMouseMove(event, canvas){  //? track mouse movement
-    const rect = canvas.getBoundingClientRect();
-    mouseX = event.clientX - rect.left;
-    mouseY = event.clientY - rect.top;
-}
 function isMouseOver(element,ctx){  //? handle if mouse is over any botton or box
     let w, h;
     if (element.w){ //if element has a w atribute
@@ -197,7 +189,5 @@ function reset() {  //? reset to default values
   username = "";
   password = "";
   activeField = null;
-  mouseX = 0;
-  mouseY = 0;
 }
-export { draw, handleMouseMove, handleClick, handleKeyDown, getUsername, reset };
+export { draw, handleClick, handleKeyDown, getUsername, reset };

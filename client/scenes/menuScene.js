@@ -1,7 +1,5 @@
 "use strict"
-// Mouse
-let mouseX = 0;
-let mouseY = 0;
+import { mouseX, mouseY } from "../libs/game_functions.js";
 
 const buttonStart = {
     x: 500,
@@ -58,12 +56,6 @@ function drawButton(ctx, button) {
     }
 }
 
-function handleMouseMove(event, canvas) {
-    const rect = canvas.getBoundingClientRect();
-    mouseX = event.clientX - rect.left;
-    mouseY = event.clientY - rect.top;
-}
-
 //This function is used to detect which button was clicked and move to another scene
 function isMouseOverButton(button) {
   //uses the same font and size used for drawing
@@ -89,4 +81,4 @@ function handleClick() {
   return null;
 }
 
-export { draw, handleMouseMove, handleClick };
+export { draw, handleClick };

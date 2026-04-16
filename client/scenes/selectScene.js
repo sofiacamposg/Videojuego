@@ -1,8 +1,7 @@
 import { MessageBox } from "../objects/MessageBox.js";
+import { mouseX, mouseY } from "../libs/game_functions.js";
 
 "use strict"
-let mouseX = 0;
-let mouseY = 0;
 let ctx;
 
 //Botones
@@ -48,8 +47,6 @@ errorMessage.addButton("Resume", 440, 300, 120, 50, () =>{
     let selectedCharacter = null;
     //reset
     function reset() {
-    mouseX = 0;
-    mouseY = 0;
     selectedCharacter = null;
     }
 
@@ -158,13 +155,6 @@ errorMessage.addButton("Resume", 440, 300, 120, 50, () =>{
         }
     }
 
-    function handleMouseMove(event, canvas) {
-        const rect = canvas.getBoundingClientRect();
-        mouseX = event.clientX - rect.left;
-        mouseY = event.clientY - rect.top;
-
-    }
-
     //Esta función es para poder saber que botón se clickeo y asi movernos a otra escena
     function isMouseOverButton(button) {
         //usa el mismo font y tamaño que usas para dibujar
@@ -220,7 +210,7 @@ errorMessage.addButton("Resume", 440, 300, 120, 50, () =>{
     function getSelectedCharacter(){
         return selectedCharacter;
     }
-    export { draw, handleMouseMove, handleClick, reset, getSelectedCharacter };
+    export { draw, handleClick, reset, getSelectedCharacter };
         
 
         
