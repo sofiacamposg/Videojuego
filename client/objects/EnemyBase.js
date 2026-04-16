@@ -47,14 +47,13 @@ class EnemyBase extends AnimatedObject {
     this.HITBOX_OFFSET = 70;
     //attack data
     this.attackFrames = 0;
-    this.attackDuration = 2000;
+    this.attackDuration = 1000;
     this.attackHitbox = null;
     this.hasHitPlayer = false;  //flag to limit only one hit per swing
   }
 
   update(player, deltaTime) {  //manage movement, hurtbox, attack
     this.walk();  //movement in x
-    //console.log(`Delta: ${deltaTime}`); 
     this.updateCollider();  //move de hurtbox with the enemy position
     this.attackHitbox = null;  //hitbox not activated
 
@@ -122,7 +121,6 @@ class EnemyBase extends AnimatedObject {
     let minDamage = this.damage - 3;
     let maxDamage = this.damage + 3;
     this.damage = Math.abs(randomRange(maxDamage - minDamage +1, minDamage));
-    //console.log(`lion's damage ${this.damage}`);
     if (this.damage < this.damageBase){  //if its damage is smaller than initial
       this.scale = 0.6;  //smaller
       let minSpeed = this.speedBase + 1;  //faster

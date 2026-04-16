@@ -236,13 +236,11 @@ function update(canvas, deltaTime){
 
     //---spawn ---
     spawnTimer += deltaTime;
-    //console.log(`spawntimer: ${spawnTimer}`)
     if (spawnTimer >= spawnInterval) {
         if (killedEnemies != conditionEnemies) {
             //& agrega un enemigo justo afuera del borde de la camara, asi parece que parecen fuera del mundo
             enemies.push(new EnemyBase(new Vector(cameraX + canvas.width + 100, 450), lionConfig));
         }
-        console.log(`enemies: ${enemies.length}`);
         spawnTimer = 0;
     }
 }
