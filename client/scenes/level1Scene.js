@@ -543,7 +543,6 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     if(isDeckOpen){
         deckBox.draw(ctx);
         drawDeckCards(ctx);
-        return;
     }
 }
 

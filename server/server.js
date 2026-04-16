@@ -55,7 +55,7 @@ app.get("/cards/random", (req, res) => {
         JOIN Effect e ON c.effect_id = e.effect_id
 
         ORDER BY RAND()
-        LIMIT 20   // 🔥 CAMBIA ESTO
+        LIMIT 20   
     `;
 
     db.query(query, (err, result) => {
@@ -66,5 +66,58 @@ app.get("/cards/random", (req, res) => {
         }
 
         res.json(result);
+    });
+});
+//LOGIN
+app.post("/login", (req, res) => {
+
+    const { username, password } = req.body;
+
+    const query = `
+        SELECT * FROM Player
+        WHERE username = ? AND password = ?
+    `;
+
+    db.query(query, [username, password], (err, result) => {
+
+        if (err) {
+            console.log("MYSQL ERROR:", err);
+            return res.status(500).send("Server error");
+        }
+
+        if (result.length === 0) {
+            return res.status(401).send("Invalid credentials");
+        }
+
+        console.log("USER LOGGED:", result[0]);
+
+        res.json(result[0]); // 🔥 DEVUELVE EL USER
+    });
+});
+
+//CREATE ACCOUNT
+app.post("/login", (req, res) => {
+
+    const { username, password } = req.body;
+
+    const query = `
+        SELECT * FROM Player
+        WHERE username = ? AND password = ?
+    `;
+
+    db.query(query, [username, password], (err, result) => {
+
+        if (err) {
+            console.log("MYSQL ERROR:", err);
+            return res.status(500).send("Server error");
+        }
+
+        if (result.length === 0) {
+            return res.status(401).send("Invalid credentials");
+        }
+
+        console.log("USER LOGGED:", result[0]);
+
+        res.json(result[0]); // 🔥 DEVUELVE EL USER
     });
 });
