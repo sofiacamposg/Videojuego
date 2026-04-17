@@ -4,6 +4,7 @@ import { EnemyBase } from "../objects/EnemyBase.js";
 import { MessageBox } from "../objects/MessageBox.js";
 import { cards } from "../cards/Card.js";
 import { mouseX, mouseY } from "../libs/game_functions.js";
+import { cardsOnCanvas } from "../cards/cardsOnCanvas.js"; //card UI and logic
 
 "use strict"
 
@@ -63,7 +64,7 @@ let jumpPressed = false; //Prevents continuous jumping when holding the key
 //---enemy data ----
 //config for every enemy, all the data that is only for this enemy, should change between levels
 const lionConfig = {
-    hp: 100, 
+    hp: 100,
     damage: 5,
     speed: 0.4,
     scale: 0.8,
@@ -77,25 +78,8 @@ let killedEnemies = 0;
 const conditionEnemies = 20;
 
 //========================= CARD SYSTEM =========================
-let playerDeck = []; 
-let isDeckOpen = false;
-let selectedDeckIndex = -1;
-
-let kills = 10; //$$
-let triggerPoint = 10; // when event triggers $$
 let cardEventTriggered = false;
-
-let cardOptions = []; // the 3 cards
-let selectedCard = null;
-let selectedIndex = -1;
-let isCardActive = false;
-let cardBackImage = new Image();
-cardBackImage.src = "./assets/cards/BaseCard.png";
-
-let activeEffects = [];
-
-let cardBox = new MessageBox("Choose a Card", "", 80, 60, 840, 500);
-let deckBox = new MessageBox("Your Deck", "", 80, 60, 840, 500);
+const cardSystem = new cardsOnCanvas(); //single instance handles all card stuff
 
 
 //========================= PAUSE SYSTEM =========================
@@ -211,7 +195,7 @@ function generatePlatform(){
 
 //========================= BACKGROUND =========================
 let backgroundImage = new Image()
-backgroundImage.src = "./assets/fondo2.png"; 
+backgroundImage.src = "./assets/fondo2.png";
 
 
 //========================= SPAWN SYSTEM =========================
@@ -225,16 +209,7 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); //draw background
     }
 
-    //drawDeckButton(ctx);
-    
-    /*HTML stats (User Stats)
-    let delta = time - lastTime;
-    lastTime = time;
-    levelTime += delta;
-    document.getElementById("timer").textContent =
-    (levelTime / 1000).toFixed(1) + "s"; */
-
-    if(!isPaused && !isCardActive){
+    if(!isPaused && !cardSystem.isActive){ //freeze game while picking a card
         update(canvas, deltaTime);
     }
 
@@ -252,14 +227,8 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     pauseBox.draw(ctx);
 
-    if(isCardActive){
-        cardBox.draw(ctx);
-        drawCardsInBox(ctx);
-    }
-    if(isDeckOpen){
-        deckBox.draw(ctx);
-        drawDeckCards(ctx);
-    }
+    cardSystem.draw(ctx, canvas); //draws offered cards overlay
+    cardSystem.drawDeck(ctx, canvas); //draws deck overlay
 }
 
 function update(canvas, deltaTime){
@@ -268,7 +237,7 @@ function update(canvas, deltaTime){
     if (!cardEventTriggered && levelTimer >= randomEventTime) {
         console.log("EVENT TRIGGERED");
         cardEventTriggered = true;
-        triggerCardEvent();
+        cardSystem.show(cards, player, enemies); //trigger the card pick screen
     }
 
     //---player ----
@@ -320,17 +289,15 @@ function update(canvas, deltaTime){
         spawnTimer = 0;
     }
 
-    //Active card effects (timed removal)
-    updateActiveEffects();
+    //tick card effects so they expire with deltaTime
+    cardSystem.update(deltaTime);
 }
 
 //HEALTH BAR
 function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
-    // background (lost health)
     ctx.fillStyle = "white";
     ctx.font = "20px Arial";
     ctx.fillText("HP: " + player.hp, 20, 70);
-
 
     ctx.fillStyle = "gray";
     ctx.fillRect(x, y, width, height);
@@ -343,13 +310,15 @@ function drawHealthBar(ctx, x, y, width, height, current, max) { //current from 
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
 };
-//HEARTS  
+
+//HEARTS
 function drawHearts(ctx, x, y, current, max) {
     for (let i = 0; i < max; i++) {
         ctx.fillStyle = i < current ? "red" : "gray";  //gray if heart is lost
         ctx.fillText("♥", x + i * 50, y);
     }
 };
+
 /*//DECK BUTTON
 function drawDeckButton(ctx, button) {
     const left = button.x - button.w / 2;
@@ -367,193 +336,18 @@ function drawDeckButton(ctx, button) {
 };*/
 
 
-//========================= CARD FUNCTIONS =========================
-function triggerCardEvent() {
-    let shuffled = [...cards].sort(() => Math.random() - 0.5);
-    cardOptions = shuffled.slice(0, 3);
-    isCardActive = true;
-    cardBox.show();
-}
-
-function applyCard(card) {
-    card.applyEffect(player, enemies, null);
-    if (card.duration && card.removeEffect) {
-        activeEffects.push({
-            card,
-            endTime: Date.now() + card.duration
-        });
-    }
-}
-
-function updateActiveEffects() {
-    const now = Date.now();
-    activeEffects = activeEffects.filter(effect => {
-        if (now >= effect.endTime) {
-            effect.card.removeEffect(player, enemies);
-            return false;
-        }
-        return true;
-    });
-}
-
-function drawCardsInBox(ctx) {
-    if (cardOptions.length === 0) return;
-    let startX = cardBox.x + 60;
-    let y = cardBox.y + 100;
-    let width = 140;
-    let height = 200;
-    let spacing = 160;
-
-    for (let i = 0; i < cardOptions.length; i++) {
-        let card = cardOptions[i];
-        let x = startX + i * spacing;
-
-        if (card.image && card.image.complete && card.image.naturalWidth > 0) {
-            ctx.drawImage(card.image, x, y, width, height);
-        } else {
-            ctx.drawImage(cardBackImage, x, y, width, height);
-        }
-
-        if (selectedIndex === i) {
-            ctx.strokeStyle = card.type === "powerup" ? "#D4A537" : "#C0392B";
-            ctx.lineWidth = 3;
-            ctx.strokeRect(x, y, width, height);
-        }
-
-        ctx.fillStyle = "white";
-        ctx.font = "14px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText(card.name, x + width / 2, y + height + 16);
-        ctx.textAlign = "left";
-    }
-}
-
-function drawDeckCards(ctx) {
-    if (playerDeck.length === 0) return;
-    let startX = deckBox.x + 80;
-    let startY = deckBox.y + 110;
-    let cols = 3;
-    let spacingX = 220;
-    let spacingY = 160;
-
-    for (let i = 0; i < playerDeck.length; i++) {
-        let card = playerDeck[i];
-        let col = i % cols;
-        let row = Math.floor(i / cols);
-        let x = startX + col * spacingX;
-        let y = startY + row * spacingY;
-
-        if (card.image && card.image.complete && card.image.naturalWidth > 0) {
-            ctx.drawImage(card.image, x, y, 140, 200);
-        } else {
-            ctx.drawImage(cardBackImage, x, y, 140, 200);
-        }
-
-        if (selectedDeckIndex === i) {
-            ctx.strokeStyle = "#D4A537";
-            ctx.lineWidth = 3;
-            ctx.strokeRect(x, y, 140, 200);
-        }
-
-        ctx.fillStyle = "white";
-        ctx.font = "14px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText(card.name, x + 70, y + 216);
-        ctx.textAlign = "left";
-    }
-}
-
-
 function handleClick(){
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
-    //Player's Deck
-    if(isDeckOpen){
-
-        let startX = deckBox.x + 80;
-        let startY = deckBox.y + 110;
-        let cols = 3;
-        let spacingX = 220;
-        let spacingY = 160;
-        for(let i = 0; i < playerDeck.length; i++){
-            let col = i % cols;
-            let row = Math.floor(i / cols);
-            let x = startX + col * spacingX;
-            let y = startY + row * spacingY;
-            if(
-                mouseX > x && mouseX < x + 140 &&
-                mouseY > y && mouseY < y + 200
-            ){
-                selectedDeckIndex = i;
-                return;
-            }
-        }
-        // CONFIRM BUTTON
-    let confirmX = 350;
-    let confirmY = 450;
-    let confirmW = 120;
-    let confirmH = 50;
-
-    if(
-        mouseX > confirmX &&
-        mouseX < confirmX + confirmW &&
-        mouseY > confirmY &&
-        mouseY < confirmY + confirmH
-    ){
-        if(selectedDeckIndex !== -1){
-            let card = playerDeck[selectedDeckIndex];
-            applyCard(card);
-            playerDeck.splice(selectedDeckIndex, 1);
-            deckBox.hide();
-            isDeckOpen = false;
-            selectedDeckIndex = -1;
-        }
-    }
+    if(cardSystem.isDeckOpen){ //deck click goes to cardSystem
+        cardSystem.handleDeckClick(mouseX, mouseY, canvas);
         return;
     }
-    //Random Deck
-    if(isCardActive){
-        if(selectedIndex !== -1) return;
-        if(cardOptions.length === 0) return;
-        let startX = cardBox.x + 60;
-        let y = cardBox.y + 100;
-
-        let width = 140;
-        let height = 200;
-        let spacing = 160;
-
-        for(let i = 0; i < 3; i++){
-
-            let cardX = startX + i * spacing;
-
-            if(
-                mouseX > cardX &&
-                mouseX < cardX + width &&
-                mouseY > y &&
-                mouseY < y + height
-            ){
-                selectedIndex = i;
-                selectedCard = cardOptions[i];
-
-                if(!selectedCard) return;
-
-                applyCard(selectedCard);
-
-                setTimeout(() => {
-                    isCardActive = false;
-                    cardBox.hide();
-                    selectedIndex = -1;
-                    selectedCard = null;
-                    cardOptions = [];
-                }, 5000); //5 seconds to see the card you've chosen
-
-                return;
-            }
-        }
+    if(cardSystem.isActive){ //card pick click goes to cardSystem
+        cardSystem.handleClick(mouseX, mouseY, canvas);
+        return;
     }
-
-    //Handles attacks, cards, and powerups
 }
 
 function handleKeyDown(event){
@@ -576,15 +370,8 @@ function handleKeyDown(event){
     keysDown[event.key] = true;
     //Open Player's Deck
     if(event.key === "c" || event.key === "C"){
-    isDeckOpen = !isDeckOpen;
-    selectedDeckIndex = -1;
-
-    if(isDeckOpen){
-        deckBox.show();
-    } else {
-        deckBox.hide();
+        cardSystem.toggleDeck(); //open/close deck overlay
     }
-}
     //Jump
     if(event.key === " "){
         jumpPressed = true;
@@ -632,28 +419,21 @@ function reset(){
     // reset spawn
     spawnTimer = 0;
 
-    //reset 
-
     levelTimer = 0;
     randomEventTime = Math.random() * (40 - 20) + 20;
     cardEventTriggered = false;
-    cardOptions = [];
-    isCardActive = false;
-    activeEffects = [];
-    selectedIndex = -1;
-    selectedCard = null;
-    cardBox.hide();
-    deckBox.hide();
+    cardSystem.close(); //dismiss any open card UI
+    cardSystem.isDeckOpen = false;
 }
 
 
 //========================= EXPORTS =========================
-export { 
-    draw, 
-    handleClick, 
-    reset, 
-    handleKeyDown, 
-    handleKeyUp, 
-    setSelectedCharacter, 
-    goToMenu 
+export {
+    draw,
+    handleClick,
+    reset,
+    handleKeyDown,
+    handleKeyUp,
+    setSelectedCharacter,
+    goToMenu
 }
