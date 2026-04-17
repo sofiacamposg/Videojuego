@@ -1,10 +1,12 @@
 import { MessageBox } from "../objects/MessageBox.js";  
 "use strict"
+import { handleMouseMove, drawButton, handleClick, isMouseOverBox } from "../libs/game_functions.js";
 
 //? mouse track
 let mouseX = 0;
 let mouseY = 0;
 let loginSuccess = false;
+
 const buttonBack = { //? BACK TO MENU BUTTON
     x: 150,
     y: 70,
@@ -25,10 +27,12 @@ const errorMessage = new MessageBox(  //? error message creation
     errorMessage.addButton("Try again", 440, 300, 120, 50, () =>{  //? hide when clicked
         errorMessage.hide()
     });
+
 //? inputs 
 let username = "";  
 let password = "";
 let activeField = null; //username / password / null
+
 const inputUsername = { x: 500, y: 300, w: 500, h: 60 };
 const inputPassword = { x: 500, y: 410, w: 500, h: 60 };
 
@@ -36,7 +40,7 @@ const inputPassword = { x: 500, y: 410, w: 500, h: 60 };
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
-function draw(ctx, canvas){  //? draw every element on the canvas
+function drawLogIn(ctx, canvas){  //? draw every element on the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
@@ -54,12 +58,13 @@ function draw(ctx, canvas){  //? draw every element on the canvas
     drawInputBox(ctx, inputPassword.x, inputPassword.y, inputPassword.w, inputPassword.h, "PASSWORD");
 
     //? buttons
-    drawButton(ctx, buttonConfirm);
-    drawButton(ctx, buttonBack);
-    drawButton(ctx, buttonCreate);
+    drawButton(ctx, buttonConfirm, mouseX, mouseY);
+    drawButton(ctx, buttonBack, mouseX, mouseY);
+    drawButton(ctx, buttonCreate, mouseX, mouseY);
 
     errorMessage.draw(ctx); 
 }
+
 function drawInputBox(ctx, centerX, centerY, w, h, label){  //? draw the labels and input boxes
     const x = centerX - w / 2;
     const y = centerY - h / 2;
@@ -95,56 +100,14 @@ function drawInputBox(ctx, centerX, centerY, w, h, label){  //? draw the labels 
         ctx.fillText(valueToShow + (activeField === label.toLowerCase() ? "|" : ""), x + 18, y + 38);  //check if is inactive so the | doesn't appear 
     }
 }
-function drawButton(ctx, button){  //? draw buttons 
-    ctx.font = "25px 'VT323'";
-    ctx.textAlign = 'center';
-    const textWidth = ctx.measureText(button.text).width;
-    const textHeight = 30;
 
-    const left = button.x - textWidth / 2;
-    const right = button.x + textWidth / 2;
-    const top = button.y - textHeight;
-    const bottom = button.y;
-
-    const isHover =  //is over the button?
-        mouseX > left &&
-        mouseX < right &&
-        mouseY > top &&
-        mouseY < bottom;
-
-    ctx.fillStyle = isHover ? "red" : "white";  //change color if hover
-    ctx.fillText(button.text, button.x, button.y);
-
-    if (isHover){  
-        ctx.beginPath();
-        ctx.moveTo(left, button.y + 5);
-        ctx.lineTo(right, button.y + 5);
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-    }
+function handleMouseMoveLogIn(event, canvas){
+    const pos = handleMouseMove(event, canvas);
+    mouseX = pos.x;
+    mouseY = pos.y;
 }
-function handleMouseMove(event, canvas){  //? track mouse movement
-    const rect = canvas.getBoundingClientRect();
-    mouseX = event.clientX - rect.left;
-    mouseY = event.clientY - rect.top;
-}
-function isMouseOver(element,ctx){  //? handle if mouse is over any botton or box
-    let w, h;
-    if (element.w){ //if element has a w atribute
-        w = element.w;
-        h = element.h;
-    } else{  //buttons do not have w
-        ctx.font = "25px 'VT323'";  //force the size of text
-        w = ctx.measureText(element.text).width;
-        h = 30;
-    }
-    return mouseX > element.x - w / 2 &&  
-           mouseX < element.x + w / 2 &&
-           mouseY > element.y - h / 2 &&
-           mouseY < element.y + h / 2;
-}
-function handleClick(ctx){  //? handle cliks over any element
+
+function handleClickLogIn(ctx){  //? handle cliks over any element
     if(loginSuccess){
         loginSuccess = false;
         return "confirm";
@@ -152,21 +115,27 @@ function handleClick(ctx){  //? handle cliks over any element
     if (errorMessage.visible) {
         return errorMessage.handleClick(mouseX, mouseY);
     }
-    if (isMouseOver(inputUsername, ctx)){
+    // inputs
+    if (isMouseOverBox(mouseX, mouseY, inputUsername)){
         activeField = "username"; 
         return "username";
     }
-    if (isMouseOver(inputPassword, ctx)){
+
+    if (isMouseOverBox(mouseX, mouseY, inputPassword)){
         activeField = "password"; 
         return "password";
     }
-    if (isMouseOver(buttonBack, ctx)){
+
+    // buttons
+    if (handleClick(mouseX, mouseY, buttonBack, ctx)){
         return "back";
     }
-    if (isMouseOver(buttonCreate, ctx)){
+
+    if (handleClick(mouseX, mouseY, buttonCreate, ctx)){
         return "create";
     }
-    if (isMouseOver(buttonConfirm, ctx)) {
+
+    if (handleClick(mouseX, mouseY, buttonConfirm, ctx)) {
         if (username === "" || password === "") {
             errorMessage.show();
             return null;
@@ -174,15 +143,13 @@ function handleClick(ctx){  //? handle cliks over any element
         loginUser();
         return null;
     }
-    if(loginSuccess){
-        loginSuccess = false; // reset
-        return "confirm";
-    }
+
     return null;
 }
 
-//Tenemos que hacer esta función para darle valor a la variable activeField
-function handleKeyDown(event){  //? handles user's input
+
+
+function handleKeyDownLogIn(event){  //? handles user's input
   if (activeField === null) return; //case 1: no active field
 
   if (event.key === "Backspace"){ //case 2: deletes lasts key wrote
@@ -201,10 +168,10 @@ function handleKeyDown(event){  //? handles user's input
   if (activeField === "username") username += event.key;  //adds letter to stricng
   if (activeField === "password") password += event.key;
 }
-function getUsername(){  //? getter
+function getUsernameLogIn(){  //? getter
   return username;
 }
-function reset() {  //? reset to default values
+function resetLogIn() {  //? reset to default values
   username = "";
   password = "";
   activeField = null;
@@ -243,4 +210,4 @@ async function loginUser(){
         errorMessage.show();
     }
 }
-export { draw, handleMouseMove, handleClick, handleKeyDown, getUsername, reset };
+export { drawLogIn, handleMouseMoveLogIn, handleClickLogIn, handleKeyDownLogIn, resetLogIn };

@@ -1,5 +1,12 @@
 import { MessageBox } from "../objects/MessageBox.js";  
 "use strict"
+import { 
+    handleMouseMove, 
+    drawButton, 
+    handleClick, 
+    isMouseOverBox 
+} from "../libs/game_functions.js";
+
 
 //? mouse track
 let mouseX = 0;
@@ -41,7 +48,7 @@ const inputName = { x: 540, y: 400, w: 500, h: 60 };
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
-function draw(ctx, canvas){
+function drawCreateAccount(ctx, canvas){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
@@ -59,10 +66,10 @@ function draw(ctx, canvas){
     drawInputBox(ctx, inputPassword.x, inputPassword.y, inputPassword.w, inputPassword.h, "PASSWORD");
     drawInputBox(ctx, inputName.x, inputName.y, inputName.w, inputName.h, "NAME");
 
-    //? buttons
-    drawButton(ctx, buttonConfirm);
-    drawButton(ctx, buttonBack);
-    drawButton(ctx, buttonLogIn);
+    // botones reutilizables
+    drawButton(ctx, buttonConfirm, mouseX, mouseY);
+    drawButton(ctx, buttonBack, mouseX, mouseY);
+    drawButton(ctx, buttonLogIn, mouseX, mouseY);
 
     errorMessage.draw(ctx); 
 }
@@ -102,56 +109,14 @@ function drawInputBox(ctx, centerX, centerY, w, h, label){  //? draw the labels 
       ctx.fillText(valueToShow + (activeField === label.toLowerCase() ? "|" : ""), x + 20, y + 38);  //check if is inactive so the | doesn't appear 
   }
 }
-function drawButton(ctx, button){  //? draw buttons 
-    ctx.font = "25px 'VT323'";
-    ctx.textAlign = 'center';
-    const textWidth = ctx.measureText(button.text).width;
-    const textHeight = 30;
 
-    const left = button.x - textWidth / 2;
-    const right = button.x + textWidth / 2;
-    const top = button.y - textHeight;
-    const bottom = button.y;
-
-    const isHover =  //is over the button?
-        mouseX > left &&
-        mouseX < right &&
-        mouseY > top &&
-        mouseY < bottom;
-
-    ctx.fillStyle = isHover ? "red" : "white";  //change color
-    ctx.fillText(button.text, button.x, button.y);
-
-    if (isHover) {
-        ctx.beginPath();
-        ctx.moveTo(left, button.y + 5);
-        ctx.lineTo(right, button.y + 5);
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-    }
+function handleMouseMoveCreateAccount(event, canvas){
+    const pos = handleMouseMove(event, canvas);
+    mouseX = pos.x;
+    mouseY = pos.y;
 }
-function handleMouseMove(event, canvas){  //? track mouse movement
-    const rect = canvas.getBoundingClientRect();
-    mouseX = event.clientX - rect.left;
-    mouseY = event.clientY - rect.top;
-}
-function isMouseOver(element,ctx){  //? handle if mouse is over any botton or box
-    let w, h;
-    if (element.w){ //if element has a w atribute
-        w = element.w;
-        h = element.h;
-    } else{  //buttons do not have w
-        ctx.font = "25px 'VT323'";  //force the size of text
-        w = ctx.measureText(element.text).width;
-        h = 30;
-    }
-    return mouseX > element.x - w / 2 &&  
-           mouseX < element.x + w / 2 &&
-           mouseY > element.y - h / 2 &&
-           mouseY < element.y + h / 2;
-}
-function handleClick(ctx){  //? handle cliks over any element
+
+function handleClickCreateAccount(ctx){  //? handle cliks over any element
     if(registerSuccess){
         registerSuccess = false;
         return "confirm";
@@ -159,25 +124,32 @@ function handleClick(ctx){  //? handle cliks over any element
     if (errorMessage.visible) {
         return errorMessage.handleClick(mouseX, mouseY);
     }
-    if (isMouseOver(inputUsername, ctx)){
+    // inputs
+    if (isMouseOverBox(mouseX, mouseY, inputUsername)){
         activeField = "username"; 
         return "username";
     }
-    if (isMouseOver(inputPassword, ctx)){
+
+    if (isMouseOverBox(mouseX, mouseY, inputPassword)){
         activeField = "password"; 
         return "password";
     }
-    if (isMouseOver(inputName, ctx)){
+
+    if (isMouseOverBox(mouseX, mouseY, inputName)){
         activeField = "name"; 
         return "name";
     }
-    if (isMouseOver(buttonBack, ctx)){
+
+    // buttons
+    if (handleClick(mouseX, mouseY, buttonBack, ctx)){
         return "back";
     }
-    if (isMouseOver(buttonLogIn, ctx)){
+
+    if (handleClick(mouseX, mouseY, buttonLogIn, ctx)){
         return "login";
     }
-    if (isMouseOver(buttonConfirm, ctx)) {
+
+    if (handleClick(mouseX, mouseY, buttonConfirm, ctx)) {
         if (username === "" || password === "" || name === "") {
             errorMessage.show();
             return null;
@@ -185,13 +157,11 @@ function handleClick(ctx){  //? handle cliks over any element
         registerUser();
         return null;
     }
-    if(registerSuccess){
-        registerSuccess = false;
-        return "confirm";
-    }
+
     return null;
 }
-function handleKeyDown(event){
+
+function handleKeyDownCreateAccount(event){
   if (activeField === null) return;  //case 1: no active field
 
   if (event.key === "Backspace") {  //case 2: deletes lasts key wrote
@@ -219,7 +189,7 @@ function handleKeyDown(event){
 function getUsername(){  //? getter
   return username;
 }
-function reset(){  //? reset to default values
+function resetCreateAccount(){  //? reset to default values
   username = "";
   password = "";
   name = "";
@@ -259,4 +229,4 @@ async function registerUser(){
         errorMessage.show();
     }
 }
-export { draw, handleMouseMove, handleClick, handleKeyDown, getUsername, reset };
+export { drawCreateAccount, handleMouseMoveCreateAccount, handleClickCreateAccount, handleKeyDownCreateAccount, resetCreateAccount };

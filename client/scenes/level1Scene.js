@@ -1,15 +1,17 @@
 import { PlayerBase } from "../objects/PlayerBase.js";
 import { Vector } from "../libs/Vector.js";
-import { EnemyBase } from "../objects/EnemyBase.js";
 import { MessageBox } from "../objects/MessageBox.js";
-import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
-import { cards } from "../cards/Card.js";
-
+//import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
+//import { cards } from "../cards/Card.js";
+import { handleMouseMove } from "../libs/game_functions.js";
+import { level1Config, playerConfigs } from "../libs/levelConfig.js";
+import { spawnEnemy, generatePlatform, updateCamera } from "../libs/level_functions.js";
 "use strict"
 
+let currentLevelConfig = level1Config;
 //========================= GAME CORE VARIABLES =========================
 //* GAME'S LOGIC
-
+let currentLevel = 1;
 //world size
 let worldWidth = 2000;
 let worldHeight = 600;
@@ -20,6 +22,7 @@ let mouseX = 0
 let mouseY = 0
 
 let player
+let nextLevelLevel1 = false; //Change of scene
 
 //LEVEL TIMER
 let levelTimer = 0;
@@ -27,66 +30,17 @@ let levelTimer = 0;
 // random trigger between 20s and 40s (considering 1 minute per level)
 let randomEventTime = Math.random() * (40 - 20) + 20;
 
-
-/* For HTML stats (User stats)
-let levelTime = 0;
-let lastTome = 0; */
-//---player data---
-const guerreroConfig = {
-    hp: 120, maxHp: 120, speed: 300, damage: 20,
-    walkRightSrc:   "./assets/player1/1.png",
-    walkLeftSrc:    "./assets/player1/2.png",
-    jumpRightSrc:   "./assets/player1/3.png",
-    jumpLeftSrc:    "./assets/player1/4.png",
-    attackRightSrc: "./assets/player1/attackright.png",
-    attackLeftSrc:  "./assets/player1/attackleft.png",
-};
-
-const lanceroConfig = {
-    hp: 100, maxHp: 100, speed: 420, damage: 25,
-    walkRightSrc:   "./assets/player2/5.png",
-    walkLeftSrc:    "./assets/player2/6.png",
-    jumpRightSrc:   "./assets/player2/7.png",
-    jumpLeftSrc:    "./assets/player2/8.png",
-    attackRightSrc: "./assets/player2/attackright.png",
-    attackLeftSrc:  "./assets/player2/attackleft.png",
-};
-
-const pesadoConfig = {
-    hp: 150, maxHp: 150, speed: 180, damage: 20,
-    walkRightSrc:   "./assets/player3/9.png",
-    walkLeftSrc:    "./assets/player3/10.png",
-    jumpRightSrc:   "./assets/player3/11.png",
-    jumpLeftSrc:    "./assets/player3/12.png",
-    attackRightSrc: "./assets/player3/attackright.png",
-    attackLeftSrc:  "./assets/player3/attackleft.png",
-};
 let keysDown = {}; //To track keyboard input for player movement
 let jumpPressed = false; //Prevents continuous jumping when holding the key
 
-//---enemy data ----
-//config for every enemy, all the data that is only for this enemy, should change between levels
-const lionConfig = {
-    hp: 100, 
-    damage: 5,
-    speed: 4,
-    scale: 0.8,
-    walkRightSrc:   "./assets/enemy1/walkRight.png",
-    walkLeftSrc:    "./assets/enemy1/walkLeft.png",
-    attackRightSrc: "./assets/enemy1/attackRight.png",
-    attackLeftSrc:  "./assets/enemy1/attackLeft.png",
-    deathSrc: "./assets/enemy1/death.png",
-};
 let killedEnemies = 0;
-const conditionEnemies = 20;
+const conditionEnemies = 1;
 
 //========================= CARD SYSTEM =========================
 let playerDeck = []; 
 let isDeckOpen = false;
 let selectedDeckIndex = -1;
 
-let kills = 10;
-let triggerPoint = 10; // when event triggers
 let cardEventTriggered = false;
 
 let cardOptions = []; // the 3 cards
@@ -98,7 +52,7 @@ cardBackImage.src = "./assets/cards/powerup/BaseCard.png";
 
 //========================= PAUSE SYSTEM =========================
 let isPaused = false;
-let goToMenu = false;
+let goToMenuLevel1 = false;
 
 let pauseBox = new MessageBox(
     "PAUSED",
@@ -112,37 +66,35 @@ pauseBox.addButton("Continue", 440, 290, 120, 35, () => {
 });
 
 pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
-    reset();
+    resetLevel1();
     isPaused = false;
     pauseBox.hide();
 });
 
 //DOESN´T WORK, MUST CONNECT WITH SWITCH SCENE
 pauseBox.addButton("Home", 440, 390, 120, 35, () => {
-    goToMenu = true;
+    goToMenuLevel1 = true;
 });
 
 
 //========================= PLAYER SELECTION =========================
 //This function selects the player sprite
 function setSelectedCharacter(selectedCharacter){
-    if (selectedCharacter === "Guerrero"){
-        player = new PlayerBase(new Vector(200, 450), guerreroConfig);
-    }
-    else if (selectedCharacter === "Lancero"){
-        player = new PlayerBase(new Vector(200, 450), lanceroConfig);
-    }
-    else if (selectedCharacter === "Pesado"){
-        player = new PlayerBase(new Vector(200, 450), pesadoConfig);
-    }
+    player = new PlayerBase(
+        new Vector(200,450),
+        playerConfigs[selectedCharacter]
+    );
     initPlatforms();
 }
 
 //enemies, random entities, position, config 
-let enemies = [
-    new EnemyBase(new Vector(900,450), lionConfig),
-    new EnemyBase(new Vector(1100,450), lionConfig),
-]
+let enemies = currentLevelConfig.spawnPositions.map(pos =>
+    spawnEnemy(
+        pos.x,
+        pos.y,
+        currentLevelConfig.enemyConfig
+    )
+);
 
 
 //========================= PLATFORMS =========================
@@ -154,8 +106,14 @@ platformImage.src = "./assets/Platform.png";
 
 function initPlatforms(){
     platforms = [];
+
     for(let i = 0; i < 8; i++){
-        generatePlatform();
+        if(platforms.length === 0){
+            platforms.push({ x:300, y:300, width:100, height:70 });
+        } else {
+            let last = platforms[platforms.length - 1];
+            platforms.push(generatePlatform(last)); 
+        }
     }
 }
 
@@ -165,38 +123,9 @@ function drawPlatforms(ctx){
     });
 }
 
-//This functions avoids running out of platforms
-function generatePlatform(){
-    let x, y;
-
-    if(platforms.length === 0){
-        x = 300;
-        y = 300;
-    } else {
-        let last = platforms[platforms.length - 1];
-
-        let minGap = 200;
-        let maxGap = 300;
-
-        x = last.x + Math.random() * (maxGap - minGap) + minGap;
-        y = last.y + (Math.random() - 0.5) * 120;
-
-        if(y > 420) y = 420;
-        if(y < 350) y = 350;
-    }
-
-    platforms.push({
-        x: x,
-        y: y,
-        width: 100,
-        height: 70 
-    });
-}
-
-
 //========================= BACKGROUND =========================
-let backgroundImage = new Image()
-backgroundImage.src = "./assets/fondo2.png"; 
+let backgroundImage = new Image();
+backgroundImage.src = currentLevelConfig.background;
 
 
 //========================= SPAWN SYSTEM =========================
@@ -476,7 +405,7 @@ function applyCard(card){ //random deck effect
         }
 
         if(card.effect_name === "Venus Blessing"){
-            player.health += 20;
+            player.hp += 20;
         }
     }
 
@@ -500,7 +429,7 @@ function applyCard(card){ //random deck effect
     }
 }
 //========================= DRAW LOOP =========================
-function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
+function drawLevel1(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     if (!player) return; //avoids crash
     //Clear → update → draw objects
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -610,38 +539,37 @@ function update(deltaTime){
     if (spawnTimer >= spawnInterval) {
         if (killedEnemies != conditionEnemies) {
             //& agrega un enemigo justo afuera del borde de la camara, asi parece que parecen fuera del mundo
-            enemies.push(new EnemyBase(new Vector(cameraX + canvas.width + 100, 450), lionConfig));
+            enemies.push(spawnEnemy(cameraX + canvas.width + 100, 450, currentLevelConfig.enemyConfig));
         }
         console.log(`enemies: ${enemies.length}`);
         spawnTimer = 0;
     }
-
-    //camera follows player
-    cameraX = player.position.x - canvas.width/2;
-
-    if (cameraX < 0) {
-        cameraX = 0;
+    //Condition for netx level
+    if(killedEnemies >= conditionEnemies){
+        nextLevelLevel1 = true;
     }
 
-    if (cameraX > worldWidth - canvas.width){
-        cameraX = worldWidth - canvas.width;
-    }
-
+    cameraX = updateCamera(
+        player.position.x,
+        canvas.width,
+        worldWidth
+    );
     //Random Platforms
     let last = platforms[platforms.length - 1];
+
     if(player.position.x > last.x - 500){
-        generatePlatform();
+        platforms.push(generatePlatform(last)); 
     }
 }
 
 //========================= INPUT HANDLERS =========================
-function handleMouseMove(event,canvas){ //Standard mouse tracking function
-    const rect = canvas.getBoundingClientRect()
-    mouseX = event.clientX - rect.left
-    mouseY = event.clientY - rect.top
+function handleMouseMoveLevel1(event, canvas){
+    const pos = handleMouseMove(event, canvas);
+    mouseX = pos.x;
+    mouseY = pos.y;
 }
 
-function handleClick(){
+function handleClickLevel1(){
 
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
@@ -734,7 +662,7 @@ function handleClick(){
     //Handles attacks, cards, and powerups
 }
 
-function handleKeyDown(event){
+function handleKeyDownLevel1(event){
     if(event.repeat) return;
     if(isPaused) return; 
 
@@ -774,7 +702,7 @@ function handleKeyDown(event){
     }
 }
 
-function handleKeyUp(event){
+function handleKeyUpLevel1(event){
     keysDown[event.key] = false;
 
     if(event.key === " "){
@@ -784,19 +712,18 @@ function handleKeyUp(event){
 
 
 //========================= RESET =========================
-function reset(){
+function resetLevel1(){
      // reset player
+     // nextLevelLevel1 = false;
     player.position.x = 200;
     player.position.y = 350;
     player.velocityY = 0;
     player.hp = player.maxHp;
 
     // reset enemies
-    enemies = [
-        new EnemyBase(new Vector(900,450), lionConfig),
-        new EnemyBase(new Vector(800,450), lionConfig),
-    ];
-    killedEnemies = 0;
+    enemies = currentLevelConfig.spawnPositions.map(pos =>
+        spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
+    );
 
     //reset platforms
     initPlatforms();
@@ -811,16 +738,20 @@ function reset(){
     randomEventTime = Math.random() * (40 - 20) + 20;
     cardEventTriggered = false;
 }
-
+function getPlayerLevel1(){
+    return player;
+}
 
 //========================= EXPORTS =========================
 export { 
-    draw, 
-    handleMouseMove, 
-    handleClick, 
-    reset, 
-    handleKeyDown, 
-    handleKeyUp, 
+    getPlayerLevel1,
+    drawLevel1, 
+    handleMouseMoveLevel1, 
+    handleClickLevel1, 
+    resetLevel1, 
+    handleKeyDownLevel1, 
+    handleKeyUpLevel1, 
     setSelectedCharacter, 
-    goToMenu 
-}
+    goToMenuLevel1,
+    nextLevelLevel1
+}   

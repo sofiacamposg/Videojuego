@@ -1,10 +1,16 @@
 "use strict"
+import { 
+    handleMouseMove, 
+    drawButton, 
+    handleClick, 
+    isMouseOverBox 
+} from "../libs/game_functions.js";
 
 let mouseX = 0;
 let mouseY = 0;
 let draggingVolume = false;
 
-// Botones de navegación
+// Buttons
 const buttonBack = { x: 150, y: 50, text: "BACK" };
 const buttonConfirm = { x: 850, y: 50, text: "CONFIRM" };
 
@@ -24,7 +30,7 @@ let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
 // Dibuja toda la pantalla de settings
-function draw(ctx, canvas) {
+function drawSettings(ctx, canvas) {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(backgroundImage,0,0,canvas.width,canvas.height);
 
@@ -44,8 +50,9 @@ function draw(ctx, canvas) {
     drawToggle(ctx); // botón ON/OFF
     if(volumeOn) drawVolumeBar(ctx); // solo muestra barra si está encendido
 
-    drawButton(ctx, buttonBack);
-    drawButton(ctx, buttonConfirm);
+     // botones reutilizables
+    drawButton(ctx, buttonBack, mouseX, mouseY);
+    drawButton(ctx, buttonConfirm, mouseX, mouseY);
 }
 
 // Dibuja el botón de encendido/apagado
@@ -87,69 +94,41 @@ function drawVolumeBar(ctx){
     ctx.fillText("LEVEL: "+volumeLevel, volumeBar.x, volumeBar.y+60);
 }
 
-// Dibuja botones (BACK y CONFIRM)
-function drawButton(ctx, button){
-    ctx.font = "25px 'VT323'";
-    ctx.textAlign = "center";
-
-    const textWidth = ctx.measureText(button.text).width;
-    const left = button.x - textWidth/2;
-    const right = button.x + textWidth/2;
-
-    // Detecta si el mouse está encima
-    const isHover = mouseX > left && mouseX < right && mouseY > button.y - 30 && mouseY < button.y;
-
-    ctx.fillStyle = isHover ? "red" : "white";
-    ctx.fillText(button.text, button.x, button.y);
-}
-
 // Detecta movimiento del mouse
-function handleMouseMove(event, canvas){
-    const rect = canvas.getBoundingClientRect();
-    mouseX = event.clientX - rect.left;
-    mouseY = event.clientY - rect.top;
+function handleMouseMoveSettings(event, canvas){
+    const pos = handleMouseMove(event, canvas);
+    mouseX = pos.x;
+    mouseY = pos.y;
 
-    // Si arrastras la barra, cambia el volumen
+    // dragging barra
     if(draggingVolume){
         const left = volumeBar.x - volumeBar.w/2;
-        const pos = mouseX - left;
-        volumeLevel = Math.min(Math.max(Math.floor((pos / volumeBar.w) * 100),0),100);
+        const posX = mouseX - left;
+        volumeLevel = Math.min(
+            Math.max(Math.floor((posX / volumeBar.w) * 100),0),
+            100
+        );
     }
-}
-
-// Detecta si el mouse está sobre el toggle
-function isMouseOverToggle(){
-    return mouseX > toggleBox.x - toggleBox.w/2 &&
-           mouseX < toggleBox.x + toggleBox.w/2 &&
-           mouseY > toggleBox.y - toggleBox.h/2 &&
-           mouseY < toggleBox.y + toggleBox.h/2;
-}
-
-// Detecta si el mouse está sobre un botón
-function isMouseOverButton(button){
-    const textWidth = 120;
-    return mouseX > button.x - textWidth/2 &&
-           mouseX < button.x + textWidth/2 &&
-           mouseY > button.y - 30 &&
-           mouseY < button.y;
 }
 
 // Maneja clicks del usuario
-function handleClick(){
-    if(isMouseOverToggle()){
-        volumeOn = !volumeOn; // cambia ON/OFF
+function handleClickSettings(ctx){
+
+    // toggle
+    if(isMouseOverBox(mouseX, mouseY, toggleBox)){
+        volumeOn = !volumeOn;
         return;
     }
 
-    if(isMouseOverButton(buttonConfirm)){
-        // Guarda los cambios
+    // confirm
+    if(handleClick(mouseX, mouseY, buttonConfirm, ctx)){
         savedVolumeOn = volumeOn;
         savedVolumeLevel = volumeLevel;
         return "confirm";
     }
 
-    if(isMouseOverButton(buttonBack)){
-        // Cancela cambios y regresa a lo guardado
+    // back
+    if(handleClick(mouseX, mouseY, buttonBack, ctx)){
         volumeOn = savedVolumeOn;
         volumeLevel = savedVolumeLevel;
         return "back";
@@ -158,22 +137,18 @@ function handleClick(){
 
 // Empieza a arrastrar la barra
 function startDragging(){
-    if(volumeOn &&
-       mouseX > volumeBar.x - volumeBar.w/2 &&
-       mouseX < volumeBar.x + volumeBar.w/2 &&
-       mouseY > volumeBar.y &&
-       mouseY < volumeBar.y + volumeBar.h){
+    if(volumeOn && isMouseOverBox(mouseX, mouseY, volumeBar)){
         draggingVolume = true;
     }
 }
 
-// Deja de arrastrar
 function stopDragging(){
     draggingVolume = false;
 }
 
+
 // Se ejecuta cuando entras a settings
-function reset(){
+function resetSettings(){
     draggingVolume = false;
     mouseX = 0;
     mouseY = 0;
@@ -183,4 +158,4 @@ function reset(){
     volumeLevel = savedVolumeLevel;
 }
 
-export { draw, handleMouseMove, handleClick, startDragging, stopDragging, reset };
+export { drawSettings, handleMouseMoveSettings, handleClickSettings, startDragging, stopDragging, resetSettings };

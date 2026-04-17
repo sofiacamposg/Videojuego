@@ -69,4 +69,65 @@ function randomRange(size, start) {  //random del tamaño de la caja
     return Math.floor(Math.random() * size) + ((start === undefined) ? 0 : start);
 }
 
+//=======================OUR FUNCTIONS============================
+//Handle Mouse Move
+export function handleMouseMove(event, canvas) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+    };
+}
+//Is Mouse Over Box
+export function isMouseOverBox(mouseX, mouseY, element) {
+    return mouseX > element.x - element.w / 2 &&
+           mouseX < element.x + element.w / 2 &&
+           mouseY > element.y - element.h / 2 &&
+           mouseY < element.y + element.h / 2;
+}
+//Handle Click
+export function handleClick(mouseX, mouseY, button, ctx) {
+    ctx.font = "25px 'VT323'";
+
+    const w = ctx.measureText(button.text).width;
+    const h = 30;
+
+    return mouseX > button.x - w / 2 &&
+           mouseX < button.x + w / 2 &&
+           mouseY > button.y - h / 2 &&
+           mouseY < button.y + h / 2;
+}
+
+//Draw Button 
+export function drawButton(ctx, button, mouseX, mouseY) {
+    ctx.font = "25px 'VT323'";
+    ctx.textAlign = "center";
+
+    const textWidth = ctx.measureText(button.text).width;
+    const textHeight = 30;
+
+    const left = button.x - textWidth / 2;
+    const right = button.x + textWidth / 2;
+    const top = button.y - textHeight;
+    const bottom = button.y;
+
+    const isHover =
+        mouseX > left &&
+        mouseX < right &&
+        mouseY > top &&
+        mouseY < bottom;
+
+    ctx.fillStyle = isHover ? "red" : "white";
+    ctx.fillText(button.text, button.x, button.y);
+
+    if (isHover) {
+        ctx.beginPath();
+        ctx.moveTo(left, button.y + 5);
+        ctx.lineTo(right, button.y + 5);
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+    }
+}
+
 export { boxOverlap, hitboxOverlap, randomRange };
