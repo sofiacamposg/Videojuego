@@ -80,7 +80,8 @@ class PlayerBase extends AnimatedObject {
 
     //sprites depending on status (jump, walk, attack, ...)
     if (!this.isOnGround) {
-      //case 1: jump (no attack allowed in the air)
+
+      // SALTO
       this.spriteImage = (this.direction === "right") ? this.spriteJumpRight : this.spriteJumpLeft;
       this.updateAnimation(20);
       this.attackHitbox = null;
@@ -97,12 +98,14 @@ class PlayerBase extends AnimatedObject {
         this.hitEnemies.clear();  //clean "hitbox" to accept enemies again
       }
     } else if (this.isMoving) {
-      //case 3: walk
+
+      // CAMINAR
       this.spriteImage = (this.direction === "right") ? this.spriteRight : this.spriteLeft;
       this.updateAnimation(20);
       this.attackHitbox = null;
     } else {
-      //case 4: stay
+
+      // QUIETO
       this.spriteImage = (this.direction === "right") ? this.spriteRight : this.spriteLeft;
       this.frame = 0;  //returns variable to 0
       if (this.spriteRect) this.spriteRect.x = 0;  //returns image to initial frame (reset)
