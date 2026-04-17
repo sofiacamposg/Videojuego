@@ -113,28 +113,20 @@ app.post("/login", (req, res) => {
 });
 
 //CREATE ACCOUNT
-app.post("/login", (req, res) => {
-
-    const { username, password } = req.body;
-
-    const query = `
-        SELECT * FROM Player
-        WHERE username = ? AND password = ?
-    `;
-
-    db.query(query, [username, password], (err, result) => {
-
-        if (err) {
-            console.log("MYSQL ERROR:", err);
-            return res.status(500).send("Server error");
-        }
-
-        if (result.length === 0) {
-            return res.status(401).send("Invalid credentials");
-        }
-
-        console.log("USER LOGGED:", result[0]);
-
-        res.json(result[0]); // 🔥 DEVUELVE EL USER
+app.post("/register", (req, res) => {
+    const { username, password, name } = req.body;
+    const checkQuery = `SELECT * FROM Player WHERE username = ?`;
+    db.query(checkQuery, [username], (err, result) => {
+        if (err) return res.status(500).send("Server error");
+        if (result.length > 0) return res.status(400).send("User already exists");
+        const insertQuery = `
+            INSERT INTO Player (name, username, password)
+            VALUES (?, ?, ?)
+        `;
+        db.query(insertQuery, [name, username, password], (err) => {
+            if (err) return res.status(500).send("Insert error");
+            console.log("USER CREATED:", username);
+            res.json({ success: true });
+        });
     });
 });
