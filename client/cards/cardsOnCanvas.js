@@ -1,4 +1,5 @@
 "use strict";
+import { MessageBox } from "../objects/MessageBox.js";
 
 class cardsOnCanvas {
     constructor() {
@@ -21,6 +22,10 @@ class cardsOnCanvas {
 
         this.cardBackImage = new Image();
         this.cardBackImage.src = "./assets/cards/BaseCard.png";
+
+        //MessageBox as background container for each overlay
+        this.cardBox = new MessageBox("SELECT A CARD", "", 80, 30, 840, 540);
+        this.deckBox = new MessageBox("YOUR DECK", "", 80, 30, 840, 540);
     }
 
     // ========================= OFFERED CARDS =========================
@@ -33,37 +38,32 @@ class cardsOnCanvas {
         this._player  = player;
         this._enemies = enemies;
         this._game    = game;
+        this.cardBox.show();
     }
 
     close() {
         this.isActive      = false;
         this.offeredCards  = [];
         this.selectedIndex = null;
+        this.cardBox.hide();
     }
 
     draw(ctx, canvas) {
         if (!this.isActive) return;
 
+        this.cardBox.draw(ctx); //background + title via MessageBox
+
         const W = canvas.width;
         const H = canvas.height;
-
-        ctx.fillStyle = "rgba(0,0,0,0.75)";
-        ctx.fillRect(0, 0, W, H);
-
-        ctx.fillStyle = "rgb(255, 187, 86)";
-        ctx.font      = "40px 'VT323'";
-        ctx.textAlign = "center";
-        ctx.fillText("SELECT A CARD", W / 2, 72);
-
-        const cardW  = 220;
-        const cardH  = 300;
-        const gap    = 28;
-        const count  = 3;
+        const cardW = 220;
+        const cardH = 300;
+        const gap = 28;
+        const count = 3;
         const startX = (W - (count * cardW + (count - 1) * gap)) / 2;
-        const cardY  = (H - cardH) / 2;
+        const cardY = (H - cardH) / 2;
 
         this.offeredCards.forEach((card, i) => {
-            const x          = startX + i * (cardW + gap);
+            const x = startX + i * (cardW + gap);
             const isSelected = this.selectedIndex === i;
             this.drawCard(ctx, card, x, cardY, cardW, cardH, isSelected);
         });
@@ -76,12 +76,12 @@ class cardsOnCanvas {
     handleClick(mx, my, canvas) {
         if (!this.isActive) return null;
 
-        const cardW  = 220;
-        const cardH  = 300;
-        const gap    = 28;
-        const count  = 3;
+        const cardW = 220;
+        const cardH = 300;
+        const gap = 28;
+        const count = 3;
         const startX = (canvas.width - (count * cardW + (count - 1) * gap)) / 2;
-        const cardY  = (canvas.height - cardH) / 2;  //same as draw()
+        const cardY = (canvas.height - cardH) / 2;  //same as draw()
 
         for (let i = 0; i < this.offeredCards.length; i++) {
             const x = startX + i * (cardW + gap);
@@ -137,24 +137,20 @@ class cardsOnCanvas {
     // ========================= DECK =========================
 
     toggleDeck() {
-        this.isDeckOpen       = !this.isDeckOpen;
+        this.isDeckOpen = !this.isDeckOpen;
         this.selectedDeckIndex = -1;
+        if (this.isDeckOpen) this.deckBox.show();
+        else this.deckBox.hide();
     }
 
     //dibuja el deck del jugador en una cuadrícula
     drawDeck(ctx, canvas) {
         if (!this.isDeckOpen) return;
 
+        this.deckBox.draw(ctx); //background + title via MessageBox
+
         const W = canvas.width;
         const H = canvas.height;
-
-        ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
-        ctx.fillRect(0, 0, W, H);
-
-        ctx.fillStyle = "rgb(255, 187, 86)";
-        ctx.font      = "40px 'VT323'";
-        ctx.textAlign = "center";
-        ctx.fillText("YOUR DECK", W / 2, 72);
 
         if (this.playerDeck.length === 0) {
             ctx.fillStyle = "white";
