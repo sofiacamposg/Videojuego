@@ -66,8 +66,8 @@ body {
 /* MAIN LAYOUT */
 .layout {
     display: grid;
-    grid-template-columns: 300px auto 300px;
-    gap: 40px;
+    grid-template-columns: 260px auto 260px;
+    gap: 10px; /* más pegado al canvas */
     align-items: start;
     justify-content: center;
     width: 100%;
@@ -107,11 +107,20 @@ body {
 }
 
 /* STATS */
+.statsContent {
+    display: none;
+    margin-top: 10px;
+}
+
 .statRow {
     display: flex;
     justify-content: space-between;
     padding: 8px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.statLabel {
+    opacity: 0.8;
 }
 
 .statValue {
@@ -139,23 +148,16 @@ body {
         width: 80%;
     }
 }
+
 body {
     background-color: black;
     color: white;
     text-align: center;
-    padding: 40px;
+    padding: 0;
 }
 
 p {
     max-width: 600px;
     margin: 20px auto;
     line-height: 1.6;
-}
-.statsBox {
-    position: absolute;
-    right: 50px;
-    top: 150px;
-    background: black;
-    padding: 20px;
-    border: 2px solid white;
 }
