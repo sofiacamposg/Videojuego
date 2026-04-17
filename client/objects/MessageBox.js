@@ -23,21 +23,25 @@ class MessageBox {
     }
     draw(ctx){
         if(this.visible){
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = "rgba(0, 0, 0, 0.9)";
         ctx.strokeStyle = 'rgb(255,187,86)';
         ctx.lineWidth = 4;
         ctx.fillRect(this.x, this.y, this.width, this.height);
         ctx.strokeRect(this.x, this.y, this.width, this.height);
 
         //títle
-        ctx.fillStyle = 'white';
-        ctx.font = '30px VT323';
+        ctx.fillStyle = 'orange';
+        ctx.font = '40px VT323';
         ctx.textAlign = 'center';
         ctx.fillText(this.title, this.x + this.width / 2, this.y + 50);
 
-        //message
+        //message — split by \n for multi-line support
+        ctx.fillStyle = 'white';
         ctx.font = '25px VT323';
-        ctx.fillText(this.message, this.x + this.width / 2, this.y + 110);
+        const lines = this.message.split('\n');  //& la pueden quitar, solo era para ver como se veia el game over
+        lines.forEach((line, i) => {
+            ctx.fillText(line, this.x + this.width / 2, this.y + 110 + i * 30);
+        });
 
         this.buttons.forEach (button =>{
             ctx.strokeStyle = 'rgb(255,187,86)';

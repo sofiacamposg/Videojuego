@@ -9,8 +9,6 @@ import { cardsOnCanvas } from "../cards/cardsOnCanvas.js"; //card UI and logic
 "use strict"
 
 //========================= GAME CORE VARIABLES =========================
-//* GAME'S LOGIC
-
 //world size
 let worldWidth = 2000;
 let worldHeight = 600;
@@ -20,14 +18,85 @@ let player
 
 //LEVEL TIMER
 let levelTimer = 0;
-
 // random trigger between 20s and 40s (considering 1 minute per level)
 let randomEventTime = Math.random() * (40 - 20) + 20;
-
 
 /* For HTML stats (User stats)
 let levelTime = 0;
 let lastTome = 0; */
+let keysDown = {}; //To track keyboard input for player movement
+let jumpPressed = false; //Prevents continuous jumping when holding the key
+
+//========================= CARD SYSTEM =========================
+let cardEventTriggered = false;
+const cardSystem = new cardsOnCanvas(); //single instance handles all card stuff
+
+//========================= PAUSE SYSTEM =========================
+let isPaused = false;
+let goToMenu = false;
+
+let pauseBox = new MessageBox(
+    "PAUSED",
+    "Game is paused",
+    250, 150, 500, 300
+);
+
+pauseBox.addButton("Continue", 440, 290, 120, 35, () => {
+    isPaused = false;
+    pauseBox.hide();
+});
+
+pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
+    reset();
+    isPaused = false;
+    pauseBox.hide();
+});
+
+//DOESN´T WORK, MUST CONNECT WITH SWITCH SCENE
+pauseBox.addButton("Home", 440, 390, 120, 35, () => {
+    goToMenu = true;
+});
+
+//========================= LIVE SYSTEM =========================
+//HEALTH BAR
+function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText("HP: " + player.hp, 20, 70);
+
+    ctx.fillStyle = "gray";
+    ctx.fillRect(x, y, width, height);
+
+    const healthWidth = (current / max) * width;
+    ctx.fillStyle = "green";
+    ctx.fillRect(x, y, healthWidth, height);
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, width, height);
+};
+//HEARTS
+function drawHearts(ctx, x, y, current, max) {
+    for (let i = 0; i < max; i++) {
+        ctx.fillStyle = i < current ? "red" : "gray";  //gray if heart is lost
+        ctx.fillText("♥", x + i * 50, y);
+    }
+};
+
+//========================= GAME OVER =========================
+let gameOver = false;
+let gameOverBox = new MessageBox(
+    "Game Over",
+    "You died!\n The emperor is dissapointed in you",
+    250, 150, 500, 300
+);
+gameOverBox.addButton("Restart", 440, 340, 120, 35, () => {
+    reset();
+    gameOver = false;
+    gameOverBox.hide();
+});
+
+//========================= PLAYER =========================
 //---player data---
 const guerreroConfig = {
     hp: 120, maxHp: 120, speed: 0.5, damage: 20,
@@ -58,9 +127,21 @@ const pesadoConfig = {
     attackRightSrc: "./assets/player3/attackright.png",
     attackLeftSrc:  "./assets/player3/attackleft.png",
 };
-let keysDown = {}; //To track keyboard input for player movement
-let jumpPressed = false; //Prevents continuous jumping when holding the key
+//This function selects the player sprite
+function setSelectedCharacter(selectedCharacter){
+    if (selectedCharacter === "Guerrero"){
+        player = new PlayerBase(new Vector(200, 450), guerreroConfig);
+    }
+    else if (selectedCharacter === "Lancero"){
+        player = new PlayerBase(new Vector(200, 450), lanceroConfig);
+    }
+    else if (selectedCharacter === "Pesado"){
+        player = new PlayerBase(new Vector(200, 450), pesadoConfig);
+    }
+    initPlatforms();
+}
 
+//========================= ENEMIES =========================
 //---enemy data ----
 //config for every enemy, all the data that is only for this enemy, should change between levels
 const lionConfig = {
@@ -76,56 +157,6 @@ const lionConfig = {
 };
 let killedEnemies = 0;
 const conditionEnemies = 20;
-
-//========================= CARD SYSTEM =========================
-let cardEventTriggered = false;
-const cardSystem = new cardsOnCanvas(); //single instance handles all card stuff
-
-
-//========================= PAUSE SYSTEM =========================
-let isPaused = false;
-let goToMenu = false;
-
-let pauseBox = new MessageBox(
-    "PAUSED",
-    "Game is paused",
-    250, 150, 500, 300
-);
-
-pauseBox.addButton("Continue", 440, 290, 120, 35, () => {
-    isPaused = false;
-    pauseBox.hide();
-});
-
-pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
-    reset();
-    isPaused = false;
-    pauseBox.hide();
-});
-
-//DOESN´T WORK, MUST CONNECT WITH SWITCH SCENE
-pauseBox.addButton("Home", 440, 390, 120, 35, () => {
-    goToMenu = true;
-});
-
-
-//========================= PLAYER SELECTION =========================
-//This function selects the player sprite
-function setSelectedCharacter(selectedCharacter){
-    if (selectedCharacter === "Guerrero"){
-        player = new PlayerBase(new Vector(200, 450), guerreroConfig);
-    }
-    else if (selectedCharacter === "Lancero"){
-        player = new PlayerBase(new Vector(200, 450), lanceroConfig);
-    }
-    else if (selectedCharacter === "Pesado"){
-        player = new PlayerBase(new Vector(200, 450), pesadoConfig);
-    }
-    initPlatforms();
-}
-
-
-//========================= ENEMIES =========================
 // Enemies, random entities
 let enemies = [
     new EnemyBase(new Vector(900,450), lionConfig),
@@ -139,26 +170,12 @@ let platforms = [];
 let platformImage = new Image();
 platformImage.src = "./assets/Platform.png";
 
-/*platforms.push({
-    x: 300,
-    y: 320,
-    width: 100,
-    height: 70
-}); */
-
 //begining with 8 platforms
 function initPlatforms(){
     platforms = [];
     for(let i = 0; i < 8; i++){
         generatePlatform();
     }
-}
-
-//el -37 alinea la imagen con su hitbox
-function drawPlatforms(ctx){
-    platforms.forEach(p=>{
-        ctx.drawImage(platformImage, p.x, p.y - 37, p.width, p.height);
-    });
 }
 
 function generatePlatform(){
@@ -192,11 +209,9 @@ function generatePlatform(){
     });
 }
 
-
 //========================= BACKGROUND =========================
 let backgroundImage = new Image()
 backgroundImage.src = "./assets/fondo2.png";
-
 
 //========================= SPAWN SYSTEM =========================
 let spawnTimer = 0;
@@ -216,8 +231,11 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     ctx.save();  //keeps character within screen
     ctx.translate(-cameraX, 0);
 
+    platforms.forEach(p=>{  //draw platforms
+        ctx.drawImage(platformImage, p.x, p.y - 37, p.width, p.height);
+    });
+
     player.draw(ctx);  //draw player sprite
-    drawPlatforms(ctx);  //obstacles
     enemies.forEach(enemy => enemy.draw(ctx));  //draw enemy sprites
 
     ctx.restore();
@@ -226,7 +244,10 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     pauseBox.draw(ctx);
-
+    if (gameOver){
+        gameOverBox.draw(ctx);
+        return;
+    }
     cardSystem.draw(ctx, canvas); //draws offered cards overlay
     cardSystem.drawDeck(ctx, canvas); //draws deck overlay
 }
@@ -235,9 +256,15 @@ function update(canvas, deltaTime){
     levelTimer += deltaTime;
     //Time Based random card event
     if (!cardEventTriggered && levelTimer >= randomEventTime) {
-        console.log("EVENT TRIGGERED");
+        //console.log("EVENT TRIGGERED");
         cardEventTriggered = true;
         cardSystem.show(cards, player, enemies); //trigger the card pick screen
+    }
+
+    if (player.hearts <= 0){
+        gameOver = true;
+        gameOverBox.show();
+        return; //stop update when game is over
     }
 
     //---player ----
@@ -292,32 +319,6 @@ function update(canvas, deltaTime){
     //tick card effects so they expire with deltaTime
     cardSystem.update(deltaTime);
 }
-
-//HEALTH BAR
-function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
-    ctx.fillStyle = "white";
-    ctx.font = "20px Arial";
-    ctx.fillText("HP: " + player.hp, 20, 70);
-
-    ctx.fillStyle = "gray";
-    ctx.fillRect(x, y, width, height);
-
-    const healthWidth = (current / max) * width;
-    ctx.fillStyle = "green";
-    ctx.fillRect(x, y, healthWidth, height);
-
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, width, height);
-};
-
-//HEARTS
-function drawHearts(ctx, x, y, current, max) {
-    for (let i = 0; i < max; i++) {
-        ctx.fillStyle = i < current ? "red" : "gray";  //gray if heart is lost
-        ctx.fillText("♥", x + i * 50, y);
-    }
-};
 
 /*//DECK BUTTON
 function drawDeckButton(ctx, button) {
@@ -393,7 +394,6 @@ function handleKeyUp(event){
     }
 }
 
-
 //========================= RESET =========================
 function reset(){
     // reset player
@@ -424,8 +424,8 @@ function reset(){
     cardEventTriggered = false;
     cardSystem.close(); //dismiss any open card UI
     cardSystem.isDeckOpen = false;
+    gameOver = false;
 }
-
 
 //========================= EXPORTS =========================
 export {
