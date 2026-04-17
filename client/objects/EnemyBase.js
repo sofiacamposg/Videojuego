@@ -68,12 +68,15 @@ class EnemyBase extends AnimatedObject {
     this.position.x -= this.speed * deltaTime;
   }
 
-  takeDamage(hit) {  //damage made by player, look Playerbase to understand the whole logic
+  takeDamage(hit, player) {  //damage made by player, look Playerbase to understand the whole logic
     this.hp -= hit;
     if (this.hp <= 0) {  //TODO hacer el flag de dying para que aparezca la animación
       this.spriteImage = this.spriteDeath;
       this.updateAnimation(500);
       this.hp = 0;
+      if (player.lifeSteal){
+        player.hp = (player.hp >= player.maxHp) ? player.maxHp : player.hp + 20;
+      }
     }
   }
 
@@ -117,6 +120,7 @@ class EnemyBase extends AnimatedObject {
 
   bounce(){  //logic to change speed and damage everytime the enemy bounce
     let direction = this.speed > 0 ? -1 : 1;  //change direction
+    if (this.isSlowed) this.speed *= 0.2;  //check for lions roar effect
     //random damage after bounce
     let minDamage = this.damage - 3;
     let maxDamage = this.damage + 3;

@@ -57,13 +57,15 @@ class PlayerBase extends AnimatedObject {
     this.attackDuration = 10;
     this.HITBOX_WIDTH = 50;
     this.HITBOX_HEIGHT = 100;
+    this.range = 1;  //colosseums fury effect
     this.HITBOX_OFFSET = -15;
     this.hitEnemies = new Set();
 
     // card system
-    this.canJump = true;
-    this.invincible = false;
-    this.lifeSteal = false;
+    this.canJump = true;  //chains ceaser effect
+    this.invincible = false;  //divine shield effect
+    this.lifeSteal = false;  //gladiators blood effect
+    this.doubleDeathPenalty = false;  //senates judgement effect
     this.hearts = 5;
     this.maxHearts = 5;
   }
@@ -156,9 +158,18 @@ class PlayerBase extends AnimatedObject {
   }
   
   takeDamage(hit){  //damage made by enemy, look EnemyBase to understand the whole logic
+    if (this.invincible){
+      this.invincible = false;
+      return;
+    }
     this.hp -= hit;
     if (this.hp <= 0) {
-      this.hearts--;  //lose a heart
+      if (this.doubleDeathPenalty) {  //senates judgment effect
+        this.hearts -= 2;
+        this.doubleDeathPenalty = false;
+      } else {
+        this.hearts--;
+      }
       if (this.hearts > 0) {
         this.hp = this.maxHp;  //reset hp for next heart
       } else {
@@ -175,7 +186,7 @@ class PlayerBase extends AnimatedObject {
                 return;  
             if (hitboxOverlap(this.attackHitbox, enemy)) {
                 this.hitEnemies.add(enemy);
-                enemy.takeDamage(this.damage);
+                enemy.takeDamage(this.damage, this);
             }
         });
   }
@@ -185,14 +196,14 @@ class PlayerBase extends AnimatedObject {
       this.attackHitbox = {
         x: this.position.x + this.halfSize.x + this.HITBOX_OFFSET,
         y: this.position.y - this.HITBOX_HEIGHT * 1.2,
-        width: this.HITBOX_WIDTH,
+        width: this.HITBOX_WIDTH * this.range,  //to increase range if colosseums fury is active
         height: this.HITBOX_HEIGHT
       };
     } else {
       this.attackHitbox = {
-        x: this.position.x - this.halfSize.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET,
+        x: this.position.x - this.halfSize.x - (this.HITBOX_WIDTH * this.range) - this.HITBOX_OFFSET,
         y: this.position.y - this.HITBOX_HEIGHT * 1.2,
-        width: this.HITBOX_WIDTH,
+        width: this.HITBOX_WIDTH * this.range,
         height: this.HITBOX_HEIGHT
       };
     }

@@ -51,76 +51,75 @@ class Card {
 //Power-ups
 const cards = [
 
-new Card("Speed Boost", "powerup", null, (player) => {  //favor_people.png
+new Card("Speed Boost", "powerup", null, (player) => {  //favor_people.png check
     player.speed *= 1.2;
 }, null, favor_people),
 
-new Card("Damage Boost", "powerup", null, (player) => {  //blade_mars.png
+new Card("Damage Boost", "powerup", null, (player) => {  //blade_mars.png check
     player.damage *= 1.3;
 }, null, blade_mars),
 
-new Card("Heal 1 Heart", "powerup", null, (player) => {  //blessing_venus.png
-    player.hp += 20;
+new Card("Heal 1 Heart", "powerup", null, (player) => {  //blessing_venus.png check
+    player.hearts += 1;
 }, null, blessing_venus),
 
-new Card("Slow Enemies", "powerup", 5000,  //lions_roar.png
+new Card("Slow Enemies", "powerup", 5000,  //lions_roar.png check
     (player, enemies) => {  
-    enemies.forEach(e => e.speed *= 0.5);
+    enemies.forEach(e => { e.isSlowed = true; e.speed *= 0.2; });
 }, (player, enemies) => {
-    enemies.forEach(e => e.speed *= 2);
+    enemies.forEach(e => { e.isSlowed = false; e.speed = e.speedBase; });
 }, lion_roar),
 
-new Card("Shield", "powerup", 10000, (player) => {  //divine shield
+new Card("Shield", "powerup", null, (player) => {  //divine shield check
     player.invincible = true;
-}, (player) => {
-    player.invincible = false;
 }, divine_shield),
 
-new Card("Life Steal", "powerup", null, (player) => {  //gladiators_blood.png
+new Card("Life Steal", "powerup", null, (player) => {  //gladiators_blood.png check
     player.lifeSteal = true;
 }, null, gladiators_blood),
 
-new Card("Range Boost", "powerup", null, (player) => {  //colosseums_fury.png
+new Card("Range Boost", "powerup", 8000, (player) => {  //colosseums_fury.png check
     player.range *= 1.3;
-}, null, colosseums_fury),
+}, (player) => {
+    player.range /= 1.3;
+}, colosseums_fury),
 
-new Card("Reveal Card", "powerup", null, (player, game) => {  //eye_emperor.png
+new Card("Reveal Card", "powerup", null, (player, game) => {  //eye_emperor.png $
     game.revealNextCard = true;  //TODO arreglar propiedad
 }, null, eye_emperor),
 
 //Punishment
-new Card("Spawn Enemies", "punishment", null, (player, enemies) => {  //imperial_decreee.png
-    enemies.push(new EnemyBase(new Vector(900,450), lionConfig));  //TODO hacer una funcion para llamar dependiendo del enemigo del nivel
-    enemies.push(new EnemyBase(new Vector(900,450), lionConfig));
+new Card("Spawn Enemies", "punishment", null, (player, enemies, game) => {  //imperial_decreee.png check
+    enemies.push(game.spawnEnemy());
+    enemies.push(game.spawnEnemy());
 }, imperial_decree),
 
-new Card("No Jump", "punishment", 10000, (player) => {  //chains_caesar.png
+new Card("No Jump", "punishment", 10000, (player) => {  //chains_caesar.png check
     player.canJump = false;
 }, (player) => {
     player.canJump = true;
 }, chains_caesar),
 
-new Card("Cards Cost HP", "punishment", null, (player) => {  //hunger_plebs.pnga
+new Card("Cards Cost HP", "punishment", null, (player) => {  //hunger_plebs.png $
     player.cardCostHP = true;
 }, null, hunger_plebs),
 
-new Card("Lose Heart", "punishment", null, (player) => {  //wrath_jupiter.png
-    player.hp -= 20;
+new Card("Lose Heart", "punishment", null, (player) => {  //wrath_jupiter.png check
+    player.hearts -= 1;
 }, null, wrath_jupiter),
 
-// CORRECTO
-new Card("Fog", "punishment", 12000,  //ampitheatre_fog.png
+new Card("Fog", "punishment", 12000,  //ampitheatre_fog.png check
     (player) => { player.fogActive = true; },
     (player) => { player.fogActive = false; }, amphitheatre_fog
 ),  
 
-new Card("Weak Damage", "punishment", 15000, (player) => {  //lanistas_betrayal.png
+new Card("Weak Damage", "punishment", 15000, (player) => {  //lanistas_betrayal.png check
     player.damage *= 0.6;
 }, (player) => {
     player.damage /= 0.6;
 }, lanistas_betreyal),
 
-new Card("Double Death Penalty", "punishment", null, (player) => {  //senates_judgment.png
+new Card("Double Death Penalty", "punishment", null, (player) => {  //senates_judgment.png check
     player.doubleDeathPenalty = true;
 }, null, senates_judgement)
 

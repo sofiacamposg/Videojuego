@@ -155,6 +155,9 @@ const lionConfig = {
     attackLeftSrc:  "./assets/enemy1/attackLeft.png",
     deathSrc: "./assets/enemy1/death.png",
 };
+const game = {  //imperial decree effect, 
+    spawnEnemy: () => new EnemyBase(new Vector(900, 450), lionConfig)
+};
 let killedEnemies = 0;
 const conditionEnemies = 20;
 // Enemies, random entities
@@ -240,6 +243,11 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
 
     ctx.restore();
 
+    if (player.fogActive) {  //ampitheatre fog effect
+        ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
     drawHealthBar(ctx, 20, 20, 100, 30, player.hp, player.maxHp);
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
@@ -258,10 +266,10 @@ function update(canvas, deltaTime){
     if (!cardEventTriggered && levelTimer >= randomEventTime) {
         //console.log("EVENT TRIGGERED");
         cardEventTriggered = true;
-        cardSystem.show(cards, player, enemies); //trigger the card pick screen
+        cardSystem.show(cards, player, enemies, game); //trigger the card pick screen
     }
 
-    if (player.hearts <= 0){
+    if (player.hearts <= 0){  //game over scene
         gameOver = true;
         gameOverBox.show();
         return; //stop update when game is over
