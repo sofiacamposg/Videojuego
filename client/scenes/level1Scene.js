@@ -4,62 +4,53 @@ import { EnemyBase } from "../objects/EnemyBase.js";
 import { MessageBox } from "../objects/MessageBox.js";
 import { cards } from "../cards/Card.js";
 import { mouseX, mouseY } from "../libs/game_functions.js";
-import { cardsOnCanvas } from "../cards/cardsOnCanvas.js"; //card UI and logic
+import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
+//& pulled player/enemy configs and platform/camera helpers out of this file
+import { playerConfigs, level1Config } from "../libs/levelConfig.js";
+import { spawnEnemy, generatePlatform, updateCamera } from "../libs/level_functions.js";
 
 "use strict"
 
-//========================= GAME CORE VARIABLES =========================
-//world size
+//========================= WORLD =========================
 let worldWidth = 2000;
 let worldHeight = 600;
-let cameraX = 0; //canvas viewport
+let cameraX = 0;
 
-let player
+let player;
+let canvasRef; //& stored so helpers that need canvas.width work without it being passed everywhere
 
-//LEVEL TIMER
+//========================= TIMERS =========================
 let levelTimer = 0;
-// random trigger between 20s and 40s (considering 1 minute per level)
 let randomEventTime = Math.random() * (40 - 20) + 20;
 
-/* For HTML stats (User stats)
-let levelTime = 0;
-let lastTome = 0; */
-let keysDown = {}; //To track keyboard input for player movement
-let jumpPressed = false; //Prevents continuous jumping when holding the key
+let keysDown = {};
+let jumpPressed = false;
 
 //========================= CARD SYSTEM =========================
 let cardEventTriggered = false;
-const cardSystem = new cardsOnCanvas(); //single instance handles all card stuff
+const cardSystem = new cardsOnCanvas();
 
 //========================= PAUSE SYSTEM =========================
 let isPaused = false;
 let goToMenu = false;
 
-let pauseBox = new MessageBox(
-    "PAUSED",
-    "Game is paused",
-    250, 150, 500, 300
-);
+let pauseBox = new MessageBox("PAUSED", "Game is paused", 250, 150, 500, 300);
 
 pauseBox.addButton("Continue", 440, 290, 120, 35, () => {
     isPaused = false;
     pauseBox.hide();
 });
-
 pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
     reset();
     isPaused = false;
     pauseBox.hide();
 });
-
-//DOESN´T WORK, MUST CONNECT WITH SWITCH SCENE
 pauseBox.addButton("Home", 440, 390, 120, 35, () => {
     goToMenu = true;
 });
 
 //========================= LIVE SYSTEM =========================
-//HEALTH BAR
-function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
+function drawHealthBar(ctx, x, y, width, height, current, max) {
     ctx.fillStyle = "white";
     ctx.font = "20px Arial";
     ctx.fillText("HP: " + player.hp, 20, 70);
@@ -74,14 +65,14 @@ function drawHealthBar(ctx, x, y, width, height, current, max) { //current from 
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
-};
-//HEARTS
+}
+
 function drawHearts(ctx, x, y, current, max) {
     for (let i = 0; i < max; i++) {
-        ctx.fillStyle = i < current ? "red" : "gray";  //gray if heart is lost
+        ctx.fillStyle = i < current ? "red" : "gray";
         ctx.fillText("♥", x + i * 50, y);
     }
-};
+}
 
 //========================= GAME OVER =========================
 let gameOver = false;
@@ -97,153 +88,68 @@ gameOverBox.addButton("Restart", 440, 340, 120, 35, () => {
 });
 
 //========================= PLAYER =========================
-//---player data---
-const guerreroConfig = {
-    hp: 120, maxHp: 120, speed: 0.5, damage: 20,
-    walkRightSrc:   "./assets/player1/1.png",
-    walkLeftSrc:    "./assets/player1/2.png",
-    jumpRightSrc:   "./assets/player1/3.png",
-    jumpLeftSrc:    "./assets/player1/4.png",
-    attackRightSrc: "./assets/player1/attackright.png",
-    attackLeftSrc:  "./assets/player1/attackleft.png",
-};
-
-const lanceroConfig = {
-    hp: 100, maxHp: 100, speed: 0.6, damage: 25,
-    walkRightSrc:   "./assets/player2/5.png",
-    walkLeftSrc:    "./assets/player2/6.png",
-    jumpRightSrc:   "./assets/player2/7.png",
-    jumpLeftSrc:    "./assets/player2/8.png",
-    attackRightSrc: "./assets/player2/attackright.png",
-    attackLeftSrc:  "./assets/player2/attackleft.png",
-};
-
-const pesadoConfig = {
-    hp: 150, maxHp: 150, speed: 0.3, damage: 20,
-    walkRightSrc:   "./assets/player3/9.png",
-    walkLeftSrc:    "./assets/player3/10.png",
-    jumpRightSrc:   "./assets/player3/11.png",
-    jumpLeftSrc:    "./assets/player3/12.png",
-    attackRightSrc: "./assets/player3/attackright.png",
-    attackLeftSrc:  "./assets/player3/attackleft.png",
-};
-//This function selects the player sprite
-function setSelectedCharacter(selectedCharacter){
-    if (selectedCharacter === "Guerrero"){
-        player = new PlayerBase(new Vector(200, 450), guerreroConfig);
-    }
-    else if (selectedCharacter === "Lancero"){
-        player = new PlayerBase(new Vector(200, 450), lanceroConfig);
-    }
-    else if (selectedCharacter === "Pesado"){
-        player = new PlayerBase(new Vector(200, 450), pesadoConfig);
-    }
+function setSelectedCharacter(selectedCharacter) {
+    player = new PlayerBase(new Vector(200, 450), playerConfigs[selectedCharacter]);
     initPlatforms();
 }
 
 //========================= ENEMIES =========================
-//---enemy data ----
-//config for every enemy, all the data that is only for this enemy, should change between levels
-const lionConfig = {
-    hp: 100,
-    damage: 5,
-    speed: 0.4,
-    scale: 0.8,
-    walkRightSrc:   "./assets/enemy1/walkRight.png",
-    walkLeftSrc:    "./assets/enemy1/walkLeft.png",
-    attackRightSrc: "./assets/enemy1/attackRight.png",
-    attackLeftSrc:  "./assets/enemy1/attackLeft.png",
-    deathSrc: "./assets/enemy1/death.png",
+//& game object used by card system to trigger extra spawns mid-level
+const game = {
+    spawnEnemy: () => spawnEnemy(cameraX + 1100, 450, level1Config.enemyConfig)
 };
-const game = {  //imperial decree effect, 
-    spawnEnemy: () => new EnemyBase(new Vector(900, 450), lionConfig)
-};
+
 let killedEnemies = 0;
 const conditionEnemies = 20;
-// Enemies, random entities
-let enemies = [
-    new EnemyBase(new Vector(900,450), lionConfig),
-    new EnemyBase(new Vector(1100,450), lionConfig),
-]
+let enemies = level1Config.spawnPositions.map(p => spawnEnemy(p.x, p.y, level1Config.enemyConfig));
 
 //========================= PLATFORMS =========================
-//Obstacles, also random entities
 let platforms = [];
 
 let platformImage = new Image();
 platformImage.src = "./assets/Platform.png";
 
-//begining with 8 platforms
-function initPlatforms(){
-    platforms = [];
-    for(let i = 0; i < 8; i++){
-        generatePlatform();
+function initPlatforms() {
+    //& seed first platform manually since generatePlatform always needs a previous one
+    platforms = [{ x: 300, y: 350, width: 100, height: 70 }];
+    for (let i = 1; i < 8; i++) {
+        platforms.push(generatePlatform(platforms[platforms.length - 1]));
     }
-}
-
-function generatePlatform(){
-    let x, y;
-
-    //fixed position platform
-    if(platforms.length === 0){
-        x = 300;
-        y = 350;
-    } else {
-        let last = platforms[platforms.length - 1];
-
-        let minGap = 200;
-        let maxGap = 300;
-
-        //separación horizontal aleatoria entre min y max
-        x = last.x + Math.random() * (maxGap - minGap) + minGap;
-        //variación vertical aleatoria respecto a la anterior
-        y = last.y + (Math.random() - 0.5) * 120;
-
-        //clamp para que las plataformas no salgan del rango jugable
-        if(y > 340) y = 340;
-        if(y < 200) y = 200;
-    }
-
-    platforms.push({
-        x: x,
-        y: y,
-        width: 100,
-        height: 70
-    });
 }
 
 //========================= BACKGROUND =========================
-let backgroundImage = new Image()
-backgroundImage.src = "./assets/fondo2.png";
+let backgroundImage = new Image();
+backgroundImage.src = level1Config.background;
 
 //========================= SPAWN SYSTEM =========================
 let spawnTimer = 0;
-let spawnInterval = 2000; // 2000 ms = 2 seconds
+let spawnInterval = 2000;
 
-function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
-    //Clear → update → draw objects
+//========================= DRAW =========================
+function draw(ctx, canvas, deltaTime) {
+    canvasRef = canvas;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for(let i = 0; i < worldWidth; i += canvas.width){
-        ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); //draw background
+    for (let i = 0; i < worldWidth; i += canvas.width) {
+        ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height);
     }
 
-    if(!isPaused && !cardSystem.isActive){ //freeze game while picking a card
+    if (!isPaused && !cardSystem.isActive) {
         update(canvas, deltaTime);
     }
 
-    ctx.save();  //keeps character within screen
+    ctx.save();
     ctx.translate(-cameraX, 0);
 
-    platforms.forEach(p=>{  //draw platforms
+    platforms.forEach(p => {
         ctx.drawImage(platformImage, p.x, p.y - 37, p.width, p.height);
     });
 
-    player.draw(ctx);  //draw player sprite
-    enemies.forEach(enemy => enemy.draw(ctx));  //draw enemy sprites
+    player.draw(ctx);
+    enemies.forEach(enemy => enemy.draw(ctx));
 
     ctx.restore();
 
-    if (player.fogActive) {  //ampitheatre fog effect
+    if (player.fogActive) {
         ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
@@ -252,44 +158,42 @@ function draw(ctx, canvas, deltaTime){  //TODO DRAW MUST CHANGE TO CAMERA VIEW
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     pauseBox.draw(ctx);
-    if (gameOver){
+
+    if (gameOver) {
         gameOverBox.draw(ctx);
         return;
     }
-    cardSystem.draw(ctx, canvas); //draws offered cards overlay
-    cardSystem.drawDeck(ctx, canvas); //draws deck overlay
+
+    cardSystem.draw(ctx, canvas);
+    cardSystem.drawDeck(ctx, canvas);
 }
 
-function update(canvas, deltaTime){
+//========================= UPDATE =========================
+function update(canvas, deltaTime) {
     levelTimer += deltaTime;
-    //Time Based random card event
     if (!cardEventTriggered && levelTimer >= randomEventTime) {
-        //console.log("EVENT TRIGGERED");
         cardEventTriggered = true;
-        cardSystem.show(cards, player, enemies, game); //trigger the card pick screen
+        cardSystem.show(cards, player, enemies, game);
     }
 
-    if (player.hearts <= 0){  //game over scene
+    if (player.hearts <= 0) {
         gameOver = true;
         gameOverBox.show();
-        return; //stop update when game is over
+        return;
     }
 
-    //---player ----
     const goLeft  = keysDown["ArrowLeft"] || keysDown['a'];
     const goRight = keysDown["ArrowRight"] || keysDown['d'];
     const playerGroundY = 450;
 
     player.update(goLeft, goRight, jumpPressed, platforms, playerGroundY, deltaTime);
-    jumpPressed = false;  //reset after player jumped
+    jumpPressed = false;
 
-    //Limit player position inside the world
     if (player.position.x < player.halfSize.x)
         player.position.x = player.halfSize.x;
     if (player.position.x > worldWidth - player.halfSize.x)
         player.position.x = worldWidth - player.halfSize.x;
 
-    //---enemy ---
     enemies.forEach(enemy => {
         enemy.update(player, deltaTime);
         //& solo bounce si está en el borde Y moviéndose hacia esa pared (evita el bounce infinito)
@@ -299,138 +203,89 @@ function update(canvas, deltaTime){
             enemy.bounce();
     });
 
-    player.attackEnemy(enemies);  //player attacks enemies
+    player.attackEnemy(enemies);
 
     let totalLenEnemies = enemies.length;
-    enemies = enemies.filter(alive => alive.hp > 0);  //remove dead enemies
-    killedEnemies += totalLenEnemies - enemies.length;  //update killed enemies
+    enemies = enemies.filter(alive => alive.hp > 0);
+    killedEnemies += totalLenEnemies - enemies.length;
 
-    //---camera ----
-    cameraX = player.position.x - canvas.width / 2;
-    if (cameraX < 0) cameraX = 0;
-    if (cameraX > worldWidth - canvas.width) cameraX = worldWidth - canvas.width;
+    cameraX = updateCamera(player.position.x, canvas.width, worldWidth);
 
-    //---platforms ---
     let last = platforms[platforms.length - 1];
-    if (player.position.x > last.x - 500) generatePlatform();
+    if (player.position.x > last.x - 500)
+        platforms.push(generatePlatform(last));
 
-    //---spawn ---
     spawnTimer += deltaTime;
     if (spawnTimer >= spawnInterval) {
-        if (killedEnemies != conditionEnemies) {
-            //& agrega un enemigo justo afuera del borde de la camara, asi parece que parecen fuera del mundo
-            enemies.push(new EnemyBase(new Vector(cameraX + canvas.width + 100, 450), lionConfig));
+        if (killedEnemies !== conditionEnemies) {
+            //& agrega un enemigo justo afuera del borde de la camara, asi parece que aparecen fuera del mundo
+            enemies.push(spawnEnemy(cameraX + canvas.width + 100, 450, level1Config.enemyConfig));
         }
         spawnTimer = 0;
     }
 
-    //tick card effects so they expire with deltaTime
     cardSystem.update(deltaTime);
 }
 
-/*//DECK BUTTON
-function drawDeckButton(ctx, button) {
-    const left = button.x - button.w / 2;
-    const top = button.y - button.h / 2;
-
-    ctx.fillStyle = "black";
-    ctx.fillRect(left, top, button.w, button.h);
-
-    ctx.strokeStyle = "white";
-    ctx.strokeRect(left, top, button.w, button.h);
-
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    ctx.fillText("DECK", button.x, button.y);
-};*/
-
-
-function handleClick(){
-    if(isPaused){
-        return pauseBox.handleClick(mouseX, mouseY);
-    }
-    if(cardSystem.isDeckOpen){ //deck click goes to cardSystem
-        cardSystem.handleDeckClick(mouseX, mouseY, canvas);
+//========================= INPUT =========================
+function handleClick() {
+    if (isPaused) return pauseBox.handleClick(mouseX, mouseY);
+    if (cardSystem.isDeckOpen) {
+        cardSystem.handleDeckClick(mouseX, mouseY, canvasRef);
         return;
     }
-    if(cardSystem.isActive){ //card pick click goes to cardSystem
-        cardSystem.handleClick(mouseX, mouseY, canvas);
+    if (cardSystem.isActive) {
+        cardSystem.handleClick(mouseX, mouseY, canvasRef);
         return;
     }
 }
 
-function handleKeyDown(event){
-    if(event.repeat) return;
+function handleKeyDown(event) {
+    if (event.repeat) return;
 
-    //PauseMessage — must be checked before the isPaused guard so Escape can unpause
-    if(event.key === "Escape"){
+    if (event.key === "Escape") {
         isPaused = !isPaused;
-
-        if(isPaused){
-            pauseBox.show();
-        } else {
-            pauseBox.hide();
-        }
+        isPaused ? pauseBox.show() : pauseBox.hide();
         return;
     }
 
-    if(isPaused) return;
+    if (isPaused) return;
 
     keysDown[event.key] = true;
-    //Open Player's Deck
-    if(event.key === "c" || event.key === "C"){
-        cardSystem.toggleDeck(); //open/close deck overlay
-    }
-    //Jump
-    if(event.key === " "){
-        jumpPressed = true;
-    }
-    //Attack
-    if(event.key === "j"){
-        if(!player.playeratack){
+    if (event.key === "c" || event.key === "C") cardSystem.toggleDeck();
+    if (event.key === " ") jumpPressed = true;
+    if (event.key === "j") {
+        if (!player.playeratack) {
             player.playeratack = true;
             player.attackFrames = 0;
         }
     }
 }
 
-function handleKeyUp(event){
+function handleKeyUp(event) {
     keysDown[event.key] = false;
-
-    if(event.key === " "){
-        jumpPressed = false;
-    }
+    if (event.key === " ") jumpPressed = false;
 }
 
 //========================= RESET =========================
-function reset(){
-    // reset player
+function reset() {
     player.position.x = 200;
     player.position.y = 350;
     player.velocityY = 0;
     player.hp = player.maxHp;
     player.hearts = player.maxHearts;
 
-    // reset enemies
-    enemies = [
-        new EnemyBase(new Vector(900,450), lionConfig),
-        new EnemyBase(new Vector(800,450), lionConfig),
-    ];
+    enemies = level1Config.spawnPositions.map(p => spawnEnemy(p.x, p.y, level1Config.enemyConfig));
     killedEnemies = 0;
 
-    //reset platforms
     initPlatforms();
-
-    // reset camera
     cameraX = 0;
-
-    // reset spawn
     spawnTimer = 0;
 
     levelTimer = 0;
     randomEventTime = Math.random() * (40 - 20) + 20;
     cardEventTriggered = false;
-    cardSystem.close(); //dismiss any open card UI
+    cardSystem.close();
     cardSystem.isDeckOpen = false;
     gameOver = false;
 }
