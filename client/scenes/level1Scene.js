@@ -106,6 +106,19 @@ let enemies = currentLevelConfig.spawnPositions.map(pos =>
     )
 );
 
+//========================= GAME OVER =========================
+let gameOver = false;
+let gameOverBox = new MessageBox(
+    "Game Over",
+    "You died!\n The emperor is dissapointed in you",
+    250, 150, 500, 300
+);
+gameOverBox.addButton("Restart", 440, 340, 120, 35, () => {
+    resetLevel1();
+    gameOver = false;
+    gameOverBox.hide();
+});
+
 
 //========================= PLATFORMS =========================
 //Obstacles, also random entities
@@ -233,6 +246,11 @@ function drawLevel1(ctx, canvas, deltaTime){
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     pauseBox.draw(ctx);
 
+    if (gameOver) {
+        gameOverBox.draw(ctx);
+        return;
+    }
+
     // cardsOnCanvas dibuja la selección de cartas y el deck del jugador
     cardSystem.draw(ctx, canvas);
     cardSystem.drawDeck(ctx, canvas);
@@ -269,6 +287,13 @@ function drawHearts(ctx, x, y, current, max) {
 function update(deltaTime){
     if (!player) return; //avoids crash
      levelTimer += deltaTime;
+
+    if (player.hearts <= 0) {
+        gameOver = true;
+        gameOverBox.show();
+        return;
+    }
+
     //Time Based random card event
     if (!cardEventTriggered && levelTimer >= randomEventTime) {
         console.log("EVENT TRIGGERED");
@@ -346,6 +371,9 @@ function handleMouseMoveLevel1(event, canvas){
 
 function handleClickLevel1(){
 
+    if(gameOver){
+        return gameOverBox.handleClick(mouseX, mouseY);
+    }
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
@@ -416,12 +444,15 @@ function resetLevel1(){
     player.position.y = 350;
     player.velocityY = 0;
     player.hp = player.maxHp;
+    player.hearts = player.maxHearts;
 
     // reset enemies
     enemies = currentLevelConfig.spawnPositions.map(pos =>
         spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
     );
     killedEnemies = 0;
+
+    gameOver = false;
 
     //reset platforms
     initPlatforms();
