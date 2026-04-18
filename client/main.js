@@ -100,7 +100,7 @@ function main() {
         }
         //LEVEL 1 SCENE
         else if (currentScene === 'level1'){
-            clicked = handleClickLevel1(ctx); //& manejo de clicks en level1 (aún no implementado)
+            clicked = handleClickLevel1(ctx);
 
             if(goToMenuLevel1){
                 //& si level1 pide volver al menú, resetea todas las escenas involucradas
@@ -109,6 +109,14 @@ function main() {
                 resetLevel1();
                 currentScene = "menu";
             }
+        }
+        //LEVEL 2 SCENE
+        else if (currentScene === 'level2'){
+            handleClickLevel2();
+        }
+        //LEVEL 3 SCENE
+        else if (currentScene === 'level3'){
+            handleClickLevel3();
         }
     });
 

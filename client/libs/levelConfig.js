@@ -12,7 +12,7 @@ export const playerConfigs = {
     },
 
     Lancero: {
-    hp: 100, maxHp: 100, speed: 0.5, damage: 25,
+    hp: 100, maxHp: 100, speed: 0.6, damage: 25,
     walkRightSrc:   "./assets/player2/5.png",
     walkLeftSrc:    "./assets/player2/6.png",
     jumpRightSrc:   "./assets/player2/7.png",
@@ -22,7 +22,7 @@ export const playerConfigs = {
 },
 
     Pesado: {
-    hp: 150, maxHp: 150, speed: 0.5, damage: 20,
+    hp: 150, maxHp: 150, speed: 0.4, damage: 15,
     walkRightSrc:   "./assets/player3/9.png",
     walkLeftSrc:    "./assets/player3/10.png",
     jumpRightSrc:   "./assets/player3/11.png",
@@ -38,9 +38,9 @@ export const level1Config = {
 
     enemyConfig: {
         hp: 100,
-        damage: 5,
+        damage: 8,
         speed: 0.4,
-        scale: 0.8,
+        scale: 0.7,
         walkRightSrc: "./assets/enemy1/walkRight.png",
         walkLeftSrc: "./assets/enemy1/walkLeft.png",
         attackRightSrc: "./assets/enemy1/attackRight.png",
@@ -59,9 +59,9 @@ export const level2Config = {
 
     enemyConfig: {
         hp: 120,
-        damage: 8,
+        damage: 9,
         speed: 0.5,
-        scale: 0.9,
+        scale: 0.8,
         walkRightSrc: "./assets/enemy1/walkRight.png",
         walkLeftSrc: "./assets/enemy1/walkLeft.png",
         attackRightSrc: "./assets/enemy1/attackRight.png",
@@ -79,7 +79,7 @@ export const level3Config = {
 
     enemyConfig: {
         hp: 120,
-        damage: 8,
+        damage: 10,
         speed: 0.5,
         scale: 0.9,
         walkRightSrc: "./assets/enemy1/walkRight.png",
