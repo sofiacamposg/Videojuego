@@ -12,7 +12,7 @@ export const playerConfigs = {
     },
 
     Lancero: {
-    hp: 100, maxHp: 100, speed: 0.6, damage: 25,
+    hp: 100, maxHp: 100, speed: 0.5, damage: 25,
     walkRightSrc:   "./assets/player2/5.png",
     walkLeftSrc:    "./assets/player2/6.png",
     jumpRightSrc:   "./assets/player2/7.png",
@@ -22,7 +22,7 @@ export const playerConfigs = {
 },
 
     Pesado: {
-    hp: 150, maxHp: 150, speed: 0.3, damage: 20,
+    hp: 150, maxHp: 150, speed: 0.5, damage: 20,
     walkRightSrc:   "./assets/player3/9.png",
     walkLeftSrc:    "./assets/player3/10.png",
     jumpRightSrc:   "./assets/player3/11.png",

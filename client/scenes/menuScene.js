@@ -1,6 +1,9 @@
 "use strict"
-//& swapped local drawButton/isMouseOverButton for shared versions from game_functions
-import { mouseX, mouseY, drawButton, handleClick as isClickOnButton } from "../libs/game_functions.js";
+import { handleMouseMove, handleClick, drawButton } from "../libs/game_functions.js";
+
+// Mouse (SE QUEDA AQUÍ ✔)
+let mouseX = 0;
+let mouseY = 0;
 
 const buttonStart = {
     x: 500,
@@ -14,14 +17,10 @@ const buttonSettings = {
     text: "SETTINGS"
 };
 
-// Background
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/Portada.png";
 
-let cachedCtx;
-
-function draw(ctx, canvas) {
-    cachedCtx = ctx;
+function drawMenu(ctx, canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
@@ -29,12 +28,16 @@ function draw(ctx, canvas) {
     drawButton(ctx, buttonSettings, mouseX, mouseY);
 }
 
-//This function only checks the result of the previous one and returns it
-function handleClick() {
-  //checks if the mouse is over START, SETTINGS or LOG IN
-  if (isClickOnButton(mouseX, mouseY, buttonStart, cachedCtx)) return "start";
-  if (isClickOnButton(mouseX, mouseY, buttonSettings, cachedCtx)) return "settings";
-  return null;
+function handleClickMenu(ctx) {
+    if (handleClick(mouseX, mouseY, buttonStart, ctx)) return "start";
+    if (handleClick(mouseX, mouseY, buttonSettings, ctx)) return "settings";
+    return null;
 }
 
-export { draw, handleClick };
+function handleMouseMoveMenu(event, canvas) {
+    const pos = handleMouseMove(event, canvas);
+    mouseX = pos.x;
+    mouseY = pos.y;
+}
+
+export { drawMenu, handleMouseMoveMenu, handleClickMenu };

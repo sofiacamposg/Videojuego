@@ -1,8 +1,12 @@
-import { MessageBox } from "../objects/MessageBox.js";
-//& replaced local drawButton/isMouseOver with shared versions from game_functions
-import { mouseX, mouseY, drawButton, handleClick as isClickOnButton, isMouseOverBox } from "../libs/game_functions.js";
+import { MessageBox } from "../objects/MessageBox.js";  
 "use strict"
+import { handleMouseMove, drawButton, handleClick, isMouseOverBox } from "../libs/game_functions.js";
+
+//? mouse track
+let mouseX = 0;
+let mouseY = 0;
 let loginSuccess = false;
+
 const buttonBack = { //? BACK TO MENU BUTTON
     x: 150,
     y: 70,
@@ -23,10 +27,12 @@ const errorMessage = new MessageBox(  //? error message creation
     errorMessage.addButton("Try again", 440, 300, 120, 50, () =>{  //? hide when clicked
         errorMessage.hide()
     });
+
 //? inputs 
 let username = "";  
 let password = "";
 let activeField = null; //username / password / null
+
 const inputUsername = { x: 500, y: 300, w: 500, h: 60 };
 const inputPassword = { x: 500, y: 410, w: 500, h: 60 };
 
@@ -34,10 +40,7 @@ const inputPassword = { x: 500, y: 410, w: 500, h: 60 };
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
-let cachedCtx;
-
-function draw(ctx, canvas){  //? draw every element on the canvas
-    cachedCtx = ctx;
+function drawLogIn(ctx, canvas){  //? draw every element on the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
@@ -61,6 +64,7 @@ function draw(ctx, canvas){  //? draw every element on the canvas
 
     errorMessage.draw(ctx); 
 }
+
 function drawInputBox(ctx, centerX, centerY, w, h, label){  //? draw the labels and input boxes
     const x = centerX - w / 2;
     const y = centerY - h / 2;
@@ -96,7 +100,14 @@ function drawInputBox(ctx, centerX, centerY, w, h, label){  //? draw the labels 
         ctx.fillText(valueToShow + (activeField === label.toLowerCase() ? "|" : ""), x + 18, y + 38);  //check if is inactive so the | doesn't appear 
     }
 }
-function handleClick(){  //? handle cliks over any element
+
+function handleMouseMoveLogIn(event, canvas){
+    const pos = handleMouseMove(event, canvas);
+    mouseX = pos.x;
+    mouseY = pos.y;
+}
+
+function handleClickLogIn(ctx){  //? handle cliks over any element
     if(loginSuccess){
         loginSuccess = false;
         return "confirm";
@@ -104,21 +115,27 @@ function handleClick(){  //? handle cliks over any element
     if (errorMessage.visible) {
         return errorMessage.handleClick(mouseX, mouseY);
     }
+    // inputs
     if (isMouseOverBox(mouseX, mouseY, inputUsername)){
-        activeField = "username";
+        activeField = "username"; 
         return "username";
     }
+
     if (isMouseOverBox(mouseX, mouseY, inputPassword)){
-        activeField = "password";
+        activeField = "password"; 
         return "password";
     }
-    if (isClickOnButton(mouseX, mouseY, buttonBack, cachedCtx)){
+
+    // buttons
+    if (handleClick(mouseX, mouseY, buttonBack, ctx)){
         return "back";
     }
-    if (isClickOnButton(mouseX, mouseY, buttonCreate, cachedCtx)){
+
+    if (handleClick(mouseX, mouseY, buttonCreate, ctx)){
         return "create";
     }
-    if (isClickOnButton(mouseX, mouseY, buttonConfirm, cachedCtx)) {
+
+    if (handleClick(mouseX, mouseY, buttonConfirm, ctx)) {
         if (username === "" || password === "") {
             errorMessage.show();
             return null;
@@ -126,15 +143,13 @@ function handleClick(){  //? handle cliks over any element
         loginUser();
         return null;
     }
-    if(loginSuccess){
-        loginSuccess = false; // reset
-        return "confirm";
-    }
+
     return null;
 }
 
-//Tenemos que hacer esta función para darle valor a la variable activeField
-function handleKeyDown(event){  //? handles user's input
+
+
+function handleKeyDownLogIn(event){  //? handles user's input
   if (activeField === null) return; //case 1: no active field
 
   if (event.key === "Backspace"){ //case 2: deletes lasts key wrote
@@ -153,13 +168,15 @@ function handleKeyDown(event){  //? handles user's input
   if (activeField === "username") username += event.key;  //adds letter to stricng
   if (activeField === "password") password += event.key;
 }
-function getUsername(){  //? getter
+function getUsernameLogIn(){  //? getter
   return username;
 }
-function reset() {  //? reset to default values
+function resetLogIn() {  //? reset to default values
   username = "";
   password = "";
   activeField = null;
+  mouseX = 0;
+  mouseY = 0;
 }
 
 //API CONNECTION
@@ -193,4 +210,4 @@ async function loginUser(){
         errorMessage.show();
     }
 }
-export { draw, handleClick, handleKeyDown, getUsername, reset };
+export { drawLogIn, handleMouseMoveLogIn, handleClickLogIn, handleKeyDownLogIn, resetLogIn };

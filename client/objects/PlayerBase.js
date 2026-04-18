@@ -19,7 +19,7 @@ class PlayerBase extends AnimatedObject {
         attackLeftSrc = "",
     } = config;
 
-    super(position, 160, 160, "white", "player", 4);
+    super(position, 160, 160, "white", "this", 4);
     this.setCollider(75, 130);  //hurtbox 
     this.direction = "right";
 
@@ -30,8 +30,8 @@ class PlayerBase extends AnimatedObject {
 
     this.setAnimation(0, 3, true, 200); 
     this.velocityY = 0;
-    this.gravity = 0.8;
-    this.jumpStrength = -14;
+    this.gravity = 0.0028; // px/ms²  (compatible con deltaTime en ms)
+    this.jumpStrength = -0.84; // px/ms
     this.isOnGround = true;
     this.isMoving = false;
     //sprites, must have the same name to work
@@ -55,17 +55,20 @@ class PlayerBase extends AnimatedObject {
     this.playeratack = false;
     this.attackFrames = 0;
     this.attackDuration = 10;
+     //hitbox for platform colission
+    this.hitbox = {
+        width: 40,   // AJUSTA esto
+        height: 80   // AJUSTA esto
+    };
     this.HITBOX_WIDTH = 50;
     this.HITBOX_HEIGHT = 100;
-    this.range = 1;  //colosseums fury effect
     this.HITBOX_OFFSET = -15;
     this.hitEnemies = new Set();
 
     // card system
-    this.canJump = true;  //chains ceaser effect
-    this.invincible = false;  //divine shield effect
-    this.lifeSteal = false;  //gladiators blood effect
-    this.doubleDeathPenalty = false;  //senates judgement effect
+    this.canJump = true;
+    this.invincible = false;
+    this.lifeSteal = false;
     this.hearts = 5;
     this.maxHearts = 5;
   }
@@ -74,14 +77,13 @@ class PlayerBase extends AnimatedObject {
     this.isMoving = false;
     this.walk(goLeft, goRight, deltaTime);
     this.jump(jumpPressed);
-    this.applyGravity();
-    this.checkPlatforms(platforms, groundY);
+    this.applyGravity(deltaTime);
+    this.checkPlatforms(platforms, groundY, deltaTime);
     this.updateCollider();
 
     //sprites depending on status (jump, walk, attack, ...)
     if (!this.isOnGround) {
-
-      // SALTO
+      //case 1: jump (no attack allowed in the air)
       this.spriteImage = (this.direction === "right") ? this.spriteJumpRight : this.spriteJumpLeft;
       this.updateAnimation(20);
       this.attackHitbox = null;
@@ -98,14 +100,12 @@ class PlayerBase extends AnimatedObject {
         this.hitEnemies.clear();  //clean "hitbox" to accept enemies again
       }
     } else if (this.isMoving) {
-
-      // CAMINAR
+      //case 3: walk
       this.spriteImage = (this.direction === "right") ? this.spriteRight : this.spriteLeft;
       this.updateAnimation(20);
       this.attackHitbox = null;
     } else {
-
-      // QUIETO
+      //case 4: stay
       this.spriteImage = (this.direction === "right") ? this.spriteRight : this.spriteLeft;
       this.frame = 0;  //returns variable to 0
       if (this.spriteRect) this.spriteRect.x = 0;  //returns image to initial frame (reset)
@@ -127,28 +127,36 @@ class PlayerBase extends AnimatedObject {
   }
 
   jump(jumpPressed){  //jump logic
-    if (jumpPressed && this.isOnGround && this.canJump){ //player meets all requirements
+    if (jumpPressed && this.isOnGround && this.canJump){ //this meets all requirements
         this.velocityY = this.jumpStrength;
         this.isOnGround = false;
     }
   }
 
-  applyGravity(){  //gravity parameters
-    this.velocityY += this.gravity;
-    this.position.y += this.velocityY;
+  applyGravity(deltaTime){  //gravity parameters
+    this.velocityY += this.gravity * deltaTime;
+    this.position.y += this.velocityY *deltaTime;
   }
-
-  checkPlatforms(platforms, groundY){  //check colision between player and platform
+  
+  checkPlatforms(platforms, groundY, deltaTime){  //check colision between this and platform
+    //Platform collision
     this.isOnGround = false;
     platforms.forEach(p => {
+        let playerBottom = this.position.y + this.hitbox.height / 2;
+        let prevBottom = (this.position.y - this.velocityY * deltaTime) + this.hitbox.height / 2;
         let isFalling = this.velocityY >= 0;
-        let prevY = this.position.y - this.velocityY;
+
+        let footOffset = 20;
         let withinX =
-            this.position.x + this.halfSize.x > p.x &&
-            this.position.x - this.halfSize.x < p.x + p.width;
-        let crossingTop = prevY <= p.y && this.position.y >= p.y;
+            this.position.x + this.halfSize.x - footOffset > p.x &&
+            this.position.x - this.halfSize.x + footOffset < p.x + p.width;
+
+        let crossingTop =
+            prevBottom <= p.y &&
+            playerBottom >= p.y;
+
         if (isFalling && withinX && crossingTop) {
-            this.position.y = p.y;
+            this.position.y = p.y - this.hitbox.height / 2;
             this.velocityY = 0;
             this.isOnGround = true;
         }
@@ -161,18 +169,9 @@ class PlayerBase extends AnimatedObject {
   }
   
   takeDamage(hit){  //damage made by enemy, look EnemyBase to understand the whole logic
-    if (this.invincible){
-      this.invincible = false;
-      return;
-    }
     this.hp -= hit;
     if (this.hp <= 0) {
-      if (this.doubleDeathPenalty) {  //senates judgment effect
-        this.hearts -= 2;
-        this.doubleDeathPenalty = false;
-      } else {
-        this.hearts--;
-      }
+      this.hearts--;  //lose a heart
       if (this.hearts > 0) {
         this.hp = this.maxHp;  //reset hp for next heart
       } else {
@@ -182,7 +181,7 @@ class PlayerBase extends AnimatedObject {
   }
 
   attackEnemy(enemies){
-    if (!this.playeratack || !this.attackHitbox) //"player is attacking?"
+    if (!this.playeratack || !this.attackHitbox) //"this is attacking?"
             return;  
         enemies.forEach(enemy => {
             if (this.hitEnemies.has(enemy))  //single attack doesnt hit the same enemy more than once
@@ -199,20 +198,20 @@ class PlayerBase extends AnimatedObject {
       this.attackHitbox = {
         x: this.position.x + this.halfSize.x + this.HITBOX_OFFSET,
         y: this.position.y - this.HITBOX_HEIGHT * 1.2,
-        width: this.HITBOX_WIDTH * this.range,  //to increase range if colosseums fury is active
+        width: this.HITBOX_WIDTH,
         height: this.HITBOX_HEIGHT
       };
     } else {
       this.attackHitbox = {
-        x: this.position.x - this.halfSize.x - (this.HITBOX_WIDTH * this.range) - this.HITBOX_OFFSET,
+        x: this.position.x - this.halfSize.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET,
         y: this.position.y - this.HITBOX_HEIGHT * 1.2,
-        width: this.HITBOX_WIDTH * this.range,
+        width: this.HITBOX_WIDTH,
         height: this.HITBOX_HEIGHT
       };
     }
   };
 
-  draw(ctx){  //draw player, attack, jump and death on canvas
+  draw(ctx){  //draw this, attack, jump and death on canvas
     super.draw(ctx)
     //* only to test
     if (this.attackHitbox) {

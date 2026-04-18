@@ -1,11 +1,14 @@
-import { draw as drawMenu, handleClick as handleClickMenu } from "./scenes/menuScene.js";
-import { draw as drawLogIn, handleClick as handleClickLogIn, handleKeyDown as handleKeyDownLogIn, reset as resetLogIn } from "./scenes/logInScene.js";
-import { draw as drawSelect, handleClick as handleClickSelect, reset as resetSelect, getSelectedCharacter } from "./scenes/selectScene.js";
-import { draw as drawLevel1, handleClick as handleClickLevel1, reset as resetLevel1, handleKeyDown as handleKeyDownLevel1,
-    handleKeyUp as handleKeyUpLevel1, setSelectedCharacter, goToMenu as goToMenuLevel1 } from "./scenes/level1Scene.js";
-import { draw as drawCreateAccount, handleClick as handleClickCreateAccount, handleKeyDown as handleKeyDownCreateAccount, reset as resetCreateAccount } from "./scenes/createAccountScene.js";
-import { draw as drawSettings, handleDrag, handleClick as handleClickSettings, reset as resetSettings } from "./scenes/settingsScene.js";
-import { handleMouseMove } from "./libs/game_functions.js";
+import { drawMenu,  handleMouseMoveMenu, handleClickMenu } from "./scenes/menuScene.js";
+import { drawLogIn, handleMouseMoveLogIn, handleClickLogIn, handleKeyDownLogIn, resetLogIn } from "./scenes/logInScene.js";
+import { drawSelect, handleMouseMoveSelect, handleClickSelect, resetSelect, getSelectedCharacter } from "./scenes/selectScene.js";
+import { getPlayerLevel1, drawLevel1, handleMouseMoveLevel1, handleClickLevel1, resetLevel1, handleKeyDownLevel1,
+    handleKeyUpLevel1, setSelectedCharacter, goToMenuLevel1, nextLevelLevel1 } from "./scenes/level1Scene.js";
+import { getPlayerLevel2, setPlayerLevel2, drawLevel2, handleMouseMoveLevel2, handleClickLevel2,
+ resetLevel2, handleKeyDownLevel2, handleKeyUpLevel2, nextLevelLevel2 } from "./scenes/level2Scene.js";
+import { setPlayerLevel3, drawLevel3, handleMouseMoveLevel3, handleClickLevel3, resetLevel3,
+handleKeyDownLevel3, handleKeyUpLevel3 } from "./scenes/level3Scene.js";
+import { drawCreateAccount, handleMouseMoveCreateAccount, handleClickCreateAccount, handleKeyDownCreateAccount, resetCreateAccount } from "./scenes/createAccountScene.js";
+import { drawSettings, handleMouseMoveSettings, handleClickSettings, startDragging, stopDragging, resetSettings } from "./scenes/settingsScene.js";
 
 //& dimensiones fijas del canvas
 const canvasWidth = 1000;
@@ -15,6 +18,7 @@ let canvas;
 let ctx;
 let oldTime = 0; //& guarda el tiempo del frame anterior para calcular deltaTime
 let currentScene = "menu"; //& escena activa, controla qué se dibuja y qué eventos se manejan
+let currentPlayer = null;
 let selectedCharacter = null; //& personaje elegido en selectScene, se pasa a level1
 
 function main() {
@@ -30,7 +34,7 @@ function main() {
     canvas.addEventListener("click", (event) => {
         //MENU SCENE
         if(currentScene === 'menu'){
-            clicked = handleClickMenu(); //& detecta qué botón se presionó en el menú
+            clicked = handleClickMenu(ctx); //& detecta qué botón se presionó en el menú
 
         if (clicked === 'start'){
             currentScene = 'login';
@@ -41,7 +45,7 @@ function main() {
         }
         //SETTINGS SCENE
         else if(currentScene === 'settings') {
-            clicked = handleClickSettings();
+            clicked = handleClickSettings(ctx);
             if(clicked === 'back' || clicked === 'confirm') {
                 resetSettings(); //TODO esto resetea settings incluso si son modificados?
                 currentScene = 'menu';
@@ -49,7 +53,7 @@ function main() {
         }
         //LOG IN SCENE
         else if (currentScene === 'login'){
-            clicked = handleClickLogIn(); //& ctx no longer needed, scene caches it internally
+            clicked = handleClickLogIn(ctx); 
             if(clicked === 'back'){
                 resetLogIn(); //& limpia los campos del login antes de volver
                 currentScene = 'menu';
@@ -63,7 +67,7 @@ function main() {
         }
         //CREATE ACCOUNT SCENE
         else if(currentScene === 'createAccount') {
-            clicked = handleClickCreateAccount(); //& ctx no longer needed, scene caches it internally
+            clicked = handleClickCreateAccount(ctx);
             if(clicked === 'back') {
                 resetCreateAccount(); //& limpia los campos antes de volver al menú
                 currentScene = 'menu';
@@ -78,7 +82,7 @@ function main() {
         }
         //SELECT CHARACTER
         else if (currentScene === 'start'){
-            clicked = handleClickSelect(); 
+            clicked = handleClickSelect(ctx); 
             if(clicked === 'back'){
                 resetSelect(); 
                 currentScene = 'menu';
@@ -90,12 +94,13 @@ function main() {
             if (clicked === 'confirm'){
                 selectedCharacter = getSelectedCharacter();
                 setSelectedCharacter(selectedCharacter); //& pone el personaje seleccionado en level1Scene
+                currentPlayer = getPlayerLevel1();
                 currentScene = 'level1';
             }
         }
         //LEVEL 1 SCENE
         else if (currentScene === 'level1'){
-            clicked = handleClickLevel1(); //& manejo de clicks en level1 (aún no implementado)
+            clicked = handleClickLevel1(ctx); //& manejo de clicks en level1 (aún no implementado)
 
             if(goToMenuLevel1){
                 //& si level1 pide volver al menú, resetea todas las escenas involucradas
@@ -107,47 +112,74 @@ function main() {
         }
     });
 
+    //& slider de settings inicia el arrastre
     canvas.addEventListener("mousedown", () => {
-        if(currentScene === "settings") handleDrag('down');
+        if(currentScene === "settings") startDragging();
     });
 
     canvas.addEventListener("mouseup", () => {
-        if(currentScene === "settings") handleDrag('up');
+        if(currentScene === "settings") stopDragging();
     });
 
-    //& mousemove actualiza mouseX/mouseY globalmente; settings también actualiza el slider
+    //& mousemove despacha el evento a la escena activa para hover y arrastre
     canvas.addEventListener("mousemove", (event) => {
-        handleMouseMove(event, canvas);
-        if(currentScene === 'settings') handleDrag('move');
+        if(currentScene === 'menu') handleMouseMoveMenu(event,canvas);
+        if(currentScene === 'settings') handleMouseMoveSettings(event,canvas);
+        if(currentScene === 'login') handleMouseMoveLogIn(event,canvas);
+        if(currentScene === 'createAccount') handleMouseMoveCreateAccount(event,canvas);
+        if(currentScene === 'start') handleMouseMoveSelect(event,canvas);
+        if(currentScene === 'level1') handleMouseMoveLevel1(event,canvas);
+        if(currentScene === 'level2') handleMouseMoveLevel2(event,canvas);
+        if(currentScene === 'level3') handleMouseMoveLevel3(event,canvas);
     });
 
     //& keydown se despacha solo a las escenas que necesitan input de teclado
     window.addEventListener("keydown", (event) => {
         if (currentScene === "login") handleKeyDownLogIn(event);
-        if(currentScene === "level1") handleKeyDownLevel1(event);
         if(currentScene === "createAccount") handleKeyDownCreateAccount(event);
+        if(currentScene === "level1") handleKeyDownLevel1(event);
+        if(currentScene === "level2") handleKeyDownLevel2(event);
+        if(currentScene === "level3") handleKeyDownLevel3(event);
     });
 
     //& keyup se usa en level1 para detectar cuando el jugador suelta una tecla de movimiento
     window.addEventListener("keyup", (event)=>{
-        if(currentScene === "level1"){
-            handleKeyUpLevel1(event);
-        }
+        if(currentScene === "level1") handleKeyUpLevel1(event);
+        if(currentScene === "level2") handleKeyUpLevel2(event);
+        if(currentScene === "level3") handleKeyUpLevel3(event);
     });
 
-    gameLoop(0); //& arranca el game loop con tiempo inicial 0
+    requestAnimationFrame(gameLoop); 
 }
 
 function gameLoop(newTime) {
-    let deltaTime = newTime - oldTime; //& tiempo transcurrido entre frames en ms
-    //& dibuja la escena activa
+
+    let deltaTime = (newTime - oldTime);
+    oldTime = newTime;
+
+
+    if(currentScene === "level1" && nextLevelLevel1){
+        currentPlayer = getPlayerLevel1();
+        setPlayerLevel2(currentPlayer);
+        resetLevel1();
+        currentScene = "level2";
+    }
+    if(currentScene === "level2" && nextLevelLevel2){
+        currentPlayer = getPlayerLevel2();
+        setPlayerLevel3(currentPlayer);
+        resetLevel2();
+        currentScene = "level3";
+    }
     if(currentScene === 'menu') drawMenu(ctx,canvas);
     else if(currentScene === 'settings') drawSettings(ctx,canvas);
     else if(currentScene === 'login') drawLogIn(ctx,canvas);
     else if(currentScene === 'createAccount') drawCreateAccount(ctx,canvas);
-    else if(currentScene === 'start') drawSelect(ctx,canvas);
-    else if(currentScene === 'level1') drawLevel1(ctx,canvas,deltaTime);
+    else if(currentScene === 'start') drawSelect(ctx,canvas);   
+    else if(currentScene === 'level1') drawLevel1(ctx,canvas, deltaTime);
+    else if(currentScene === 'level2') drawLevel2(ctx,canvas,deltaTime);
+    else if(currentScene === 'level3') drawLevel3(ctx,canvas,deltaTime);
 
+    
     oldTime = newTime; //& actualiza oldTime para el siguiente frame
     requestAnimationFrame(gameLoop); //& solicita el siguiente frame al navegador
 }

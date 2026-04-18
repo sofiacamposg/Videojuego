@@ -1,8 +1,18 @@
-import { MessageBox } from "../objects/MessageBox.js";
-//& replaced local drawButton/isMouseOver with shared versions from game_functions
-import { mouseX, mouseY, drawButton, handleClick as isClickOnButton, isMouseOverBox } from "../libs/game_functions.js";
+import { MessageBox } from "../objects/MessageBox.js";  
 "use strict"
+import { 
+    handleMouseMove, 
+    drawButton, 
+    handleClick, 
+    isMouseOverBox 
+} from "../libs/game_functions.js";
+
+
+//? mouse track
+let mouseX = 0;
+let mouseY = 0;
 let registerSuccess = false;
+
 const buttonBack = { //? BACK TO MENU BUTTON
     x: 850,
     y: 70,
@@ -38,10 +48,7 @@ const inputName = { x: 540, y: 400, w: 500, h: 60 };
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
-let cachedCtx;
-
-function draw(ctx, canvas){
-    cachedCtx = ctx;
+function drawCreateAccount(ctx, canvas){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
@@ -59,7 +66,7 @@ function draw(ctx, canvas){
     drawInputBox(ctx, inputPassword.x, inputPassword.y, inputPassword.w, inputPassword.h, "PASSWORD");
     drawInputBox(ctx, inputName.x, inputName.y, inputName.w, inputName.h, "NAME");
 
-    //? buttons
+    // botones reutilizables
     drawButton(ctx, buttonConfirm, mouseX, mouseY);
     drawButton(ctx, buttonBack, mouseX, mouseY);
     drawButton(ctx, buttonLogIn, mouseX, mouseY);
@@ -102,7 +109,14 @@ function drawInputBox(ctx, centerX, centerY, w, h, label){  //? draw the labels 
       ctx.fillText(valueToShow + (activeField === label.toLowerCase() ? "|" : ""), x + 20, y + 38);  //check if is inactive so the | doesn't appear 
   }
 }
-function handleClick(){  //? handle cliks over any element
+
+function handleMouseMoveCreateAccount(event, canvas){
+    const pos = handleMouseMove(event, canvas);
+    mouseX = pos.x;
+    mouseY = pos.y;
+}
+
+function handleClickCreateAccount(ctx){  //? handle cliks over any element
     if(registerSuccess){
         registerSuccess = false;
         return "confirm";
@@ -110,25 +124,32 @@ function handleClick(){  //? handle cliks over any element
     if (errorMessage.visible) {
         return errorMessage.handleClick(mouseX, mouseY);
     }
+    // inputs
     if (isMouseOverBox(mouseX, mouseY, inputUsername)){
-        activeField = "username";
+        activeField = "username"; 
         return "username";
     }
+
     if (isMouseOverBox(mouseX, mouseY, inputPassword)){
-        activeField = "password";
+        activeField = "password"; 
         return "password";
     }
+
     if (isMouseOverBox(mouseX, mouseY, inputName)){
-        activeField = "name";
+        activeField = "name"; 
         return "name";
     }
-    if (isClickOnButton(mouseX, mouseY, buttonBack, cachedCtx)){
+
+    // buttons
+    if (handleClick(mouseX, mouseY, buttonBack, ctx)){
         return "back";
     }
-    if (isClickOnButton(mouseX, mouseY, buttonLogIn, cachedCtx)){
+
+    if (handleClick(mouseX, mouseY, buttonLogIn, ctx)){
         return "login";
     }
-    if (isClickOnButton(mouseX, mouseY, buttonConfirm, cachedCtx)) {
+
+    if (handleClick(mouseX, mouseY, buttonConfirm, ctx)) {
         if (username === "" || password === "" || name === "") {
             errorMessage.show();
             return null;
@@ -136,13 +157,11 @@ function handleClick(){  //? handle cliks over any element
         registerUser();
         return null;
     }
-    if(registerSuccess){
-        registerSuccess = false;
-        return "confirm";
-    }
+
     return null;
 }
-function handleKeyDown(event){
+
+function handleKeyDownCreateAccount(event){
   if (activeField === null) return;  //case 1: no active field
 
   if (event.key === "Backspace") {  //case 2: deletes lasts key wrote
@@ -170,11 +189,13 @@ function handleKeyDown(event){
 function getUsername(){  //? getter
   return username;
 }
-function reset(){  //? reset to default values
+function resetCreateAccount(){  //? reset to default values
   username = "";
   password = "";
   name = "";
   activeField = null;
+  mouseX = 0;
+  mouseY = 0;
 }
 
 //API CONNECTION
@@ -208,4 +229,4 @@ async function registerUser(){
         errorMessage.show();
     }
 }
-export { draw, handleClick, handleKeyDown, getUsername, reset };
+export { drawCreateAccount, handleMouseMoveCreateAccount, handleClickCreateAccount, handleKeyDownCreateAccount, resetCreateAccount };

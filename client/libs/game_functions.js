@@ -70,15 +70,13 @@ function randomRange(size, start) {  //random del tamaño de la caja
 }
 
 //=======================OUR FUNCTIONS============================
-//& shared mouse state so all scenes can import instead of tracking their own
-export let mouseX = 0;
-export let mouseY = 0;
-
 //Handle Mouse Move
 export function handleMouseMove(event, canvas) {
     const rect = canvas.getBoundingClientRect();
-    mouseX = event.clientX - rect.left;
-    mouseY = event.clientY - rect.top;
+    return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+    };
 }
 //Is Mouse Over Box
 export function isMouseOverBox(mouseX, mouseY, element) {
@@ -131,4 +129,5 @@ export function drawButton(ctx, button, mouseX, mouseY) {
         ctx.stroke();
     }
 }
+
 export { boxOverlap, hitboxOverlap, randomRange };

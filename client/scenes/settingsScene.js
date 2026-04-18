@@ -1,10 +1,16 @@
 "use strict"
-//& replaced local drawButton/isMouseOverToggle/isMouseOverButton with shared versions from game_functions
-import { mouseX, mouseY, drawButton, handleClick as isClickOnButton, isMouseOverBox } from "../libs/game_functions.js";
+import { 
+    handleMouseMove, 
+    drawButton, 
+    handleClick, 
+    isMouseOverBox 
+} from "../libs/game_functions.js";
 
+let mouseX = 0;
+let mouseY = 0;
 let draggingVolume = false;
 
-// Botones de navegación
+// Buttons
 const buttonBack = { x: 150, y: 50, text: "BACK" };
 const buttonConfirm = { x: 850, y: 50, text: "CONFIRM" };
 
@@ -23,11 +29,8 @@ const volumeBar = { x: 500, y: 400, w: 300, h: 30 };
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
-let cachedCtx;
-
 // Dibuja toda la pantalla de settings
-function draw(ctx, canvas) {
-    cachedCtx = ctx;
+function drawSettings(ctx, canvas) {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(backgroundImage,0,0,canvas.width,canvas.height);
 
@@ -47,6 +50,7 @@ function draw(ctx, canvas) {
     drawToggle(ctx); // botón ON/OFF
     if(volumeOn) drawVolumeBar(ctx); // solo muestra barra si está encendido
 
+     // botones reutilizables
     drawButton(ctx, buttonBack, mouseX, mouseY);
     drawButton(ctx, buttonConfirm, mouseX, mouseY);
 }
@@ -90,53 +94,68 @@ function drawVolumeBar(ctx){
     ctx.fillText("LEVEL: "+volumeLevel, volumeBar.x, volumeBar.y+60);
 }
 
-//controls 3 states of the sliding bar
-function handleDrag(type){
-    if(type === 'down'){  //case1: there's a click on the bar
-        if(volumeOn &&
-           mouseX > volumeBar.x - volumeBar.w/2 &&
-           mouseX < volumeBar.x + volumeBar.w/2 &&
-           mouseY > volumeBar.y &&
-           mouseY < volumeBar.y + volumeBar.h){
-            draggingVolume = true;
-        }
-    } else if(type === 'up'){  //case 2: no one has touch the bar
-        draggingVolume = false;
-    } else if(type === 'move' && draggingVolume){  //case 3: is moving
+// Detecta movimiento del mouse
+function handleMouseMoveSettings(event, canvas){
+    const pos = handleMouseMove(event, canvas);
+    mouseX = pos.x;
+    mouseY = pos.y;
+
+    // dragging barra
+    if(draggingVolume){
         const left = volumeBar.x - volumeBar.w/2;
-        const pos = mouseX - left;
-        volumeLevel = Math.min(Math.max(Math.floor((pos / volumeBar.w) * 100),0),100);
+        const posX = mouseX - left;
+        volumeLevel = Math.min(
+            Math.max(Math.floor((posX / volumeBar.w) * 100),0),
+            100
+        );
     }
 }
 
 // Maneja clicks del usuario
-function handleClick(){
+function handleClickSettings(ctx){
+
+    // toggle
     if(isMouseOverBox(mouseX, mouseY, toggleBox)){
-        volumeOn = !volumeOn; // cambia ON/OFF
+        volumeOn = !volumeOn;
         return;
     }
 
-    if(isClickOnButton(mouseX, mouseY, buttonConfirm, cachedCtx)){
-        // Guarda los cambios
+    // confirm
+    if(handleClick(mouseX, mouseY, buttonConfirm, ctx)){
         savedVolumeOn = volumeOn;
         savedVolumeLevel = volumeLevel;
         return "confirm";
     }
 
-    if(isClickOnButton(mouseX, mouseY, buttonBack, cachedCtx)){
-        // Cancela cambios y regresa a lo guardado
+    // back
+    if(handleClick(mouseX, mouseY, buttonBack, ctx)){
         volumeOn = savedVolumeOn;
         volumeLevel = savedVolumeLevel;
         return "back";
     }
 }
 
-// Se ejecuta cuando entras a settings
-function reset(){
+// Empieza a arrastrar la barra
+function startDragging(){
+    if(volumeOn && isMouseOverBox(mouseX, mouseY, volumeBar)){
+        draggingVolume = true;
+    }
+}
+
+function stopDragging(){
     draggingVolume = false;
+}
+
+
+// Se ejecuta cuando entras a settings
+function resetSettings(){
+    draggingVolume = false;
+    mouseX = 0;
+    mouseY = 0;
+
     // Carga los valores guardados
     volumeOn = savedVolumeOn;
     volumeLevel = savedVolumeLevel;
 }
 
-export { draw, handleDrag, handleClick, reset };
+export { drawSettings, handleMouseMoveSettings, handleClickSettings, startDragging, stopDragging, resetSettings };
