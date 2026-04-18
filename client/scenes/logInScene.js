@@ -1,5 +1,6 @@
 import { MessageBox } from "../objects/MessageBox.js";
-import { mouseX, mouseY } from "../libs/game_functions.js";
+//& replaced local drawButton/isMouseOver with shared versions from game_functions
+import { mouseX, mouseY, drawButton, handleClick as isClickOnButton, isMouseOverBox } from "../libs/game_functions.js";
 "use strict"
 let loginSuccess = false;
 const buttonBack = { //? BACK TO MENU BUTTON
@@ -33,7 +34,10 @@ const inputPassword = { x: 500, y: 410, w: 500, h: 60 };
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
+let cachedCtx;
+
 function draw(ctx, canvas){  //? draw every element on the canvas
+    cachedCtx = ctx;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
@@ -51,9 +55,9 @@ function draw(ctx, canvas){  //? draw every element on the canvas
     drawInputBox(ctx, inputPassword.x, inputPassword.y, inputPassword.w, inputPassword.h, "PASSWORD");
 
     //? buttons
-    drawButton(ctx, buttonConfirm);
-    drawButton(ctx, buttonBack);
-    drawButton(ctx, buttonCreate);
+    drawButton(ctx, buttonConfirm, mouseX, mouseY);
+    drawButton(ctx, buttonBack, mouseX, mouseY);
+    drawButton(ctx, buttonCreate, mouseX, mouseY);
 
     errorMessage.draw(ctx); 
 }
@@ -92,51 +96,7 @@ function drawInputBox(ctx, centerX, centerY, w, h, label){  //? draw the labels 
         ctx.fillText(valueToShow + (activeField === label.toLowerCase() ? "|" : ""), x + 18, y + 38);  //check if is inactive so the | doesn't appear 
     }
 }
-function drawButton(ctx, button){  //? draw buttons 
-    ctx.font = "25px 'VT323'";
-    ctx.textAlign = 'center';
-    const textWidth = ctx.measureText(button.text).width;
-    const textHeight = 30;
-
-    const left = button.x - textWidth / 2;
-    const right = button.x + textWidth / 2;
-    const top = button.y - textHeight;
-    const bottom = button.y;
-
-    const isHover =  //is over the button?
-        mouseX > left &&
-        mouseX < right &&
-        mouseY > top &&
-        mouseY < bottom;
-
-    ctx.fillStyle = isHover ? "red" : "white";  //change color if hover
-    ctx.fillText(button.text, button.x, button.y);
-
-    if (isHover){  
-        ctx.beginPath();
-        ctx.moveTo(left, button.y + 5);
-        ctx.lineTo(right, button.y + 5);
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-    }
-}
-function isMouseOver(element,ctx){  //? handle if mouse is over any botton or box
-    let w, h;
-    if (element.w){ //if element has a w atribute
-        w = element.w;
-        h = element.h;
-    } else{  //buttons do not have w
-        ctx.font = "25px 'VT323'";  //force the size of text
-        w = ctx.measureText(element.text).width;
-        h = 30;
-    }
-    return mouseX > element.x - w / 2 &&  
-           mouseX < element.x + w / 2 &&
-           mouseY > element.y - h / 2 &&
-           mouseY < element.y + h / 2;
-}
-function handleClick(ctx){  //? handle cliks over any element
+function handleClick(){  //? handle cliks over any element
     if(loginSuccess){
         loginSuccess = false;
         return "confirm";
@@ -144,21 +104,21 @@ function handleClick(ctx){  //? handle cliks over any element
     if (errorMessage.visible) {
         return errorMessage.handleClick(mouseX, mouseY);
     }
-    if (isMouseOver(inputUsername, ctx)){
-        activeField = "username"; 
+    if (isMouseOverBox(mouseX, mouseY, inputUsername)){
+        activeField = "username";
         return "username";
     }
-    if (isMouseOver(inputPassword, ctx)){
-        activeField = "password"; 
+    if (isMouseOverBox(mouseX, mouseY, inputPassword)){
+        activeField = "password";
         return "password";
     }
-    if (isMouseOver(buttonBack, ctx)){
+    if (isClickOnButton(mouseX, mouseY, buttonBack, cachedCtx)){
         return "back";
     }
-    if (isMouseOver(buttonCreate, ctx)){
+    if (isClickOnButton(mouseX, mouseY, buttonCreate, cachedCtx)){
         return "create";
     }
-    if (isMouseOver(buttonConfirm, ctx)) {
+    if (isClickOnButton(mouseX, mouseY, buttonConfirm, cachedCtx)) {
         if (username === "" || password === "") {
             errorMessage.show();
             return null;

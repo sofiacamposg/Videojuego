@@ -1,5 +1,6 @@
 "use strict"
-import { mouseX, mouseY } from "../libs/game_functions.js";
+//& replaced local drawButton/isMouseOverToggle/isMouseOverButton with shared versions from game_functions
+import { mouseX, mouseY, drawButton, handleClick as isClickOnButton, isMouseOverBox } from "../libs/game_functions.js";
 
 let draggingVolume = false;
 
@@ -22,8 +23,11 @@ const volumeBar = { x: 500, y: 400, w: 300, h: 30 };
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
+let cachedCtx;
+
 // Dibuja toda la pantalla de settings
 function draw(ctx, canvas) {
+    cachedCtx = ctx;
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(backgroundImage,0,0,canvas.width,canvas.height);
 
@@ -43,8 +47,8 @@ function draw(ctx, canvas) {
     drawToggle(ctx); // botón ON/OFF
     if(volumeOn) drawVolumeBar(ctx); // solo muestra barra si está encendido
 
-    drawButton(ctx, buttonBack);
-    drawButton(ctx, buttonConfirm);
+    drawButton(ctx, buttonBack, mouseX, mouseY);
+    drawButton(ctx, buttonConfirm, mouseX, mouseY);
 }
 
 // Dibuja el botón de encendido/apagado
@@ -86,22 +90,6 @@ function drawVolumeBar(ctx){
     ctx.fillText("LEVEL: "+volumeLevel, volumeBar.x, volumeBar.y+60);
 }
 
-// Dibuja botones (BACK y CONFIRM)
-function drawButton(ctx, button){
-    ctx.font = "25px 'VT323'";
-    ctx.textAlign = "center";
-
-    const textWidth = ctx.measureText(button.text).width;
-    const left = button.x - textWidth/2;
-    const right = button.x + textWidth/2;
-
-    // Detecta si el mouse está encima
-    const isHover = mouseX > left && mouseX < right && mouseY > button.y - 30 && mouseY < button.y;
-
-    ctx.fillStyle = isHover ? "red" : "white";
-    ctx.fillText(button.text, button.x, button.y);
-}
-
 //controls 3 states of the sliding bar
 function handleDrag(type){
     if(type === 'down'){  //case1: there's a click on the bar
@@ -121,38 +109,21 @@ function handleDrag(type){
     }
 }
 
-// Detecta si el mouse está sobre el toggle
-function isMouseOverToggle(){
-    return mouseX > toggleBox.x - toggleBox.w/2 &&
-           mouseX < toggleBox.x + toggleBox.w/2 &&
-           mouseY > toggleBox.y - toggleBox.h/2 &&
-           mouseY < toggleBox.y + toggleBox.h/2;
-}
-
-// Detecta si el mouse está sobre un botón
-function isMouseOverButton(button){
-    const textWidth = 120;
-    return mouseX > button.x - textWidth/2 &&
-           mouseX < button.x + textWidth/2 &&
-           mouseY > button.y - 30 &&
-           mouseY < button.y;
-}
-
 // Maneja clicks del usuario
 function handleClick(){
-    if(isMouseOverToggle()){
+    if(isMouseOverBox(mouseX, mouseY, toggleBox)){
         volumeOn = !volumeOn; // cambia ON/OFF
         return;
     }
 
-    if(isMouseOverButton(buttonConfirm)){
+    if(isClickOnButton(mouseX, mouseY, buttonConfirm, cachedCtx)){
         // Guarda los cambios
         savedVolumeOn = volumeOn;
         savedVolumeLevel = volumeLevel;
         return "confirm";
     }
 
-    if(isMouseOverButton(buttonBack)){
+    if(isClickOnButton(mouseX, mouseY, buttonBack, cachedCtx)){
         // Cancela cambios y regresa a lo guardado
         volumeOn = savedVolumeOn;
         volumeLevel = savedVolumeLevel;

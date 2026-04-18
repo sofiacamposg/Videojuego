@@ -1,5 +1,6 @@
 import { MessageBox } from "../objects/MessageBox.js";
-import { mouseX, mouseY } from "../libs/game_functions.js";
+//& swapped local drawButton/isMouseOverButton for shared versions from game_functions
+import { mouseX, mouseY, drawButton, handleClick as isClickOnButton } from "../libs/game_functions.js";
 
 "use strict"
 let ctx;
@@ -45,12 +46,14 @@ errorMessage.addButton("Resume", 440, 300, 120, 50, () =>{
     ];
 
     let selectedCharacter = null;
+    let cachedCtx;
     //reset
     function reset() {
     selectedCharacter = null;
     }
 
     function draw(ctx, canvas) {
+        cachedCtx = ctx;
         ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
         // Título
         ctx.fillStyle = "white"; //texto
@@ -62,8 +65,8 @@ errorMessage.addButton("Resume", 440, 300, 120, 50, () =>{
         ctx.fillText("S E L E C T   C H A R A C T E R", canvas.width / 2, 150);
 
         // Botones
-        drawButton(ctx, buttonConfirm);
-        drawButton(ctx, buttonBack);
+        drawButton(ctx, buttonConfirm, mouseX, mouseY);
+        drawButton(ctx, buttonBack, mouseX, mouseY);
         //Dibujamos a los gladiadores
         const targetW = 600;
         const scale = targetW / gladiatorsImage.width;
@@ -123,56 +126,6 @@ errorMessage.addButton("Resume", 440, 300, 120, 50, () =>{
          errorMessage.draw(ctx); 
     }
 
-    //Reutiliza función de menuScreen
-    function drawButton(ctx, button) {
-        ctx.font = "25px 'VT323'";
-        ctx.textAlign = 'center';
-
-        const textWidth = ctx.measureText(button.text).width;
-        const textHeight = 30;
-
-        const left = button.x - textWidth / 2;
-        const right = button.x + textWidth / 2;
-        const top = button.y - textHeight;
-        const bottom = button.y;
-
-        const isHover =
-            mouseX > left &&
-            mouseX < right &&
-            mouseY > top &&
-            mouseY < bottom;
-
-        ctx.fillStyle = isHover ? "red" : "white";
-        ctx.fillText(button.text, button.x, button.y);
-
-        if (isHover) {
-            ctx.beginPath();
-            ctx.moveTo(left, button.y + 5);
-            ctx.lineTo(right, button.y + 5);
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 3;
-            ctx.stroke();
-        }
-    }
-
-    //Esta función es para poder saber que botón se clickeo y asi movernos a otra escena
-    function isMouseOverButton(button) {
-        //usa el mismo font y tamaño que usas para dibujar
-        const dummyCanvas = document.createElement("canvas");
-        const dummyCtx = dummyCanvas.getContext("2d");
-        dummyCtx.font = "25px 'VT323'";
-
-        const textWidth = dummyCtx.measureText(button.text).width;
-        const textHeight = 30;
-
-        const left = button.x - textWidth / 2;
-        const right = button.x + textWidth / 2;
-        const top = button.y - textHeight;
-        const bottom = button.y;
-
-        return mouseX > left && mouseX < right && mouseY > top && mouseY < bottom;
-    }
-    
     // Detecta click en zona y regresa cuál eligieron
     function handleClick() {
     //errorMessage
@@ -192,10 +145,10 @@ errorMessage.addButton("Resume", 440, 300, 120, 50, () =>{
         }
     }
         // revisa si el mouse está encima de BACK O CONFIRM
-    if (isMouseOverButton(buttonBack)) {
+    if (isClickOnButton(mouseX, mouseY, buttonBack, cachedCtx)) {
         return "back";
     }
-    if (isMouseOverButton(buttonConfirm)){
+    if (isClickOnButton(mouseX, mouseY, buttonConfirm, cachedCtx)){
         if(selectedCharacter != null){
             return 'confirm'
         }

@@ -49,7 +49,7 @@ function main() {
         }
         //LOG IN SCENE
         else if (currentScene === 'login'){
-            clicked = handleClickLogIn(ctx); 
+            clicked = handleClickLogIn(); //& ctx no longer needed, scene caches it internally
             if(clicked === 'back'){
                 resetLogIn(); //& limpia los campos del login antes de volver
                 currentScene = 'menu';
@@ -63,7 +63,7 @@ function main() {
         }
         //CREATE ACCOUNT SCENE
         else if(currentScene === 'createAccount') {
-            clicked = handleClickCreateAccount(ctx);
+            clicked = handleClickCreateAccount(); //& ctx no longer needed, scene caches it internally
             if(clicked === 'back') {
                 resetCreateAccount(); //& limpia los campos antes de volver al menú
                 currentScene = 'menu';
