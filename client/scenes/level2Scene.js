@@ -33,7 +33,7 @@ let nextLevelLevel2 = false; //Change of scene
 let levelTimer = 0;
 
 // random trigger between 20s and 40s (considering 1 minute per level)
-let randomEventTime = Math.random() * (40 - 20) + 20;
+let randomEventTime = Math.random() * (40000 - 20000) + 20000;
 
 let keysDown = {}; //To track keyboard input for player movement
 let jumpPressed = false; //Prevents continuous jumping when holding the key
