@@ -110,6 +110,9 @@ let enemies = currentLevelConfig.spawnPositions.map(pos =>
     )
 );
 
+// hazards (spikes / traps in the level)
+let hazards = [];
+
 
 //========================= PLATFORMS =========================
 //Obstacles, also random entities
