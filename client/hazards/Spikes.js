@@ -7,12 +7,19 @@ class Spikes {
         this.width = 60;
         this.height = 40;
         this.damage = 10;
+        this.damageCooldown = 0;
+        this.damageCooldownMax = 800;
 
         this.image = new Image();
-        this.image.src = "./assets/Spikes.png";
+this.image.src = "./assets/Spikes.png";
     }
 
-    update(player){
+    update(player, deltaTime){
+        if(this.damageCooldown > 0){
+            this.damageCooldown -= deltaTime;
+            return;
+        }
+
         let hit =
             player.position.x + player.halfSize.x > this.x &&
             player.position.x - player.halfSize.x < this.x + this.width &&
@@ -20,6 +27,7 @@ class Spikes {
 
         if(hit){
             player.takeDamage(this.damage);
+            this.damageCooldown = this.damageCooldownMax;
         }
     }
 

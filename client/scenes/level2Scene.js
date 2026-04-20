@@ -6,6 +6,7 @@ import { cards } from "../cards/Card.js";
 import { handleMouseMove } from "../libs/game_functions.js";
 import { level2Config, playerConfigs } from "../libs/levelConfig.js";
 import { spawnEnemy, generatePlatform, updateCamera } from "../libs/level_functions.js";
+import { FirePit } from "../hazards/FirePit.js";
 "use strict"
 
 let currentLevelConfig = level2Config;
@@ -14,47 +15,37 @@ function setPlayerLevel2(existingPlayer){
     initPlatforms();
 }
 //========================= GAME CORE VARIABLES =========================
-//* GAME'S LOGIC
 let currentLevel = 2;
-//world size
 let worldWidth = 2000;
 let worldHeight = 600;
-let cameraX = 0; //canvas viewport
-let canvasRef = { width: 1000 }; // se actualiza en drawLevel2, necesario para spawn y cartas
+let cameraX = 0;
+let canvasRef = { width: 1000 };
 
-// Mouse
 let mouseX = 0
 let mouseY = 0
 
 let player
-let nextLevelLevel2 = false; //Change of scene
+let nextLevelLevel2 = false;
 
-//LEVEL TIMER
 let levelTimer = 0;
-
-// random trigger between 20s and 40s (considering 1 minute per level)
 let randomEventTime = Math.random() * (40000 - 20000) + 20000;
 
-let keysDown = {}; //To track keyboard input for player movement
-let jumpPressed = false; //Prevents continuous jumping when holding the key
+let keysDown = {};
+let jumpPressed = false;
 
 let killedEnemies = 0;
 const conditionEnemies = 1;
 
 //========================= CARD SYSTEM =========================
 let cardEventTriggered = false;
+let cardOptions = [];
 
-let cardOptions = []; // cards fetched from API
-
-// cardsOnCanvas maneja toda la UI y lógica de cartas
 const cardSystem = new cardsOnCanvas();
 
-// game object que cardsOnCanvas usa para efectos como "Spawn Enemies"
 const game = {
     spawnEnemy: () => spawnEnemy(cameraX + canvasRef.width + 100, 450, currentLevelConfig.enemyConfig)
 };
 
-// Mapeo de effect_name de la API → Card de Card.js (que tiene applyEffect/removeEffect completos)
 const effectNameToCard = {
     "People Favor":    cards.find(c => c.name === "Speed Boost"),
     "Mars Blade":      cards.find(c => c.name === "Damage Boost"),
@@ -85,14 +76,11 @@ pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
     pauseBox.hide();
 });
 
-//DOESN´T WORK, MUST CONNECT WITH SWITCH SCENE
 pauseBox.addButton("Home", 440, 390, 120, 35, () => {
     goToMenuLevel2 = true;
 });
 
-
 //========================= PLAYER SELECTION =========================
-//This function selects the player sprite
 function setSelectedCharacter(selectedCharacter){
     player = new PlayerBase(
         new Vector(200,450),
@@ -101,21 +89,31 @@ function setSelectedCharacter(selectedCharacter){
     initPlatforms();
 }
 
-//enemies, random entities, position, config
 let enemies = currentLevelConfig.spawnPositions.map(pos =>
-    spawnEnemy(
-        pos.x,
-        pos.y,
-        currentLevelConfig.enemyConfig
-    )
+    spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
 );
 
-// hazards (spikes / traps in the level)
+//========================= HAZARDS =========================
 let hazards = [];
 
+function initHazards(){
+    hazards = [];
+
+    const zonas = [
+        { min: 400, max: 700  },
+        { min: 800, max: 1100 },
+        { min: 1300, max: 1700 },
+    ];
+    const cantidad = Math.random() < 0.5 ? 2 : 3;
+    zonas.sort(() => Math.random() - 0.5).slice(0, cantidad).forEach(z => {
+        const fp = new FirePit(Math.random() * (z.max - z.min) + z.min, 410);
+        hazards.push(fp);
+    });
+}
+
+initHazards();
 
 //========================= PLATFORMS =========================
-//Obstacles, also random entities
 let platforms = [];
 
 let platformImage = new Image();
@@ -144,14 +142,12 @@ function drawPlatforms(ctx){
 let backgroundImage = new Image();
 backgroundImage.src = currentLevelConfig.background;
 
-
 //========================= SPAWN SYSTEM =========================
 let spawnTimer = 0;
-let spawnInterval = 4000; // 4000 ms = 4 seconds
+let spawnInterval = 4000;
 
 //========================= API CONNECTION — CARD FETCH =========================
 async function generateCardOptions(){
-
     try{
         const response = await fetch("http://localhost:3000/cards/random");
 
@@ -161,22 +157,18 @@ async function generateCardOptions(){
 
         const data = await response.json();
 
-        // separate types
         let powerUps = data.filter(c => c.effect_type === "POWER_UP");
         let punishments = data.filter(c => c.effect_type === "PUNISHMENT");
 
-        // shuffle
         const shuffle = arr => arr.sort(() => Math.random() - 0.5);
 
         powerUps = shuffle(powerUps);
         punishments = shuffle(punishments);
 
-        // validation
         if(powerUps.length < 2 || punishments.length < 1){
             throw new Error("Not enough cards");
         }
 
-        // LEVEL 2 LOGIC
         let selected = [
             powerUps[0],
             powerUps[1],
@@ -187,8 +179,6 @@ async function generateCardOptions(){
 
     }catch(err){
         console.log("Card API error, using fallback:", err);
-
-//FALLBACK, if anything fails these are safe options
         cardOptions = [
             { card_name: "People Favor", effect_name: "People Favor", effect_type: "POWER_UP" },
             { card_name: "Mars Blade", effect_name: "Mars Blade", effect_type: "POWER_UP" },
@@ -198,12 +188,9 @@ async function generateCardOptions(){
 }
 
 async function triggerCardEvent(){
-
     console.log("EVENT TRIGGERED");
-
     await generateCardOptions();
 
-    // Convertir los objetos de la API a Cards reales de Card.js (que tienen applyEffect completo)
     const convertedCards = cardOptions.map(apiCard =>
         effectNameToCard[apiCard.effect_name] || cards[Math.floor(Math.random() * cards.length)]
     );
@@ -213,25 +200,25 @@ async function triggerCardEvent(){
 
 //========================= DRAW LOOP =========================
 function drawLevel2(ctx, canvas, deltaTime){
-    if (!player) return; //avoids crash
-    canvasRef = canvas; // actualizar referencia para spawn y cardSystem
+    if (!player) return;
+    canvasRef = canvas;
 
-    //Clear → update → draw objects
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for(let i = 0; i < worldWidth; i += canvas.width){
-        ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); //draw background
+        ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height);
     }
 
     if(!isPaused && !cardSystem.isActive){
         update(deltaTime);
     }
 
-    ctx.save();  //keeps character within screen
+    ctx.save();
     ctx.translate(-cameraX, 0);
 
-    player.draw(ctx);  //draw player sprite
-    drawPlatforms(ctx);  //obstacles
-    enemies.forEach(enemy => enemy.draw(ctx));  //draw enemy sprites
+    player.draw(ctx);
+    drawPlatforms(ctx);
+    enemies.forEach(enemy => enemy.draw(ctx));
+    hazards.forEach(h => h.draw(ctx));
 
     ctx.restore();
 
@@ -240,18 +227,15 @@ function drawLevel2(ctx, canvas, deltaTime){
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     pauseBox.draw(ctx);
 
-    // cardsOnCanvas dibuja la selección de cartas y el deck del jugador
     cardSystem.draw(ctx, canvas);
     cardSystem.drawDeck(ctx, canvas);
 }
 
 //HEALTH BAR
-function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
-    // background (lost health)
+function drawHealthBar(ctx, x, y, width, height, current, max) {
     ctx.fillStyle = "white";
     ctx.font = "20px Arial";
     ctx.fillText("HP: " + player.hp, 20, 70);
-
 
     ctx.fillStyle = "gray";
     ctx.fillRect(x, y, width, height);
@@ -264,25 +248,26 @@ function drawHealthBar(ctx, x, y, width, height, current, max) { //current from 
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
 };
+
 //HEARTS
 function drawHearts(ctx, x, y, current, max) {
     for (let i = 0; i < max; i++) {
-        ctx.fillStyle = i < current ? "red" : "gray";  //gray if heart is lost
+        ctx.fillStyle = i < current ? "red" : "gray";
         ctx.fillText("♥", x + i * 50, y);
     }
 }
 
 //========================= UPDATE LOGIC =========================
 function update(deltaTime){
-    if (!player) return; //avoids crash
-     levelTimer += deltaTime;
-    //Time Based random card event
+    if (!player) return;
+    levelTimer += deltaTime;
+
     if (!cardEventTriggered && levelTimer >= randomEventTime) {
         console.log("EVENT TRIGGERED");
         cardEventTriggered = true;
         triggerCardEvent();
     }
-    //Player movement
+
     player.isMoving = false;
 
     const goLeft  = keysDown["ArrowLeft"];
@@ -290,41 +275,38 @@ function update(deltaTime){
     const groundY = 450;
 
     player.update(goLeft, goRight, jumpPressed, platforms, groundY, deltaTime);
-    jumpPressed = false;  //reset after player jumped
+    jumpPressed = false;
 
-    //Limit player position inside the world
     if (player.position.x < player.halfSize.x)
         player.position.x = player.halfSize.x;
     if (player.position.x > worldWidth - player.halfSize.x)
         player.position.x = worldWidth - player.halfSize.x;
 
-    //enemy movement
     enemies.forEach(enemy => {
         enemy.update(player, deltaTime);
-        //& avoid infinite loop, bounce only if it´s on the border
         if (enemy.position.x - enemy.halfSize.x <= 0 && enemy.speed > 0)
             enemy.bounce();
         else if (enemy.position.x + enemy.halfSize.x >= worldWidth && enemy.speed < 0)
             enemy.bounce();
     });
 
-    player.attackEnemy(enemies);  //player attacks enemies
+    player.attackEnemy(enemies);
 
     let totalLenEnemies = enemies.length;
-    enemies = enemies.filter(alive => alive.hp > 0);  //remove dead enemies
-    killedEnemies += totalLenEnemies - enemies.length;  //update killed enemies
+    enemies = enemies.filter(alive => alive.hp > 0);
+    killedEnemies += totalLenEnemies - enemies.length;
 
-    //---spawn ---
+    hazards.forEach(h => h.update(player, deltaTime));
+
     spawnTimer += deltaTime;
     if (spawnTimer >= spawnInterval) {
         if (killedEnemies < conditionEnemies) {
-            //& agrega un enemigo justo afuera del borde de la camara, asi parece que parecen fuera del mundo
             enemies.push(spawnEnemy(cameraX + canvasRef.width + 100, 450, currentLevelConfig.enemyConfig));
         }
         console.log(`enemies: ${enemies.length}`);
         spawnTimer = 0;
     }
-    //Condition for next level
+
     if(killedEnemies >= conditionEnemies){
         nextLevelLevel2 = true;
     }
@@ -334,14 +316,13 @@ function update(deltaTime){
         canvasRef.width,
         worldWidth
     );
-    //Random Platforms
-    let last = platforms[platforms.length - 1];
 
+    let last = platforms[platforms.length - 1];
     if(player.position.x > last.x - 500){
         platforms.push(generatePlatform(last));
     }
 
-    cardSystem.update(deltaTime); // actualiza efectos temporales (duración de cartas)
+    cardSystem.update(deltaTime);
 }
 
 //========================= INPUT HANDLERS =========================
@@ -352,31 +333,24 @@ function handleMouseMoveLevel2(event, canvas){
 }
 
 function handleClickLevel2(){
-
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
-    //Player's Deck
     if(cardSystem.isDeckOpen){
         cardSystem.handleDeckClick(mouseX, mouseY, canvasRef);
         return;
     }
-    //Random Deck (card selection overlay)
     if(cardSystem.isActive){
         cardSystem.handleClick(mouseX, mouseY, canvasRef);
         return;
     }
-
-    //Handles attacks, cards, and powerups
 }
 
 function handleKeyDownLevel2(event){
     if(event.repeat) return;
 
-    //PauseMessage
     if(event.key === "Escape"){
         isPaused = !isPaused;
-
         if(isPaused){
             pauseBox.show();
         } else {
@@ -389,15 +363,12 @@ function handleKeyDownLevel2(event){
 
     keysDown[event.key] = true;
 
-    //Open Player's Deck
     if(event.key === "c" || event.key === "C"){
         cardSystem.toggleDeck();
     }
-    //Jump
     if(event.key === " "){
         jumpPressed = true;
     }
-    //Attack
     if(event.key === "j"){
         if(!player.playeratack){
             player.playeratack = true;
@@ -408,35 +379,28 @@ function handleKeyDownLevel2(event){
 
 function handleKeyUpLevel2(event){
     keysDown[event.key] = false;
-
     if(event.key === " "){
         jumpPressed = false;
     }
 }
 
-
 //========================= RESET =========================
 function resetLevel2(){
-     // reset player
     nextLevelLevel2 = false;
     player.position.x = 200;
     player.position.y = 350;
     player.velocityY = 0;
     player.hp = player.maxHp;
 
-    // reset enemies
     enemies = currentLevelConfig.spawnPositions.map(pos =>
         spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
     );
     killedEnemies = 0;
 
-    //reset platforms
     initPlatforms();
+    initHazards();
 
-    // reset camera
     cameraX = 0;
-
-    // reset spawn
     spawnTimer = 0;
 
     levelTimer = 0;
