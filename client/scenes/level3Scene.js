@@ -12,10 +12,19 @@ let currentLevelConfig = level3Config;
 function setPlayerLevel3(existingPlayer){
     player = existingPlayer;
     initPlatforms();
+    gameCompleted = false;  
+    levelCompleted = false;
+    showDeckPreview = false;
+    deckPreviewTimer = 0;
 }
+
 //========================= GAME CORE VARIABLES =========================
 //* GAME'S LOGIC
 let currentLevel = 3;
+//======= LEVEL TRANSITION =======
+let levelCompleted = false;
+let showDeckPreview = false;
+let deckPreviewTimer = 0;
 //world size
 let worldWidth = 2000;
 let worldHeight = 600;
@@ -27,6 +36,7 @@ let mouseX = 0
 let mouseY = 0
 
 let player
+let gameCompleted = false; 
 
 //LEVEL TIMER
 let levelTimer = 0;
@@ -38,7 +48,7 @@ let keysDown = {}; //To track keyboard input for player movement
 let jumpPressed = false; //Prevents continuous jumping when holding the key
 
 let killedEnemies = 0;
-const conditionEnemies = 15;
+const conditionEnemies = 1;
 
 //========================= CARD SYSTEM =========================
 let cardEventTriggered = false;
@@ -88,7 +98,19 @@ pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
 pauseBox.addButton("Home", 440, 390, 120, 35, () => {
     goToMenuLevel3 = true;
 });
+//====LEVEL TRANSITION MESSAGE BOX AND BUTTON NEXT LEVEL======
+let levelCompletedBox = new MessageBox(
+    "GAME COMPLETED",
+    "You survived the arena.",
+    250, 150, 500, 300
+);
 
+levelCompletedBox.addButton("Go to Score", 420, 350, 150, 40, () => {
+    levelCompletedBox.hide();
+    showDeckPreview = true;
+    deckPreviewTimer = 0;
+    cardSystem.isDeckOpen = true;
+});
 
 //========================= PLAYER SELECTION =========================
 //This function selects the player sprite
@@ -206,7 +228,16 @@ async function triggerCardEvent(){
 
     cardSystem.show(convertedCards, player, enemies, game);
 }
+//================REWARD CARDS FOR LEVEL TRANSITION=====================
+function giveLevelRewards(){
 
+    const rewardCount = levelTimer < 60000 ? 2 : 1;
+    const powerUps = cards.filter(c => c.type === "POWER_UP");
+    const shuffled = [...powerUps].sort(() => Math.random() - 0.5);
+    for(let i = 0; i < rewardCount && i < shuffled.length; i++){
+        cardSystem.playerDeck.push(shuffled[i]);
+    }
+}
 //========================= DRAW LOOP =========================
 function drawLevel3(ctx, canvas, deltaTime){
     if (!player) return; //avoids crash
@@ -218,7 +249,7 @@ function drawLevel3(ctx, canvas, deltaTime){
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); //draw background
     }
 
-    if(!isPaused && !cardSystem.isActive){
+    if(!isPaused && (!cardSystem.isActive || showDeckPreview)){
         update(deltaTime);
     }
 
@@ -236,9 +267,22 @@ function drawLevel3(ctx, canvas, deltaTime){
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     pauseBox.draw(ctx);
 
+     if(levelCompleted){
+        levelCompletedBox.draw(ctx);
+    }
     // cardsOnCanvas dibuja la selección de cartas y el deck del jugador
     cardSystem.draw(ctx, canvas);
     cardSystem.drawDeck(ctx, canvas);
+    //Shows player's deck after each level completed to show reward cards
+    if(showDeckPreview){
+        cardSystem.drawDeck(ctx, canvas);
+        deckPreviewTimer += deltaTime;
+        if(deckPreviewTimer >= 5000){ //Only during 5 seconds
+            showDeckPreview = false;
+            cardSystem.isDeckOpen = false;
+            gameCompleted = true;  // SWITCH TO SCORE SCENE
+        }
+    }
 }
 
 //HEALTH BAR
@@ -319,7 +363,15 @@ function update(deltaTime){
         }
         console.log(`enemies: ${enemies.length}`);
         spawnTimer = 0;
+    }   
+    //Condition for next level, first message box for reward (SHOULD BE GAME COMPLTED MESSAGE BOX (NEW))
+    if(killedEnemies >= conditionEnemies && !levelCompleted){
+        levelCompleted = true;
+        giveLevelRewards();
+        levelCompletedBox.show();
+    
     }
+
 
     cameraX = updateCamera(
         player.position.x,
@@ -344,7 +396,9 @@ function handleMouseMoveLevel3(event, canvas){
 }
 
 function handleClickLevel3(){
-
+    if(levelCompleted){
+        return levelCompletedBox.handleClick(mouseX, mouseY);
+    }
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
@@ -435,8 +489,11 @@ function resetLevel3(){
     cardEventTriggered = false;
     cardSystem.close();
     cardSystem.isDeckOpen = false;
+    gameCompleted = false;
 }
-
+function isGameCompleted(){
+    return gameCompleted;
+}
 
 //========================= EXPORTS =========================
 export {
@@ -448,5 +505,6 @@ export {
     handleKeyDownLevel3,
     handleKeyUpLevel3,
     setSelectedCharacter,
-    goToMenuLevel3
+    goToMenuLevel3,
+    isGameCompleted
 }

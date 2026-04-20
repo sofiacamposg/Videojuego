@@ -12,6 +12,10 @@ let currentLevelConfig = level1Config;
 //========================= GAME CORE VARIABLES =========================
 //* GAME'S LOGIC
 let currentLevel = 1;
+//======= LEVEL TRANSITION =======
+let levelCompleted = false;
+let showDeckPreview = false;
+let deckPreviewTimer = 0;
 //world size
 let worldWidth = 2000;
 let worldHeight = 600;
@@ -29,7 +33,7 @@ let nextLevelLevel1 = false; //Change of scene
 let levelTimer = 0;
 
 // random trigger between 20s and 40s (considering 1 minute per level)
-let randomEventTime = Math.random() * (40000 - 20000) + 20000;
+let randomEventTime = Math.random() * (40- 20) + 20;
 
 let keysDown = {}; //To track keyboard input for player movement
 let jumpPressed = false; //Prevents continuous jumping when holding the key
@@ -81,11 +85,22 @@ pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
     pauseBox.hide();
 });
 
-//DOESN´T WORK, MUST CONNECT WITH SWITCH SCENE
 pauseBox.addButton("Home", 440, 390, 120, 35, () => {
     goToMenuLevel1 = true;
 });
+//====LEVEL TRANSITION MESSAGE BOX AND BUTTON NEXT LEVEL======
+let levelCompletedBox = new MessageBox(
+    "LEVEL COMPLETED",
+    "You survived the arena.",
+    250, 150, 500, 300
+);
 
+levelCompletedBox.addButton("Next Level", 420, 350, 150, 40, () => {
+    levelCompletedBox.hide();
+    showDeckPreview = true;
+    deckPreviewTimer = 0;
+    cardSystem.isDeckOpen = true;
+});
 
 //========================= PLAYER SELECTION =========================
 //This function selects the player sprite
@@ -216,6 +231,16 @@ async function triggerCardEvent(){
 
     cardSystem.show(convertedCards, player, enemies, game);
 }
+//================REWARD CARDS FOR LEVEL TRANSITION=====================
+function giveLevelRewards(){
+
+    const rewardCount = levelTimer < 60000 ? 2 : 1;
+    const powerUps = cards.filter(c => c.type === "POWER_UP");
+    const shuffled = [...powerUps].sort(() => Math.random() - 0.5);
+    for(let i = 0; i < rewardCount && i < shuffled.length; i++){
+        cardSystem.playerDeck.push(shuffled[i]);
+    }
+}
 
 //========================= DRAW LOOP =========================
 function drawLevel1(ctx, canvas, deltaTime){
@@ -228,7 +253,7 @@ function drawLevel1(ctx, canvas, deltaTime){
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); //draw background
     }
 
-    if(!isPaused && !cardSystem.isActive){
+    if(!isPaused && (!cardSystem.isActive || showDeckPreview)){
         update(deltaTime);
     }
 
@@ -251,9 +276,24 @@ function drawLevel1(ctx, canvas, deltaTime){
         return;
     }
 
+    if(levelCompleted){
+        levelCompletedBox.draw(ctx);
+    }
+
     // cardsOnCanvas dibuja la selección de cartas y el deck del jugador
     cardSystem.draw(ctx, canvas);
     cardSystem.drawDeck(ctx, canvas);
+
+    //Shows player's deck after each level completed to show reward cards
+    if(showDeckPreview){
+        cardSystem.drawDeck(ctx, canvas);
+        deckPreviewTimer += deltaTime;
+        if(deckPreviewTimer >= 5000){ //Only during 5 seconds
+            showDeckPreview = false;
+            cardSystem.isDeckOpen = false;
+            nextLevelLevel1 = true; //Then switch scenes
+        }
+    }
 }
 
 //HEALTH BAR
@@ -342,9 +382,11 @@ function update(deltaTime){
         console.log(`enemies: ${enemies.length}`);
         spawnTimer = 0;
     }
-    //Condition for next level
-    if(killedEnemies >= conditionEnemies){
-        nextLevelLevel1 = true;
+    //Condition for next level, first message box for reward
+    if(killedEnemies >= conditionEnemies && !levelCompleted){
+        levelCompleted = true;
+        giveLevelRewards();
+        levelCompletedBox.show();
     }
 
     cameraX = updateCamera(
@@ -371,6 +413,9 @@ function handleMouseMoveLevel1(event, canvas){
 
 function handleClickLevel1(){
 
+    if(levelCompleted){
+        return levelCompletedBox.handleClick(mouseX, mouseY);
+    }
     if(gameOver){
         return gameOverBox.handleClick(mouseX, mouseY);
     }
@@ -446,6 +491,11 @@ function resetLevel1(){
     player.hp = player.maxHp;
     player.hearts = player.maxHearts;
 
+    //levelCompleted variables
+    levelCompleted = false;
+    showDeckPreview = false;
+    deckPreviewTimer = 0;
+    levelCompletedBox.hide();
     // reset enemies
     enemies = currentLevelConfig.spawnPositions.map(pos =>
         spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)

@@ -1,7 +1,10 @@
 "use strict"
 //& dropped local mouseX/mouseY/handleMouseMove/drawButton — now using shared versions from game_functions
-import { mouseX, mouseY, drawButton, handleClick as isClickOnButton } from "../libs/game_functions.js";
+import { drawButton, handleClick, isMouseOverBox } from "../libs/game_functions.js";
 
+//? mouse track
+let mouseX = 0;
+let mouseY = 0;
 const buttonExit = {
     x: 150,
     y: 600,
@@ -20,7 +23,7 @@ backgroundImage.src = "./assets/PortadaBase.png";
 
 let cachedCtx;
 
-function draw(ctx, canvas) {
+function drawScoreScene(ctx, canvas) {
     cachedCtx = ctx;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
@@ -30,11 +33,11 @@ function draw(ctx, canvas) {
 }
 
 //This function only checks the result of the previous one and returns it
-function handleClick() {
+function handleClickScoreScene() {
   //checks if the mouse is over EXIT or START AGAIN
   if (isClickOnButton(mouseX, mouseY, buttonExit, cachedCtx)) return "exit";
   if (isClickOnButton(mouseX, mouseY, buttonAgain, cachedCtx)) return "again";
   return null;
 }
 
-export { draw, handleClick };
+export { drawScoreScene, handleClickScoreScene };
