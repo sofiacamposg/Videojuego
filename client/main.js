@@ -4,11 +4,12 @@ import { drawSelect, handleMouseMoveSelect, handleClickSelect, resetSelect, getS
 import { getPlayerLevel1, drawLevel1, handleMouseMoveLevel1, handleClickLevel1, resetLevel1, handleKeyDownLevel1,
     handleKeyUpLevel1, setSelectedCharacter, goToMenuLevel1, nextLevelLevel1 } from "./scenes/level1Scene.js";
 import { getPlayerLevel2, setPlayerLevel2, drawLevel2, handleMouseMoveLevel2, handleClickLevel2,
- resetLevel2, handleKeyDownLevel2, handleKeyUpLevel2, nextLevelLevel2 } from "./scenes/level2Scene.js";
+ resetLevel2, handleKeyDownLevel2, handleKeyUpLevel2, goToMenuLevel2, nextLevelLevel2 } from "./scenes/level2Scene.js";
 import { setPlayerLevel3, drawLevel3, handleMouseMoveLevel3, handleClickLevel3, resetLevel3,
-handleKeyDownLevel3, handleKeyUpLevel3 } from "./scenes/level3Scene.js";
+handleKeyDownLevel3, handleKeyUpLevel3, goToMenuLevel3, isGameCompleted } from "./scenes/level3Scene.js";
 import { drawCreateAccount, handleMouseMoveCreateAccount, handleClickCreateAccount, handleKeyDownCreateAccount, resetCreateAccount } from "./scenes/createAccountScene.js";
 import { drawSettings, handleMouseMoveSettings, handleClickSettings, startDragging, stopDragging, resetSettings } from "./scenes/settingsScene.js";
+import { drawScoreScene, handleClickScoreScene } from "./scenes/scoreScene.js";
 
 //& dimensiones fijas del canvas
 const canvasWidth = 1000;
@@ -62,6 +63,7 @@ function main() {
                 currentScene = 'createAccount'; 
             }
             if(clicked === 'confirm'){
+                resetSelect();
                 currentScene = 'start'; 
             }
         }
@@ -100,7 +102,7 @@ function main() {
         }
         //LEVEL 1 SCENE
         else if (currentScene === 'level1'){
-            clicked = handleClickLevel1(ctx);
+            clicked = handleClickLevel1(ctx); //& manejo de clicks en level1 (aún no implementado)
 
             if(goToMenuLevel1){
                 //& si level1 pide volver al menú, resetea todas las escenas involucradas
@@ -112,11 +114,27 @@ function main() {
         }
         //LEVEL 2 SCENE
         else if (currentScene === 'level2'){
-            handleClickLevel2();
+            clicked = handleClickLevel2(ctx); //& manejo de clicks en level1 (aún no implementado)
+
+            if(goToMenuLevel2){
+                //& si level1 pide volver al menú, resetea todas las escenas involucradas
+                resetLogIn();
+                resetSelect();
+                resetLevel2();
+                currentScene = "menu";
+            }
         }
-        //LEVEL 3 SCENE
+        //LEVEL 1 SCENE
         else if (currentScene === 'level3'){
-            handleClickLevel3();
+            clicked = handleClickLevel3(ctx); //& manejo de clicks en level1 (aún no implementado)
+
+            if(goToMenuLevel3){
+                //& si level1 pide volver al menú, resetea todas las escenas involucradas
+                resetLogIn();
+                resetSelect();
+                resetLevel3();
+                currentScene = "menu";
+            }
         }
     });
 
@@ -165,6 +183,7 @@ function gameLoop(newTime) {
     let deltaTime = (newTime - oldTime);
     oldTime = newTime;
 
+    if (deltaTime > 50) deltaTime = 50; 
 
     if(currentScene === "level1" && nextLevelLevel1){
         currentPlayer = getPlayerLevel1();
@@ -178,6 +197,10 @@ function gameLoop(newTime) {
         resetLevel2();
         currentScene = "level3";
     }
+    if(currentScene === "level3" && isGameCompleted()){
+        resetLevel3();
+        currentScene = "score";
+    }
     if(currentScene === 'menu') drawMenu(ctx,canvas);
     else if(currentScene === 'settings') drawSettings(ctx,canvas);
     else if(currentScene === 'login') drawLogIn(ctx,canvas);
@@ -186,6 +209,7 @@ function gameLoop(newTime) {
     else if(currentScene === 'level1') drawLevel1(ctx,canvas, deltaTime);
     else if(currentScene === 'level2') drawLevel2(ctx,canvas,deltaTime);
     else if(currentScene === 'level3') drawLevel3(ctx,canvas,deltaTime);
+    else if(currentScene === 'score') drawScoreScene(ctx,canvas,deltaTime);
 
     
     oldTime = newTime; //& actualiza oldTime para el siguiente frame

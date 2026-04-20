@@ -1,7 +1,7 @@
 "use strict"
 import { handleMouseMove, handleClick, drawButton } from "../libs/game_functions.js";
 
-// Mouse (SE QUEDA AQUÍ ✔)
+// Mouse (SE QUEDA AQUÍ)
 let mouseX = 0;
 let mouseY = 0;
 

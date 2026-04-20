@@ -16,6 +16,11 @@ function setPlayerLevel2(existingPlayer){
 }
 //========================= GAME CORE VARIABLES =========================
 let currentLevel = 2;
+//======= LEVEL TRANSITION =======
+let levelCompleted = false;
+let showDeckPreview = false;
+let deckPreviewTimer = 0;
+//world size
 let worldWidth = 2000;
 let worldHeight = 600;
 let cameraX = 0;
@@ -78,6 +83,19 @@ pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
 
 pauseBox.addButton("Home", 440, 390, 120, 35, () => {
     goToMenuLevel2 = true;
+});
+//====LEVEL TRANSITION MESSAGE BOX AND BUTTON NEXT LEVEL======
+let levelCompletedBox = new MessageBox(
+    "LEVEL COMPLETED",
+    "You survived the arena.",
+    250, 150, 500, 300
+);
+
+levelCompletedBox.addButton("Next Level", 420, 350, 150, 40, () => {
+    levelCompletedBox.hide();
+    showDeckPreview = true;
+    deckPreviewTimer = 0;
+    cardSystem.isDeckOpen = true;
 });
 
 //========================= PLAYER SELECTION =========================
@@ -197,7 +215,16 @@ async function triggerCardEvent(){
 
     cardSystem.show(convertedCards, player, enemies, game);
 }
+//================REWARD CARDS FOR LEVEL TRANSITION=====================
+function giveLevelRewards(){
 
+    const rewardCount = levelTimer < 60000 ? 2 : 1;
+    const powerUps = cards.filter(c => c.type === "POWER_UP");
+    const shuffled = [...powerUps].sort(() => Math.random() - 0.5);
+    for(let i = 0; i < rewardCount && i < shuffled.length; i++){
+        cardSystem.playerDeck.push(shuffled[i]);
+    }
+}
 //========================= DRAW LOOP =========================
 function drawLevel2(ctx, canvas, deltaTime){
     if (!player) return;
@@ -208,7 +235,7 @@ function drawLevel2(ctx, canvas, deltaTime){
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height);
     }
 
-    if(!isPaused && !cardSystem.isActive){
+    if(!isPaused && (!cardSystem.isActive || showDeckPreview)){
         update(deltaTime);
     }
 
@@ -227,8 +254,27 @@ function drawLevel2(ctx, canvas, deltaTime){
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     pauseBox.draw(ctx);
 
+     if(levelCompleted){
+        levelCompletedBox.draw(ctx);
+    }
+
+     if(levelCompleted){
+        levelCompletedBox.draw(ctx);
+    }
+
+
     cardSystem.draw(ctx, canvas);
     cardSystem.drawDeck(ctx, canvas);
+    //Shows player's deck after each level completed to show reward cards
+    if(showDeckPreview){
+        cardSystem.drawDeck(ctx, canvas);
+        deckPreviewTimer += deltaTime;
+        if(deckPreviewTimer >= 5000){ //Only during 5 seconds
+            showDeckPreview = false;
+            cardSystem.isDeckOpen = false;
+            nextLevelLevel2 = true; //Then switch scenes
+        }
+    }
 }
 
 //HEALTH BAR
@@ -306,10 +352,13 @@ function update(deltaTime){
         console.log(`enemies: ${enemies.length}`);
         spawnTimer = 0;
     }
-
-    if(killedEnemies >= conditionEnemies){
-        nextLevelLevel2 = true;
+    //Condition for next level, first message box for reward
+    if(killedEnemies >= conditionEnemies && !levelCompleted){
+        levelCompleted = true;
+        giveLevelRewards();
+        levelCompletedBox.show();
     }
+
 
     cameraX = updateCamera(
         player.position.x,
@@ -333,6 +382,9 @@ function handleMouseMoveLevel2(event, canvas){
 }
 
 function handleClickLevel2(){
+    if(levelCompleted){
+        return levelCompletedBox.handleClick(mouseX, mouseY);
+    }
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
