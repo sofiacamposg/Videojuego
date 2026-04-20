@@ -33,14 +33,14 @@ export const playerConfigs = {
 };
 
 //Configurations for each level
-export const level1Config = {
+export const level1Config = {  //   TODO agregar muerte del lado derecho
     background: "./assets/Coliseo1.png",
 
     enemyConfig: {
         hp: 100,
         damage: 8,
         speed: 0.4,
-        scale: 0.7,
+        scale: 0.6,
         walkRightSrc: "./assets/enemy1/walkRight.png",
         walkLeftSrc: "./assets/enemy1/walkLeft.png",
         attackRightSrc: "./assets/enemy1/attackRight.png",
@@ -61,12 +61,12 @@ export const level2Config = {
         hp: 120,
         damage: 9,
         speed: 0.5,
-        scale: 0.8,
-        walkRightSrc: "./assets/enemy1/walkRight.png",
-        walkLeftSrc: "./assets/enemy1/walkLeft.png",
-        attackRightSrc: "./assets/enemy1/attackRight.png",
-        attackLeftSrc: "./assets/enemy1/attackLeft.png",
-        deathSrc: "./assets/enemy1/death.png",
+        scale: 0.7,
+        walkRightSrc: "./assets/enemy2/walkRight.png",
+        walkLeftSrc: "./assets/enemy2/walkLeft.png",
+        attackRightSrc: "./assets/enemy2/attackRight.png",
+        attackLeftSrc: "./assets/enemy2/attackLeft.png",
+        deathSrc: "./assets/enemy2/death.png",
     },
 
     spawnPositions: [
@@ -81,12 +81,12 @@ export const level3Config = {
         hp: 120,
         damage: 10,
         speed: 0.5,
-        scale: 0.9,
-        walkRightSrc: "./assets/enemy1/walkRight.png",
-        walkLeftSrc: "./assets/enemy1/walkLeft.png",
-        attackRightSrc: "./assets/enemy1/attackRight.png",
-        attackLeftSrc: "./assets/enemy1/attackLeft.png",
-        deathSrc: "./assets/enemy1/death.png",
+        scale: 0.8,
+        walkRightSrc: "./assets/enemy3/walkRight.png",
+        walkLeftSrc: "./assets/enemy3/walkLeft.png",
+        attackRightSrc: "./assets/enemy3/attackRight.png",
+        attackLeftSrc: "./assets/enemy3/attackLeft.png",
+        deathSrc: "./assets/enemy3/death.png",
     },
 
     spawnPositions: [

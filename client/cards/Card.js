@@ -90,7 +90,7 @@ new Card("Reveal Card", "powerup", null, (player, game) => {  //eye_emperor.png 
 
 //Punishment
 new Card("Spawn Enemies", "punishment", null, (player, enemies, game) => {  //imperial_decreee.png check
-    enemies.push(game.spawnEnemy());
+    enemies.push(game.spawnEnemy()); //agregar cuantos enemigos y manejarlo en update
     enemies.push(game.spawnEnemy());
 }, imperial_decree),
 
