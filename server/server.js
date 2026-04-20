@@ -130,3 +130,17 @@ app.post("/register", (req, res) => {
         });
     });
 });
+// ================== GET ARCHETYPES ==================
+app.get("/archetypes", (req, res) => {
+    console.log("📥 GET /archetypes");
+
+    db.query("SELECT * FROM Archetype", (err, result) => {
+        if (err) {
+            console.log("❌ QUERY ERROR:", err);
+            return res.status(500).json({ error: err.message });
+        }
+
+        console.log("📤 Sending:", result);
+        res.json(result);
+    });
+});

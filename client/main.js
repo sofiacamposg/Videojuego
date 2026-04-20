@@ -63,6 +63,7 @@ function main() {
                 currentScene = 'createAccount'; 
             }
             if(clicked === 'confirm'){
+                resetSelect();
                 currentScene = 'start'; 
             }
         }

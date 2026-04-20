@@ -30,12 +30,12 @@ let gladiatorsImage = new Image();
 gladiatorsImage.src = "./assets/gladiadores.png";
 
 //? zones
-let zones = [
+/*let zones = [
     { x: 200, y: 190, width: 180, height: 150, name: "Guerrero", stats: "Vida:120 Ataque:20 Vel:5", description: "Gladiador equilibrado en ataque y defensa." },
     { x: 400, y: 190, width: 180, height: 150, name: "Lancero", stats: "Vida:100 Ataque:25 Vel:6", description: "Gladiador rápido con mayor alcance." },
     { x: 600, y: 190, width: 180, height: 150, name: "Pesado", stats: "Vida:150 Ataque:15 Vel:3", description: "Gladiador resistente y lento." }
-];
-
+];*/
+let zones =[];
 let selectedCharacter = null;
 
 //? reset
@@ -43,8 +43,33 @@ function resetSelect() {
     mouseX = 0;
     mouseY = 0;
     selectedCharacter = null;
+    loadArchetypes();
 }
+// ================== LOAD FROM API ==================
+async function loadArchetypes(){
+    try{
+        const res = await fetch("http://localhost:3000/archetypes");
 
+        if(!res.ok) throw new Error("HTTP " + res.status);
+
+        const data = await res.json();
+
+        zones = data.map((arch, index) => ({
+            x: 200 + index * 200,
+            y: 190,
+            width: 180,
+            height: 150,
+            name: arch.name,
+            stats: `Vida:${arch.hp_start} Ataque:${arch.damage_start} Vel:${arch.speed_start}`,
+            description: `${arch.name}`
+        }));
+
+        console.log(" Archetypes loaded:", zones);
+
+    }catch(err){
+        console.error(" API failed, using fallback:", err);
+    }
+}
 function drawSelect(ctx, canvas) {
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
