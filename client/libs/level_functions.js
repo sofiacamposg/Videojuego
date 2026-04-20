@@ -11,7 +11,7 @@ export function generatePlatform(lastPlatform){
     let y = lastPlatform.y + (Math.random() - 0.5) * 120;
 
     if(y > 420) y = 420;
-    if(y < 350) y = 350;
+    if(y < 380) y = 380;
 
     return {
         x, y,
