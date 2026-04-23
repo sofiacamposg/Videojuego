@@ -13,7 +13,7 @@ SET @old_autocommit=@@autocommit;
 
 USE gladiator;
 
--- Insert default archetypes
+-- Insert archetypes catalog
 SET AUTOCOMMIT = 0;
 INSERT INTO Archetype (name, hp_start, speed_start, damage_start) VALUES
 ('Warrior', 120, 5, 20),
@@ -29,7 +29,7 @@ INSERT INTO Level (level_number, target_time, description) VALUES
 (3, 30, 'Final battle of the colosseum');
 COMMIT;
 
--- Dummy data for Card
+-- Insert Cards catalog TODO: AÑADIR LAS DEMÁS CARTAS
 SET AUTOCOMMIT = 0;
 INSERT INTO Card (card_name, description, type, effect_from, effect_modifies, effect_to, value_effect, duration) VALUES
 ('People Favor Card', 'A card that boosts speed temporarily', 'PERMANENT', 'player', 'speed',  1),
@@ -40,12 +40,12 @@ INSERT INTO Card (card_name, description, type, effect_from, effect_modifies, ef
 ('Jupiter Wrath Card', 'A punishment card that removes life instantly', 6);
 COMMIT;
 
--- Dummy data for Enemy
+-- Insert Enemys catalog
 SET AUTOCOMMIT = 0;
-INSERT INTO Enemy (level_id, enemy_name, hp_start, speed_start, damage_start, enemy_type) VALUES
-(1, 'Lion', 50, 4, 8, 'NPC'),
-(2, 'Elite Gladiator', 80, 5, 12, 'NPC'),
-(3, 'Arena Beast', 150, 3, 20, 'BOSS');
+INSERT INTO Enemy (level_id, enemy_name, hp_start, speed_start, damage_start) VALUES
+(1, 'Lion', 50, 4, 8),
+(2, 'Tiger', 80, 5, 12),
+(3, 'Boar', 150, 3, 20);
 COMMIT;
 
 -- Dummy data for Player
@@ -53,7 +53,35 @@ SET AUTOCOMMIT = 0;
 INSERT INTO Player (name, username, password, total_runs, total_losses, total_wins) VALUES
 ('Sofia Campos', 'sofi123', 'hashed_password_1', 5, 2, 3),
 ('Daniela Ruiz', 'dani456', 'hashed_password_2', 8, 5, 3),
-('Ariel Torres', 'ariel789', 'hashed_password_3', 10, 4, 6);
+('Ariel Torres', 'ariel789', 'hashed_password_3', 10, 4, 6),
+('Carlos Mendoza', 'carlos_m', 'hashed_password_4', 3, 3, 0),
+('Valentina Cruz', 'vale_cruz', 'hashed_password_5', 12, 4, 8),
+('Miguel Herrera', 'miguelh', 'hashed_password_6', 7, 5, 2),
+('Camila Vega', 'cami_v', 'hashed_password_7', 15, 6, 9),
+('Diego Morales', 'diego_m', 'hashed_password_8', 2, 2, 0),
+('Isabella Reyes', 'isa_reyes', 'hashed_password_9', 20, 8, 12),
+('Sebastián López', 'sebas_l', 'hashed_password_10', 6, 4, 2),
+('Lucía Fernández', 'luci_f', 'hashed_password_11', 9, 3, 6),
+('Andrés Ramírez', 'andres_r', 'hashed_password_12', 4, 4, 0),
+('Mariana Castillo', 'mari_c', 'hashed_password_13', 18, 7, 11),
+('Rodrigo Gutiérrez', 'rodri_g', 'hashed_password_14', 11, 6, 5),
+('Natalia Jiménez', 'nati_j', 'hashed_password_15', 25, 10, 15),
+('Pablo Sánchez', 'pablo_s', 'hashed_password_16', 1, 1, 0),
+('Fernanda Vargas', 'fer_v', 'hashed_password_17', 14, 5, 9),
+('Tomás Flores', 'tomas_f', 'hashed_password_18', 8, 6, 2),
+('Renata Ríos', 'renata_r', 'hashed_password_19', 30, 12, 18),
+('Emilio Peña', 'emilio_p', 'hashed_password_20', 5, 3, 2),
+('Valeria Ortiz', 'vale_o', 'hashed_password_21', 16, 7, 9),
+('Nicolás Rojas', 'nico_r', 'hashed_password_22', 3, 2, 1),
+('Alejandra Núñez', 'ale_n', 'hashed_password_23', 22, 9, 13),
+('Javier Aguilar', 'javi_a', 'hashed_password_24', 7, 5, 2),
+('Daniela Mora', 'dani_m', 'hashed_password_25', 13, 4, 9),
+('Ricardo Delgado', 'ricky_d', 'hashed_password_26', 19, 8, 11),
+('Gabriela Navarro', 'gabi_n', 'hashed_password_27', 6, 6, 0),
+('Mateo Guerrero', 'mateo_g', 'hashed_password_28', 28, 11, 17),
+('Catalina Ibáñez', 'cata_i', 'hashed_password_29', 10, 3, 7),
+('Héctor Paredes', 'hector_p', 'hashed_password_30', 4, 2, 2);
+
 COMMIT;
 
 -- Dummy data for MatchGame
@@ -61,7 +89,39 @@ SET AUTOCOMMIT = 0;
 INSERT INTO MatchGame (player_id, archetype_id, end_time, duration_seconds, level_reached, final_fame, life, result) VALUES
 (1, 1, NOW(), 180, 3, 120, 2, 'WIN'),
 (2, 2, NOW(), 140, 2, 70, 1, 'LOSE'),
-(3, 3, NOW(), 200, 3, 150, 3, 'WIN');
+(3, 3, NOW(), 200, 3, 150, 3, 'WIN'),
+(4, 1, NOW(), 95, 1, 20, 0, 'LOSE'),
+(5, 2, NOW(), 220, 3, 180, 4, 'WIN'),
+(6, 3, NOW(), 110, 2, 55, 1, 'LOSE'),
+(7, 1, NOW(), 175, 3, 130, 2, 'WIN'),
+(8, 2, NOW(), 60, 1, 10, 0, 'LOSE'),
+(9, 3, NOW(), 240, 3, 200, 5, 'WIN'),
+(10, 1, NOW(), 130, 2, 80, 2, 'LOSE'),
+(1, 2, NOW(), 195, 3, 140, 3, 'WIN'),
+(2, 3, NOW(), 85, 1, 15, 0, 'LOSE'),
+(11, 1, NOW(), 210, 3, 165, 4, 'WIN'),
+(12, 2, NOW(), 120, 2, 60, 1, 'LOSE'),
+(13, 3, NOW(), 255, 3, 210, 5, 'WIN'),
+(3, 1, NOW(), 100, 1, 25, 0, 'LOSE'),
+(14, 2, NOW(), 185, 3, 135, 2, 'WIN'),
+(15, 3, NOW(), 145, 2, 90, 1, 'LOSE'),
+(16, 1, NOW(), 230, 3, 190, 4, 'WIN'),
+(17, 2, NOW(), 75, 1, 5, 0, 'LOSE'),
+(5, 3, NOW(), 205, 3, 155, 3, 'WIN'),
+(18, 1, NOW(), 115, 2, 45, 1, 'LOSE'),
+(19, 2, NOW(), 265, 3, 220, 5, 'WIN'),
+(20, 3, NOW(), 90, 1, 30, 0, 'LOSE'),
+(9, 1, NOW(), 170, 3, 125, 2, 'WIN'),
+(21, 2, NOW(), 135, 2, 75, 1, 'LOSE'),
+(22, 3, NOW(), 245, 3, 195, 4, 'WIN'),
+(7, 1, NOW(), 80, 1, 10, 0, 'LOSE'),
+(23, 2, NOW(), 215, 3, 170, 3, 'WIN'),
+(24, 3, NOW(), 125, 2, 65, 1, 'LOSE'),
+(25, 1, NOW(), 275, 3, 230, 5, 'WIN'),
+(13, 2, NOW(), 70, 1, 8, 0, 'LOSE'),
+(26, 3, NOW(), 190, 3, 145, 2, 'WIN'),
+(27, 1, NOW(), 150, 2, 85, 1, 'LOSE'),
+(28, 2, NOW(), 260, 3, 215, 4, 'WIN');
 COMMIT;
 
 -- Dummy data for SpecificLevel
