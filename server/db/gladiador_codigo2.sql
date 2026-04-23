@@ -1,3 +1,12 @@
+-- sets the character encoding to utf8mb4 so special characters and accents are stored correctly
+SET NAMES utf8mb4;
+-- saves the current unique checks setting and turns it off temporarily to avoid errors while loading the schema
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+-- saves the current foreign key checks setting and turns it off temporarily so tables can be created in any order
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+-- saves the current sql mode and sets it to strict mode so invalid data is rejected instead of silently ignored
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
+
 CREATE DATABASE IF NOT EXISTS gladiator;
 USE gladiator;
 
@@ -47,7 +56,8 @@ CREATE TABLE Card (
     card_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
     card_name VARCHAR(40) NOT NULL UNIQUE,
     description VARCHAR(120) NOT NULL,
-    type ENUM('TEMPORARY', 'PERMANENT') NOT NULL,
+    effect_type ENUM('POWER_UP', 'PUNISHMENT') NOT NULL,
+    duration_type ENUM('TEMPORARY', 'PERMANENT') NOT NULL,
     effect_from VARCHAR(6) NOT NULL,
     effect_modifies VARCHAR(15) NOT NULL,
     effect_operator CHAR 
@@ -82,6 +92,7 @@ CREATE TABLE MatchGame (
     match_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     player_id SMALLINT UNSIGNED NOT NULL,
     archetype_id SMALLINT UNSIGNED NOT NULL,
+    life SMALLINT NOT NULL,
     start_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     end_time TIMESTAMP NULL,
     duration_seconds SMALLINT UNSIGNED NOT NULL DEFAULT 0,
@@ -106,6 +117,7 @@ CREATE TABLE SpecificLevel (
     match_id INT UNSIGNED NOT NULL,
     level_id SMALLINT UNSIGNED NOT NULL,
     enemy_id SMALLINT UNSIGNED NOT NULL,
+    finished BOOL NOT NULL DEFAULT FALSE, 
     level_card_id SMALLINT UNSIGNED NOT NULL,
     completion_time SMALLINT UNSIGNED NOT NULL,
     remaining_hp SMALLINT UNSIGNED NOT NULL,
@@ -488,3 +500,8 @@ BEGIN
 END //
 
 DELIMITER ;
+
+-- restores all the settings that were saved at the beginning
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET SQL_MODE=@OLD_SQL_MODE;

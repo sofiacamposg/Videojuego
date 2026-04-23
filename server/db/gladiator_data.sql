@@ -1,5 +1,16 @@
 -- Gladiator Sample Database Data
 
+-- sets the character encoding to utf8mb4 so special characters and accents are stored correctly
+SET NAMES utf8mb4;
+-- saves the current unique checks setting and turns it off temporarily to avoid errors while loading the schema
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+-- saves the current foreign key checks setting and turns it off temporarily so tables can be created in any order
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+-- saves the current sql mode and sets it to strict mode so invalid data is rejected instead of silently ignored
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
+-- saves the current autocommit setting so it can be restored at the end
+SET @old_autocommit=@@autocommit;
+
 USE gladiator;
 
 -- Insert default archetypes
@@ -90,3 +101,10 @@ COMMIT;
 SET AUTOCOMMIT = 0;
 
 COMMIT;
+
+-- restores all the settings that were saved at the beginning
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET SQL_MODE=@OLD_SQL_MODE;
+SET autocommit=@old_autocommit;
+COMMIT; 
