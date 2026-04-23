@@ -188,6 +188,7 @@ INSERT INTO Card (card_name, description, type, effect_from, effect_modifies, ef
 ('Caesar Chains Card', 'A punishment card that disables jumping', 5),
 ('Jupiter Wrath Card', 'A punishment card that removes life instantly', 6);
 
+
 -- Dummy data for Enemy
 INSERT INTO Enemy (level_id, enemy_name, hp_start, speed_start, damage_start, enemy_type) VALUES
 (1, 'Lion', 50, 4, 8, 'NPC'),
@@ -315,3 +316,229 @@ BEGIN
     WHERE statistics_id = 1;
 END //
 DELIMITER ;
+
+-- Trigger: each time a card is registered as used in Deck, add 1 to user_movement_count
+DELIMITER //
+
+CREATE TRIGGER trg_after_insert_deck
+AFTER INSERT ON Deck
+FOR EACH ROW
+BEGIN
+    UPDATE Statistics
+    SET user_movements_count = user_movements_count + 1,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE statistics_id = 1;
+END //
+
+DELIMITER ;
+-- Trigger: Validate an effect is not terporary and permanent at the same time
+DELIMITER //
+
+CREATE TRIGGER trg_before_insert_temporaryeffect
+BEFORE INSERT ON TemporaryEffect
+FOR EACH ROW
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM PermanentEffect
+        WHERE effect_id = NEW.effect_id
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'An effect cannot be both temporary and permanent.';
+    END IF;
+END //
+
+DELIMITER ;
+
+-- Trigger: Validate an effect is not terporary and permanent at the same time
+DELIMITER //
+
+CREATE TRIGGER trg_before_insert_permanenteffect
+BEFORE INSERT ON PermanentEffect
+FOR EACH ROW
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM TemporaryEffect
+        WHERE effect_id = NEW.effect_id
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'An effect cannot be both permanent and temporary.';
+    END IF;
+END //
+
+DELIMITER ;
+
+-- STORED PROCEDURES
+--Obbtains cards for effect type (POWER UP OR PUNISHMENT)
+DELIMITER //
+
+CREATE PROCEDURE GetCardsByType(IN in_effect_type ENUM('POWER_UP', 'PUNISHMENT'))
+BEGIN
+    SELECT
+        c.card_id,
+        c.card_name,
+        e.effect_name,
+        e.effect_type,
+        e.effect_value,
+        e.description
+    FROM Card c
+    INNER JOIN Effect e ON c.effect_id = e.effect_id
+    WHERE e.effect_type = in_effect_type;
+END //
+
+DELIMITER ;
+
+-- Stored procedure to get a match summary, for our socre scene
+DELIMITER //
+
+CREATE PROCEDURE GetMatchSummary(IN in_match_id INT UNSIGNED)
+BEGIN
+    SELECT
+        m.match_id,
+        p.name AS player_name,
+        a.name AS archetype,
+        m.duration_seconds,
+        m.level_reached,
+        m.final_fame,
+        m.life,
+        m.result,
+        COUNT(sl.specific_level_id) AS levels_played,
+        SUM(sl.fame_gained) AS total_fame_from_levels,
+        SUM(sl.powerups_obtained) AS total_powerups,
+        SUM(sl.punishments_obtained) AS total_punishments
+    FROM MatchGame m
+    INNER JOIN Player p ON m.player_id = p.player_id
+    INNER JOIN Archetype a ON m.archetype_id = a.archetype_id
+    LEFT JOIN SpecificLevel sl ON m.match_id = sl.match_id
+    WHERE m.match_id = in_match_id
+    GROUP BY m.match_id;
+END //
+
+DELIMITER ;
+
+--Stored procedure to get used cards in a match
+DELIMITER //
+
+CREATE PROCEDURE GetCardsUsedInMatch(IN in_match_id INT UNSIGNED)
+BEGIN
+    SELECT
+        m.match_id,
+        sl.specific_level_id,
+        l.level_number,
+        c.card_name,
+        e.effect_name,
+        e.effect_type,
+        d.use_time,
+        d.effect_duration
+    FROM MatchGame m
+    INNER JOIN SpecificLevel sl ON m.match_id = sl.match_id
+    INNER JOIN Level l ON sl.level_id = l.level_id
+    INNER JOIN Deck d ON sl.specific_level_id = d.specific_level_id
+    INNER JOIN Card c ON d.card_id = c.card_id
+    INNER JOIN Effect e ON c.effect_id = e.effect_id
+    WHERE m.match_id = in_match_id
+    ORDER BY l.level_number, d.use_time;
+END //
+
+DELIMITER ;
+
+-- VIEW FOR OUL LIFE STATS
+-- This shows life, fame and current level
+CREATE VIEW vw_match_hud AS
+SELECT
+    m.match_id,
+    p.username,
+    m.life,
+    m.level_reached,
+    m.final_fame,
+    m.result
+FROM MatchGame m
+INNER JOIN Player p ON m.player_id = p.player_id;
+
+-- This one shows progress, the stats while we were pplaying
+CREATE VIEW vw_match_progress AS
+SELECT
+    sl.match_id,
+    l.level_number,
+    sl.completion_time,
+    sl.remaining_hp,
+    sl.fame_gained,
+    sl.finished
+FROM SpecificLevel sl
+INNER JOIN Level l ON sl.level_id = l.level_id;
+
+-- We can use this one to show  if we are currently using a card(effect)
+CREATE VIEW vw_match_cards_live AS
+SELECT
+    d.specific_level_id,
+    c.card_name,
+    e.effect_type,
+    d.use_time,
+    d.effect_duration
+FROM Deck d
+INNER JOIN Card c ON d.card_id = c.card_id
+INNER JOIN Effect e ON c.effect_id = e.effect_id;
+
+--This are User views and go on other tab
+CREATE VIEW vw_player_profile AS
+SELECT
+    player_id,
+    name,
+    username,
+    registration_date,
+    total_runs,
+    total_wins,
+    total_losses
+FROM Player;
+
+-- This one is like the winrate
+CREATE VIEW vw_player_winrate AS
+SELECT
+    player_id,
+    username,
+    total_runs,
+    total_wins,
+    total_losses,
+    CASE
+        WHEN total_runs = 0 THEN 0
+        ELSE ROUND((total_wins / total_runs) * 100, 2)
+    END AS winrate
+FROM Player;
+
+-- This works for the admin and user, is the player match history
+CREATE VIEW vw_player_match_history AS
+SELECT
+    m.match_id,
+    p.username,
+    m.start_time,
+    m.end_time,
+    m.duration_seconds,
+    m.level_reached,
+    m.final_fame,
+    m.result
+FROM MatchGame m
+INNER JOIN Player p ON m.player_id = p.player_id;
+
+-- This one is the total fame acumulated
+CREATE VIEW vw_player_total_fame AS
+SELECT
+    p.player_id,
+    p.username,
+    COALESCE(SUM(m.final_fame), 0) AS total_fame
+FROM Player p
+LEFT JOIN MatchGame m ON p.player_id = m.player_id
+GROUP BY p.player_id, p.username;
+
+-- This also works both for the admin and user because it shows which cards the user uses the most
+CREATE VIEW vw_player_card_usage AS
+SELECT
+    p.username,
+    c.card_name,
+    COUNT(*) AS times_used
+FROM Deck d
+INNER JOIN SpecificLevel sl ON d.specific_level_id = sl.specific_level_id
+INNER JOIN MatchGame m ON sl.match_id = m.match_id
+INNER JOIN Player p ON m.player_id = p.player_id
+INNER JOIN Card c ON d.card_id = c.card_id
+GROUP BY p.username, c.card_name;
