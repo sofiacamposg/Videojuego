@@ -60,17 +60,17 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 ('Gladiators Blood', 
 'Each enemy kill restores a small amount of HP for the level duration', 
 'POWER_UP', 'PERMANENT', 
-'player', 'killHeal', '=', '=', 1.0, 0.0, 0),
+'player', 'lifeSteal', '=', '=', 1.0, 0.0, 0),
 
 ('Colloseums fury', 
 'Basic attack gains area of effect for 8 seconds', 
 'POWER_UP', 'TEMPORARY', 
-'player', 'aoeActive', '=', '=', 0.0, 1.0, 8000),
+'player', 'range', '*', '/', 1.3, 1.3, 8000),
 
 ('Eye of the Emperor', 
 'Reveals the type of the next 3 cards before selection', 
 'POWER_UP', 'PERMANENT', 
-'game', 'cardPreview', '=', '=', 0.0, 1.0, 0),
+'game', 'revealNextCard', '=', '=', 1.0, 0.0, 0),
 ---
 ('Spawn Enemies', 
 '2 additional enemies spawn immediately', 
