@@ -62,8 +62,8 @@ CREATE TABLE Card (
     duration_type ENUM('TEMPORARY', 'PERMANENT') NOT NULL,
     effect_from VARCHAR(6) NOT NULL,
     effect_modifies VARCHAR(15) NOT NULL,
-    effect_operator CHAR 
-    effect_to VARCHAR(6) NOT NOT,
+    effect_operator CHAR NOT NULL,
+    effect_reverse_operator CHAR(1) NOT NULL,
     value_effect FLOAT(5) NOT NULL,
     duration SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
