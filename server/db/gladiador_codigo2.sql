@@ -63,7 +63,7 @@ CREATE TABLE Card (
     effect_operator CHAR 
     effect_to VARCHAR(6) NOT NOT,
     value_effect FLOAT(5) NOT NULL,
-    duration SMALLINT NOT NULL
+    duration SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (card_id)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
@@ -238,7 +238,7 @@ SELECT
     c.card_name,
     e.effect_type,
     d.use_time,
-    d.effect_duration
+    c.duration
 FROM Deck d
 INNER JOIN Card c ON d.card_id = c.card_id
 INNER JOIN Effect e ON c.effect_id = e.effect_id;
@@ -488,7 +488,7 @@ BEGIN
         e.effect_name,
         e.effect_type,
         d.use_time,
-        d.effect_duration
+        c.duration
     FROM MatchGame m
     INNER JOIN SpecificLevel sl ON m.match_id = sl.match_id
     INNER JOIN Level l ON sl.level_id = l.level_id
