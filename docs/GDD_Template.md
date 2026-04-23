@@ -90,14 +90,7 @@ Music On/Off toggle
 LOG IN SCREEN:
 
 
-LEVEL SELECT:
-=======
--> OPTIONS:
-Master Volume slider
-Music On/Off toggle
-
 -> LEVEL SELECT:
->>>>>>> origin/develop
 Levels advance automatically as you complete them
 Only 3 levels, played in sequence (but with variations) within one run
 
