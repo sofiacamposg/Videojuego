@@ -37,5 +37,5 @@ export function updateCoins(player, prevKilled, newKilled) {
 export function drawCoins(ctx, x, y, coins) {
     ctx.fillStyle = "gold";
     ctx.font = "20px Arial";
-    ctx.fillText("🪙 " + coins, x, y);
+    ctx.fillText("🌟 " + coins, x, y);
 }

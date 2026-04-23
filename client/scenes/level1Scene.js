@@ -266,10 +266,10 @@ function drawLevel1(ctx, canvas, deltaTime){
 
     ctx.restore();
 
-    drawHealthBar(ctx, 20, 20, 100, 30, player.hp, player.maxHp);
+    drawHealthBar(ctx, 30, 20, 100, 30, player.hp, player.maxHp);
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
-    drawCoins(ctx, 20, 100, player.coins);
+    drawCoins(ctx, 30, 100, player.coins);
     pauseBox.draw(ctx);
 
     if (gameOver) {
@@ -300,9 +300,8 @@ function drawLevel1(ctx, canvas, deltaTime){
 //HEALTH BAR
 function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
     // background (lost health)
-    ctx.fillStyle = "white";
-    ctx.font = "20px Arial";
-    ctx.fillText("HP: " + player.hp, 20, 70);
+    ctx.fillStyle = "green";
+    ctx.fillText("HP: " + player.hp, 30, 70);
 
 
     ctx.fillStyle = "gray";
