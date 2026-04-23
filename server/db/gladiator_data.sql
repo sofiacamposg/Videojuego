@@ -31,7 +31,7 @@ COMMIT;
 
 -- Insert Cards catalog TODO: AÑADIR LAS DEMÁS CARTAS
 SET AUTOCOMMIT = 0;
-INSERT INTO Card (card_name, description, type, effect_from, effect_modifies, effect_to, value_effect, duration) VALUES
+INSERT INTO Card (card_name, description, duration_type, effect_from, effect_modifies, effect_to, value_effect, duration, effect_type) VALUES
 ('People Favor Card', 'A card that boosts speed temporarily', 'PERMANENT', 'player', 'speed',  1),
 ('Mars Blade Card', 'A card that boosts damage temporarily', 2),
 ('Venus Blessing Card', 'A card that restores health permanently', 3),
