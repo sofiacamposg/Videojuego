@@ -67,45 +67,45 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 'POWER_UP', 'TEMPORARY', 
 'player', 'range', '*', '/', 1.3, 1.3, 8000),
 
-('Eye of the Emperor', 
+('Eye of the Emperor', --TODO
 'Reveals the type of the next 3 cards before selection', 
 'POWER_UP', 'PERMANENT', 
 'game', 'revealNextCard', '=', '=', 1.0, 0.0, 0),
 ---
-('Spawn Enemies', 
+('Imperial Decreee',   --TODO
 '2 additional enemies spawn immediately', 
 'PUNISHMENT', 'PERMANENT', 
-'game', 'spawnExtra', '=', '=', 0.0, 2.0, 0),
+'game', 'spawnExtra', '=', '=', 2.0, 0.0, 0),
 
-('Disable Jump', 
+('Chains of Caesar', 
 'Jump is disabled for 10 seconds', 
 'PUNISHMENT', 'TEMPORARY', 
-'player', 'canJump', '=', '=', 1.0, 0.0, 10000),
+'player', 'canJump', '=', '=', 0.0, 1.0, 10000),
 
-('Card HP Cost', 
+('Hunger of the Plebs',   --TODO
 'Using any card costs half a heart of health', 
 'PUNISHMENT', 'PERMANENT', 
-'player', 'cardCost', '=', '=', 0.0, 1.0, 0),
+'player', 'cardCostHP', '=', '=', 1.0, 0.0, 0),
 
-('Lose 1 Heart', 
+('Wrath of Jupiter',   
 'Instantly lose 1 heart', 
 'PUNISHMENT', 'PERMANENT', 
 'player', 'hearts', '-', '+', 1.0, 1.0, 0),
 
-('Screen Darkness', 
+('Ampitheatre Fog', --TODO
 'Screen is partially darkened for 12 seconds', 
 'PUNISHMENT', 'TEMPORARY', 
-'game', 'darkScreen', '=', '=', 0.0, 1.0, 12000),
+'game', 'fogActive', '=', '=', 1.0, 0.0, 12000),
 
-('Damage Reduction', 
+('Lanistas Betrayal', 
 'Player damage reduced by 40% for 15 seconds', 
 'PUNISHMENT', 'TEMPORARY', 
 'player', 'damage', '*', '/', 0.6, 0.6, 15000),
 
-('Double Life Loss', 
+('Senates Judgment', 
 'If the player dies during this level, 2 lives are lost instead of 1', 
 'PUNISHMENT', 'PERMANENT', 
-'player', 'doubleDeath', '=', '=', 0.0, 1.0, 0);
+'player', 'doubleDeath', '=', '=', 1.0, 0.0, 0);
 COMMIT;
 
 -- Insert Enemys catalog
