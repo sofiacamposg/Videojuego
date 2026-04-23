@@ -1,0 +1,96 @@
+//LEVEL CONFIGURATIONS
+//Player Configurations 
+export const playerConfigs = {
+    Guerrero: {
+        hp: 120, maxHp: 120, speed: 0.5, damage: 20,
+        walkRightSrc: "./assets/player1/1.png",
+        walkLeftSrc: "./assets/player1/2.png",
+        jumpRightSrc: "./assets/player1/3.png",
+        jumpLeftSrc: "./assets/player1/4.png",
+        attackRightSrc: "./assets/player1/attackright.png",
+        attackLeftSrc: "./assets/player1/attackleft.png",
+    },
+
+    Lancero: {
+    hp: 100, maxHp: 100, speed: 0.6, damage: 25,
+    walkRightSrc:   "./assets/player2/5.png",
+    walkLeftSrc:    "./assets/player2/6.png",
+    jumpRightSrc:   "./assets/player2/7.png",
+    jumpLeftSrc:    "./assets/player2/8.png",
+    attackRightSrc: "./assets/player2/attackright.png",
+    attackLeftSrc:  "./assets/player2/attackleft.png",
+},
+
+    Pesado: {
+    hp: 150, maxHp: 150, speed: 0.4, damage: 15,
+    walkRightSrc:   "./assets/player3/9.png",
+    walkLeftSrc:    "./assets/player3/10.png",
+    jumpRightSrc:   "./assets/player3/11.png",
+    jumpLeftSrc:    "./assets/player3/12.png",
+    attackRightSrc: "./assets/player3/attackright.png",
+    attackLeftSrc:  "./assets/player3/attackleft.png",
+}
+};
+
+//Configurations for each level
+export const level1Config = {
+    background: "./assets/Coliseo1.png",
+
+    enemyConfig: {
+        hp: 100,
+        damage: 8,
+        speed: 0.4,
+        scale: 0.7,
+        walkRightSrc: "./assets/enemy1/walkRight.png",
+        walkLeftSrc: "./assets/enemy1/walkLeft.png",
+        attackRightSrc: "./assets/enemy1/attackRight.png",
+        attackLeftSrc: "./assets/enemy1/attackLeft.png",
+        deathSrc: "./assets/enemy1/death.png",
+    },
+
+    spawnPositions: [
+        {x: 900, y: 450},
+        {x: 1100, y: 450}
+    ]
+};
+
+export const level2Config = {
+    background: "./assets/Coliseo2.png",
+
+    enemyConfig: {
+        hp: 120,
+        damage: 9,
+        speed: 0.5,
+        scale: 0.8,
+        walkRightSrc: "./assets/enemy1/walkRight.png",
+        walkLeftSrc: "./assets/enemy1/walkLeft.png",
+        attackRightSrc: "./assets/enemy1/attackRight.png",
+        attackLeftSrc: "./assets/enemy1/attackLeft.png",
+        deathSrc: "./assets/enemy1/death.png",
+    },
+
+    spawnPositions: [
+        {x: 800, y: 450},
+        {x: 1000, y: 450}
+    ]
+};
+export const level3Config = {
+    background: "./assets/Coliseo3.png",
+
+    enemyConfig: {
+        hp: 120,
+        damage: 10,
+        speed: 0.5,
+        scale: 0.9,
+        walkRightSrc: "./assets/enemy1/walkRight.png",
+        walkLeftSrc: "./assets/enemy1/walkLeft.png",
+        attackRightSrc: "./assets/enemy1/attackRight.png",
+        attackLeftSrc: "./assets/enemy1/attackLeft.png",
+        deathSrc: "./assets/enemy1/death.png",
+    },
+
+    spawnPositions: [
+        {x: 800, y: 450},
+        {x: 1000, y: 450}
+    ]
+};
