@@ -1,17 +1,35 @@
 const express = require("express");
 const mysql = require("mysql2");
-const cors = require("cors");
-
 const app = express();
+const cors = require("cors");
 app.use(cors());
 app.use(express.json());
 
-// ======================= DB CONNECTION =======================
+/* entra a mysql desde la terminal (sudo mysql) y pon los comandos:
+* CREATE USER 'gladiator'@'localhost' IDENTIFIED BY 'gladiator123';
+que hace? crea un usuario llamado gladiator que se conecta desde esta misma computadora, con contraseña gladiator123
+* GRANT ALL PRIVILEGES ON gladiator.* TO 'gladiator'@'localhost';
+que hace? dale todos los permisos sobre la base de datos gladiator 
+(el .* es "todas las tablas de esa base de datos") al usuario gladiator
+* FLUSH PRIVILEGES;
+que hace? aplica los cambios de permisos inmediatamente 
+* exit;
+que hace? sal de MySQL y regresa a la terminal normal
+* sudo mysql < ~/ruta/a/su/proyecto/server/db/gladiador_codigo2.sql
+que hace? carga el schema (cambian la ruta por la suya)
+y ya luego encienden la api
+* cd ~/ruta/a/su/proyecto/server
+* node server.js
+si jala tiene que salir lo de Servidor en 'link' MySQL conectado
+*/
 const db = mysql.createConnection({
     host: "localhost",
-    user: "gladiator",
-    password: "gladiator123",
+    user: "gladiator",  //general user
+    password: "gladiator123",  //general password
     database: "gladiator",
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 db.connect((err) => {
@@ -22,28 +40,22 @@ db.connect((err) => {
     console.log("MySQL conectado");
 });
 
-// ======================= SERVER =======================
-app.listen(3000, () => {
-    console.log("Servidor en http://localhost:3000");
-});
-
-// ======================= GET PLAYERS =======================
 app.get("/players", (req, res) => {
     console.log("ENTRÓ A /players");
-
     db.query("SELECT * FROM Player", (err, result) => {
         if (err) {
             console.log("ERROR:", err);
-            return res.status(500).send(err.message);
+            res.send(err.message);
+            return;
         }
-
         res.json(result);
     });
 });
-
-// ======================= GET RANDOM CARDS =======================
+app.listen(3000, () => {
+    console.log("Servidor en ");
+});http://localhost:3000
+//GET CARD FOR RANDOM CARD EVENT EFFECT
 app.get("/cards/random", (req, res) => {
-    console.log("ENTRÓ A /cards/random");
 
     const query = `
         SELECT 
@@ -60,23 +72,22 @@ app.get("/cards/random", (req, res) => {
         JOIN Effect e ON c.effect_id = e.effect_id
 
         ORDER BY RAND()
-        LIMIT 3
+        LIMIT 20   
     `;
 
     db.query(query, (err, result) => {
         if (err) {
-            console.log("ERROR:", err);
-            return res.status(500).send(err.message);
+            console.log(err);
+            res.send(err.message);
+            return;
         }
-
-        console.log("CARDS:", result);
 
         res.json(result);
     });
 });
-
-// ======================= LOGIN =======================
+//LOGIN
 app.post("/login", (req, res) => {
+
     const { username, password } = req.body;
 
     const query = `
@@ -97,37 +108,24 @@ app.post("/login", (req, res) => {
 
         console.log("USER LOGGED:", result[0]);
 
-        res.json(result[0]);
+        res.json(result[0]); // 🔥 DEVUELVE EL USER
     });
 });
 
-// ======================= REGISTER =======================
+//CREATE ACCOUNT
 app.post("/register", (req, res) => {
     const { username, password, name } = req.body;
-
     const checkQuery = `SELECT * FROM Player WHERE username = ?`;
-
     db.query(checkQuery, [username], (err, result) => {
-        if (err) {
-            return res.status(500).send("Server error");
-        }
-
-        if (result.length > 0) {
-            return res.status(400).send("User already exists");
-        }
-
+        if (err) return res.status(500).send("Server error");
+        if (result.length > 0) return res.status(400).send("User already exists");
         const insertQuery = `
             INSERT INTO Player (name, username, password)
             VALUES (?, ?, ?)
         `;
-
         db.query(insertQuery, [name, username, password], (err) => {
-            if (err) {
-                return res.status(500).send("Insert error");
-            }
-
+            if (err) return res.status(500).send("Insert error");
             console.log("USER CREATED:", username);
-
             res.json({ success: true });
         });
     });
