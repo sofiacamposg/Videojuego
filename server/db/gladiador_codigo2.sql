@@ -65,6 +65,7 @@ CREATE TABLE Card (
     effect_operator CHAR NOT NULL,
     effect_reverse_operator CHAR(1) NOT NULL,
     value_effect FLOAT(5) NOT NULL,
+    reverse_value FLOAT(5) NOT NULL,
     duration SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (card_id)

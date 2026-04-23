@@ -123,26 +123,23 @@ app.get("/archetypes", (req, res) => {
 app.get("/cards/random", (req, res) => {
 
     const query = `
-        SELECT 
-            c.card_id,
-            c.card_name,
-            c.description AS card_description,
-
-            e.effect_name,
-            e.effect_type,
-            e.effect_value,
-            e.description AS effect_description
-
-        FROM Card c
-        INNER JOIN Effect e ON c.effect_id = e.effect_id
-
+        SELECT
+            card_id,
+            card_name,
+            description,
+            effect_type,
+            duration_type,
+            effect_from,
+            effect_modifies,
+            effect_operator,
+            effect_reverse_operator,
+            value_effect,
+            reverse_value,
+            duration
+        FROM Card
         ORDER BY RAND()
-        LIMIT 15   
-    `; //This query retrieves a random set of 15 cards, including both the card information and the effect associated with each card.
-        //From card table c
-        //And from effect table e
-        //INNER JOIN: each card is linked with it's corresponding effect, it only returns cards that have a valid effect linked
-        //Radomizing the result
+        LIMIT 15
+    `; //Retrieves 15 random cards directly from the Card table (Effect table was merged into Card)
     db.query(query, (err, result) => {
         if (err) {
             console.log(err);

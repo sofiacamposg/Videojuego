@@ -1,7 +1,7 @@
 //Class Card
 class Card {
     constructor(id, name, type, duration, applyEffect, removeEffect = null, image) {
-        this.id; //from API
+        this.id = id; //from API
         this.name = name;
         this.type = type; // "powerup" o "punishment"
         this.duration = duration; // ms o null si es permanente
@@ -13,131 +13,90 @@ class Card {
 
 //upload all the sprites
     //powerup
-    const blade_mars = new Image();
-    blade_mars.src = "./assets/cards/powerup/blade_mars.png";
-    const blessing_venus = new Image();
-    blessing_venus.src = "./assets/cards/powerup/blessing_venus.png";
-    const colosseums_fury = new Image();
-    colosseums_fury.src = "./assets/cards/powerup/colosseums_fury.png";
-    const divine_shield = new Image();
-    divine_shield.src = "./assets/cards/powerup/divine_shield.png";
-    const eye_emperor = new Image();
-    eye_emperor.src = "./assets/cards/powerup/eye_emperor.png";
-    const favor_people = new Image();
-    favor_people.src = "./assets/cards/powerup/favor_people.png";
-    const gladiators_blood = new Image();
-    gladiators_blood.src = "./assets/cards/powerup/gladiators_blood.png";
-    const lion_roar = new Image();
-    lion_roar.src = "./assets/cards/powerup/lions_roar.png";
-    //punishments
-    const amphitheatre_fog = new Image();
-    amphitheatre_fog.src = "./assets/cards/punishment/amphitheatre_fog.png";
-    const chains_caesar = new Image();
-    chains_caesar.src = "./assets/cards/punishment/chains_caesar.png";
-    const hunger_plebs = new Image();
-    hunger_plebs.src = "./assets/cards/punishment/hunger_plebs.png";
-    const imperial_decree = new Image();
-    imperial_decree.src = "./assets/cards/punishment/imperial_decree.png";
-    const lanistas_betreyal = new Image();
-    lanistas_betreyal.src = "./assets/cards/punishment/lanistas_betrayal.png";
-    const senates_judgement = new Image();
-    senates_judgement.src = "./assets/cards/punishment/senates_judgment.png";
-    const wrath_jupiter = new Image();
-    wrath_jupiter.src = "./assets/cards/punishment/wrath_jupiter.png";
+const blade_mars = new Image();
+blade_mars.src = "./assets/cards/powerup/blade_mars.png";
+const blessing_venus = new Image();
+blessing_venus.src = "./assets/cards/powerup/blessing_venus.png";
+const colosseums_fury = new Image();
+colosseums_fury.src = "./assets/cards/powerup/colosseums_fury.png";
+const divine_shield = new Image();
+divine_shield.src = "./assets/cards/powerup/divine_shield.png";
+const eye_emperor = new Image();
+eye_emperor.src = "./assets/cards/powerup/eye_emperor.png";
+const favor_people = new Image();
+favor_people.src = "./assets/cards/powerup/favor_people.png";
+const gladiators_blood = new Image();
+gladiators_blood.src = "./assets/cards/powerup/gladiators_blood.png";
+const lion_roar = new Image();
+lion_roar.src = "./assets/cards/powerup/lions_roar.png";
+//punishments
+const amphitheatre_fog = new Image();
+amphitheatre_fog.src = "./assets/cards/punishment/amphitheatre_fog.png";
+const chains_caesar = new Image();
+chains_caesar.src = "./assets/cards/punishment/chains_caesar.png";
+const hunger_plebs = new Image();
+hunger_plebs.src = "./assets/cards/punishment/hunger_plebs.png";
+const imperial_decree = new Image();
+imperial_decree.src = "./assets/cards/punishment/imperial_decree.png";
+const lanistas_betreyal = new Image();
+lanistas_betreyal.src = "./assets/cards/punishment/lanistas_betrayal.png";
+const senates_judgement = new Image();
+senates_judgement.src = "./assets/cards/punishment/senates_judgment.png";
+const wrath_jupiter = new Image();
+wrath_jupiter.src = "./assets/cards/punishment/wrath_jupiter.png";
 
-//We only use this array in case of fallback
-const cards = [
+function applyToTarget(target, operator, prop, value) {  //all logic about the operator to aply and remove
+    switch(operator) {
+        case "*": target[prop] *= value; break;
+        case "+": target[prop] += value; break;
+        case "-": target[prop] -= value; break;
+        case "/": target[prop] /= value; break;
+        case "=": target[prop] = value;  break;
+    }
+}
 
-new Card(null, "Speed Boost", "powerup", null, (player) => {  //favor_people.png check
-    player.speed *= 1.2;
-}, null, favor_people),
+function applyEffect(card, player, enemies, game) {  //apply effect to the game/player/enemy
+    if (card.effect_from === "enemy") {
+        enemies.forEach(e => applyToTarget(e, card.effect_operator, card.effect_modifies, card.value_effect));
+    } else if (card.effect_from === "game") {
+        applyToTarget(game, card.effect_operator, card.effect_modifies, card.value_effect);
+    } else {
+        applyToTarget(player, card.effect_operator, card.effect_modifies, card.value_effect);
+    }
+}
 
-new Card(null, "Damage Boost", "powerup", null, (player) => {  //blade_mars.png check
-    player.damage *= 1.3;
-}, null, blade_mars),
+function reverseEffect(card, player, enemies, game) {  //when needed, will take off the effect
+    if (card.effect_from === "enemy") {
+        enemies.forEach(e => applyToTarget(e, card.effect_reverse_operator, card.effect_modifies, card.reverse_value));
+    } else if (card.effect_from === "game") {
+        applyToTarget(game, card.effect_reverse_operator, card.effect_modifies, card.reverse_value);
+    } else {
+        applyToTarget(player, card.effect_reverse_operator, card.effect_modifies, card.reverse_value);
+    }
+}
 
-new Card(null, "Heal 1 Heart", "powerup", null, (player) => {  //blessing_venus.png check
-    player.hearts += 1;
-}, null, blessing_venus),
+const cardImages = {  //images matched with their image
+    "Favor of the People": favor_people,
+    "Blade of Mars":        blade_mars,
+    "Blessing of Venus":    blessing_venus,
+    "Divine Shield":        divine_shield,
+    "Lions Roar":           lion_roar,
+    "Gladiators Blood":     gladiators_blood,
+    "Colloseums fury":      colosseums_fury,
+    "Eye of the Emperor":   eye_emperor,
+    "Imperial Decreee":     imperial_decree,
+    "Chains of Caesar":     chains_caesar,
+    "Hunger of the Plebs":  hunger_plebs,
+    "Wrath of Jupiter":     wrath_jupiter,
+    "Ampitheatre Fog":      amphitheatre_fog,
+    "Lanistas Betrayal":    lanistas_betreyal,
+    "Senates Judgment":     senates_judgement,
+};
 
-new Card(null, "Slow Enemies", "powerup", 5000,  //lions_roar.png check
-    (player, enemies) => {  
-    enemies.forEach(e => { e.isSlowed = true; e.speed *= 0.2; });
-}, (player, enemies) => {
-    enemies.forEach(e => { e.isSlowed = false; e.speed = e.speedBase; });
-}, lion_roar),
-
-new Card(null, "Shield", "powerup", null, (player) => {  //divine shield check
-    player.invincible = true;
-}, divine_shield),
-
-new Card(null, "Life Steal", "powerup", null, (player) => {  //gladiators_blood.png check
-    player.lifeSteal = true;
-}, null, gladiators_blood),
-
-new Card(null, "Range Boost", "powerup", 8000, (player) => {  //colosseums_fury.png check
-    player.range *= 1.3;
-}, (player) => {
-    player.range /= 1.3;
-}, colosseums_fury),
-
-new Card(null, "Reveal Card", "powerup", null, (player, game) => {  //eye_emperor.png $
-    game.revealNextCard = true;  //TODO arreglar propiedad
-}, null, eye_emperor),
-
-//Punishment
-new Card(null, "Spawn Enemies", "punishment", null, (player, enemies, game) => {  //imperial_decreee.png check
-    enemies.push(game.spawnEnemy());
-    enemies.push(game.spawnEnemy());
-}, imperial_decree),
-
-new Card(null, "No Jump", "punishment", 10000, (player) => {  //chains_caesar.png check
-    player.canJump = false;
-}, (player) => {
-    player.canJump = true;
-}, chains_caesar),
-
-new Card(null, "Cards Cost HP", "punishment", null, (player) => {  //hunger_plebs.png $
-    player.cardCostHP = true;
-}, null, hunger_plebs),
-
-new Card(null, "Lose Heart", "punishment", null, (player) => {  //wrath_jupiter.png check
-    player.hearts -= 1;
-}, null, wrath_jupiter),
-
-new Card(null, "Fog", "punishment", 12000,  //ampitheatre_fog.png check
-    (player) => { player.fogActive = true; },
-    (player) => { player.fogActive = false; }, amphitheatre_fog
-),  
-
-new Card(null, "Weak Damage", "punishment", 15000, (player) => {  //lanistas_betrayal.png check
-    player.damage *= 0.6;
-}, (player) => {
-    player.damage /= 0.6;
-}, lanistas_betreyal),
-
-new Card(null, "Double Death Penalty", "punishment", null, (player) => {  //senates_judgment.png check
-    player.doubleDeathPenalty = true;
-}, null, senates_judgement)
-
-];
-
-export { 
-    Card, 
+export {
+    Card,
     cards,
-    blade_mars,
-    blessing_venus,
-    colosseums_fury,
-    divine_shield,
-    eye_emperor,
-    favor_people,
-    gladiators_blood,
-    lion_roar,
-    amphitheatre_fog,
-    chains_caesar,
-    hunger_plebs,
-    imperial_decree,
-    lanistas_betreyal,
-    senates_judgement,
-    wrath_jupiter
+    applyEffect,
+    reverseEffect,
+    cardImages,
 };

@@ -2,7 +2,7 @@ import { PlayerBase } from "../objects/PlayerBase.js";
 import { Vector } from "../libs/Vector.js";
 import { MessageBox } from "../objects/MessageBox.js";
 import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
-import { cards } from "../cards/Card.js";
+import { cards, applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
 import { handleMouseMove } from "../libs/game_functions.js";
 import { level2Config, playerConfigs } from "../libs/levelConfig.js";
 import { spawnEnemy, generatePlatform, updateCamera } from "../libs/level_functions.js";
@@ -51,14 +51,6 @@ const game = {
     spawnEnemy: () => spawnEnemy(cameraX + canvasRef.width + 100, 450, currentLevelConfig.enemyConfig)
 };
 
-const effectNameToCard = {
-    "People Favor":    cards.find(c => c.name === "Speed Boost"),
-    "Mars Blade":      cards.find(c => c.name === "Damage Boost"),
-    "Venus Blessing":  cards.find(c => c.name === "Heal 1 Heart"),
-    "Imperial Decree": cards.find(c => c.name === "Spawn Enemies"),
-    "Caesar Chains":   cards.find(c => c.name === "No Jump"),
-    "Jupiter Wrath":   cards.find(c => c.name === "Lose Heart"),
-};
 
 //========================= PAUSE SYSTEM =========================
 let isPaused = false;
@@ -197,10 +189,11 @@ async function generateCardOptions(){
 
     }catch(err){
         console.log("Card API error, using fallback:", err);
+        //fallback uses same shape as DB so triggerCardEvent can build the card objects correctly
         cardOptions = [
-            { card_name: "People Favor", effect_name: "People Favor", effect_type: "POWER_UP" },
-            { card_name: "Mars Blade", effect_name: "Mars Blade", effect_type: "POWER_UP" },
-            { card_name: "Jupiter Wrath", effect_name: "Jupiter Wrath", effect_type: "PUNISHMENT" }
+            { card_id: null, card_name: "Favor of the People", effect_type: "POWER_UP",  effect_from: "player", effect_modifies: "speed",   effect_operator: "*", effect_reverse_operator: "/", value_effect: 1.2, reverse_value: 1.2, duration: 0 },
+            { card_id: null, card_name: "Blade of Mars",        effect_type: "POWER_UP",  effect_from: "player", effect_modifies: "damage",  effect_operator: "*", effect_reverse_operator: "/", value_effect: 1.3, reverse_value: 1.3, duration: 0 },
+            { card_id: null, card_name: "Wrath of Jupiter",     effect_type: "PUNISHMENT",effect_from: "player", effect_modifies: "hearts",  effect_operator: "-", effect_reverse_operator: "+", value_effect: 1,   reverse_value: 1,   duration: 0 },
         ];
     }
 }
@@ -209,9 +202,18 @@ async function triggerCardEvent(){
     console.log("EVENT TRIGGERED");
     await generateCardOptions();
 
-    const convertedCards = cardOptions.map(apiCard =>
-        effectNameToCard[apiCard.effect_name] || cards[Math.floor(Math.random() * cards.length)]
-    );
+    //build card objects from DB data, same approach as level1
+    const convertedCards = cardOptions.map(apiCard => ({
+        id:    apiCard.card_id,
+        name:  apiCard.card_name,
+        type:  apiCard.effect_type,
+        duration: apiCard.duration,
+        image: cardImages[apiCard.card_name] || null,
+        applyEffect:  (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
+        removeEffect: apiCard.duration > 0
+            ? (player, enemies, game) => reverseEffect(apiCard, player, enemies, game)
+            : null,
+    }));
 
     cardSystem.show(convertedCards, player, enemies, game);
 }

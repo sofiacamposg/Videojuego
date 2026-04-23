@@ -11,7 +11,7 @@
 .pixelText {
     font-family: 'VT323', monospace;
     font-weight: 900;
-    font-size: 60px;
+    font-size: 45px;
     letter-spacing: 6px;
     color: #ffd166;
     text-shadow: 3px 3px 0px #000, 0 0 15px rgba(255, 209, 102, 0.6);
@@ -30,21 +30,25 @@ body {
 /* HEADER */
 #headerContainer {
     text-align: center;
-    padding: 20px;
+    padding: 5px;
 }
 
 #headerContainer h2 {
-    margin-top: 10px;
+    margin-top: 2px;
+    color: white;
+    font-family: 'Cinzel', serif;
 }
 
 #headerContainer p {
-    font-size: 14px;
+    font-size: 10px;
     opacity: 0.8;
+    color: white;
+    font-family: 'Cinzel', serif;
 }
 
 /* BUTTONS */
 .tutorial {
-    margin-top: 15px;
+    margin-top: 5px;
 }
 
 .tutorialButton {
@@ -56,6 +60,8 @@ body {
     border-radius: 12px;
     font-weight: bold;
     transition: 0.25s;
+    border: none;
+    cursor: pointer;
 }
 
 .tutorialButton:hover {
@@ -94,6 +100,7 @@ body {
     border-radius: 10px;
     font-weight: bold;
     cursor: pointer;
+
 }
 
 .dropdownButton:hover {
@@ -104,12 +111,14 @@ body {
     margin-top: 10px;
     display: none;
     line-height: 1.5;
+    color: white;
 }
 
 /* STATS */
 .statsContent {
     display: none;
     margin-top: 10px;
+    color: white;
 }
 
 .statRow {
@@ -149,15 +158,19 @@ body {
     }
 }
 
-body {
-    background-color: black;
-    color: white;
-    text-align: center;
-    padding: 0;
-}
-
 p {
     max-width: 600px;
     margin: 20px auto;
-    line-height: 1.6;
+    line-height: 1.6;       
+}
+
+/* MODAL */
+.modal-content {
+    background: #1a0e07!important;
+    border: 2px solid #c9a44c;
+    color: white!important;
+}
+
+.modal-header {
+    border-bottom: 1px solid #c9a44c;
 }
