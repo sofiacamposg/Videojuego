@@ -1,5 +1,6 @@
 "use strict";
 import { MessageBox } from "../objects/MessageBox.js";
+import { saveCardUse } from "../libs/level_functions.js";
 
 class cardsOnCanvas {
     constructor() {
@@ -110,6 +111,8 @@ class cardsOnCanvas {
 
         card.applyEffect(this._player, this._enemies, this._game);
 
+        saveCardUse(1, card.id, card.duration || 0);
+
         if (card.duration && card.removeEffect) {
             this.activeEffects.push({
                 card,
@@ -207,6 +210,7 @@ class cardsOnCanvas {
             if (mx >= bX && mx <= bX + bW && my >= bY && my <= bY + bH) {
                 const card = this.playerDeck[this.selectedDeckIndex];
                 card.applyEffect(this._player, this._enemies, this._game);
+                saveCardUse(1, card.id, card.duration || 0);
                 this.playerDeck.splice(this.selectedDeckIndex, 1);
                 this.selectedDeckIndex = -1;
                 this.isDeckOpen = false;

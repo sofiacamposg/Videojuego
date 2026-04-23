@@ -181,7 +181,6 @@ function main() {
 function gameLoop(newTime) {
 
     let deltaTime = (newTime - oldTime);
-    oldTime = newTime;
 
     if (deltaTime > 50) deltaTime = 50; 
 

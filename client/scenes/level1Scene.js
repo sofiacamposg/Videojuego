@@ -5,7 +5,7 @@ import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
 import { cards } from "../cards/Card.js";
 import { handleMouseMove } from "../libs/game_functions.js";
 import { level1Config, playerConfigs } from "../libs/levelConfig.js";
-import { spawnEnemy, generatePlatform, updateCamera, updateCoins, drawCoins } from "../libs/level_functions.js";
+import { spawnEnemy, generatePlatform, updateCamera, updateCoins, drawCoins, saveMatch } from "../libs/level_functions.js";
 "use strict"
 
 let currentLevelConfig = level1Config;
@@ -14,6 +14,7 @@ let currentLevelConfig = level1Config;
 let currentLevel = 1;
 //======= LEVEL TRANSITION =======
 let levelCompleted = false;
+let matchSaved = false;
 let showDeckPreview = false;
 let deckPreviewTimer = 0;
 //world size
@@ -225,10 +226,15 @@ async function triggerCardEvent(){
     await generateCardOptions();
 
     // Convertir los objetos de la API a Cards reales de Card.js (que tienen applyEffect completo)
-    const convertedCards = cardOptions.map(apiCard =>
-        effectNameToCard[apiCard.effect_name] || cards[Math.floor(Math.random() * cards.length)]
-    );
+    const convertedCards = cardOptions.map(apiCard => {
+    const baseCard = effectNameToCard[apiCard.effect_name] 
+        || cards[Math.floor(Math.random() * cards.length)];
 
+    return {
+        ...baseCard,
+        id: apiCard.card_id // AQUÍ SE PONE EL ID REAL
+    };
+});
     cardSystem.show(convertedCards, player, enemies, game);
 }
 //================REWARD CARDS FOR LEVEL TRANSITION=====================
@@ -331,6 +337,19 @@ function update(deltaTime){
     if (player.hearts <= 0) {
         gameOver = true;
         gameOverBox.show();
+        if (!matchSaved) {
+            matchSaved = true;
+        //API COnnection, async function from level_funtions
+        saveMatch({
+            player_id: 1,
+            archetype_id: 1,
+            duration_seconds: levelTimer,
+            level_reached: currentLevel,
+            final_fame: killedEnemies,
+            life: player.hearts,
+            result: "LOSE"
+        });
+        }
         return;
     }
 
@@ -391,6 +410,19 @@ function update(deltaTime){
         levelCompleted = true;
         giveLevelRewards();
         levelCompletedBox.show();
+        //API connection, async function from level_functions
+        if (!matchSaved) {
+            matchSaved = true;
+        saveMatch({
+            player_id: 1,
+            archetype_id: 1,
+            duration_seconds: levelTimer,
+            level_reached: currentLevel,
+            final_fame: killedEnemies,
+            life: player.hearts,
+            result: "WIN"
+        });
+        }
     }
 
     cameraX = updateCamera(
@@ -497,6 +529,7 @@ function resetLevel1(){
 
     //levelCompleted variables
     levelCompleted = false;
+    matchSaved = false;
     showDeckPreview = false;
     deckPreviewTimer = 0;
     levelCompletedBox.hide();
