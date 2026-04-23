@@ -5,7 +5,7 @@ import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
 import { cards } from "../cards/Card.js";
 import { handleMouseMove } from "../libs/game_functions.js";
 import { level1Config, playerConfigs } from "../libs/levelConfig.js";
-import { spawnEnemy, generatePlatform, updateCamera } from "../libs/level_functions.js";
+import { spawnEnemy, generatePlatform, updateCamera, updateCoins, drawCoins } from "../libs/level_functions.js";
 "use strict"
 
 let currentLevelConfig = level1Config;
@@ -269,6 +269,7 @@ function drawLevel1(ctx, canvas, deltaTime){
     drawHealthBar(ctx, 20, 20, 100, 30, player.hp, player.maxHp);
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
+    drawCoins(ctx, 20, 100, player.coins);
     pauseBox.draw(ctx);
 
     if (gameOver) {
@@ -370,7 +371,11 @@ function update(deltaTime){
 
     let totalLenEnemies = enemies.length;
     enemies = enemies.filter(alive => alive.hp > 0);  //remove dead enemies
-    killedEnemies += totalLenEnemies - enemies.length;  //update killed enemies
+    let prevKilled = killedEnemies;
+    killedEnemies += totalLenEnemies - enemies.length;
+    updateCoins(player, prevKilled, killedEnemies);
+    
+
 
     //---spawn ---
     spawnTimer += deltaTime;

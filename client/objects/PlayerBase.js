@@ -27,6 +27,7 @@ class PlayerBase extends AnimatedObject {
     this.maxHp = maxHp;
     this.speed = speed;
     this.damage = damage;
+    this.coins = 0; //coins to buy upgrades in the game
 
     this.setAnimation(0, 3, true, 200); 
     this.velocityY = 0;

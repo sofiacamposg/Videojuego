@@ -1,5 +1,6 @@
 import { EnemyBase } from "../objects/EnemyBase.js";
 import { Vector } from "../libs/Vector.js";
+import { playerConfigs } from "./levelConfig.js";
 export function spawnEnemy(x, y, config){
     return new EnemyBase(new Vector(x,y), config);
 }
@@ -27,4 +28,14 @@ export function updateCamera(playerX, canvasWidth, worldWidth){
         return worldWidth - canvasWidth;
 
     return cameraX;
+}
+
+export function updateCoins(player, prevKilled, newKilled) {
+    player.coins += Math.floor(newKilled / 3) - Math.floor(prevKilled / 3);
+}
+
+export function drawCoins(ctx, x, y, coins) {
+    ctx.fillStyle = "gold";
+    ctx.font = "20px Arial";
+    ctx.fillText("🪙 " + coins, x, y);
 }
