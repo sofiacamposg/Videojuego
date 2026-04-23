@@ -6,6 +6,7 @@ import { cards } from "../cards/Card.js";
 import { handleMouseMove } from "../libs/game_functions.js";
 import { level2Config, playerConfigs } from "../libs/levelConfig.js";
 import { spawnEnemy, generatePlatform, updateCamera } from "../libs/level_functions.js";
+
 "use strict"
 
 let currentLevelConfig = level2Config;

@@ -1,16 +1,13 @@
 //Class Card
 class Card {
-    constructor(name, type, duration, applyEffect, removeEffect = null, image) {
+    constructor(id, name, type, duration, applyEffect, removeEffect = null, image) {
+        this.id; //from API
         this.name = name;
         this.type = type; // "powerup" o "punishment"
         this.duration = duration; // ms o null si es permanente
         this.applyEffect = applyEffect;
         this.removeEffect = removeEffect;
         this.image = image;
-/*
-        const cardBackImage = new Image();
-        cardBackImage.src = "./assets/cards/powerup/BaseCard.png";  
-        this.spriteImage = this.cardBackImage;*/
     }
 }
 
@@ -48,81 +45,99 @@ class Card {
     const wrath_jupiter = new Image();
     wrath_jupiter.src = "./assets/cards/punishment/wrath_jupiter.png";
 
-//Power-ups
+//We only use this array in case of fallback
 const cards = [
 
-new Card("Speed Boost", "powerup", null, (player) => {  //favor_people.png check
+new Card(null, "Speed Boost", "powerup", null, (player) => {  //favor_people.png check
     player.speed *= 1.2;
 }, null, favor_people),
 
-new Card("Damage Boost", "powerup", null, (player) => {  //blade_mars.png check
+new Card(null, "Damage Boost", "powerup", null, (player) => {  //blade_mars.png check
     player.damage *= 1.3;
 }, null, blade_mars),
 
-new Card("Heal 1 Heart", "powerup", null, (player) => {  //blessing_venus.png check
+new Card(null, "Heal 1 Heart", "powerup", null, (player) => {  //blessing_venus.png check
     player.hearts += 1;
 }, null, blessing_venus),
 
-new Card("Slow Enemies", "powerup", 5000,  //lions_roar.png check
+new Card(null, "Slow Enemies", "powerup", 5000,  //lions_roar.png check
     (player, enemies) => {  
     enemies.forEach(e => { e.isSlowed = true; e.speed *= 0.2; });
 }, (player, enemies) => {
     enemies.forEach(e => { e.isSlowed = false; e.speed = e.speedBase; });
 }, lion_roar),
 
-new Card("Shield", "powerup", null, (player) => {  //divine shield check
+new Card(null, "Shield", "powerup", null, (player) => {  //divine shield check
     player.invincible = true;
 }, divine_shield),
 
-new Card("Life Steal", "powerup", null, (player) => {  //gladiators_blood.png check
+new Card(null, "Life Steal", "powerup", null, (player) => {  //gladiators_blood.png check
     player.lifeSteal = true;
 }, null, gladiators_blood),
 
-new Card("Range Boost", "powerup", 8000, (player) => {  //colosseums_fury.png check
+new Card(null, "Range Boost", "powerup", 8000, (player) => {  //colosseums_fury.png check
     player.range *= 1.3;
 }, (player) => {
     player.range /= 1.3;
 }, colosseums_fury),
 
-new Card("Reveal Card", "powerup", null, (player, game) => {  //eye_emperor.png $
+new Card(null, "Reveal Card", "powerup", null, (player, game) => {  //eye_emperor.png $
     game.revealNextCard = true;  //TODO arreglar propiedad
 }, null, eye_emperor),
 
 //Punishment
-new Card("Spawn Enemies", "punishment", null, (player, enemies, game) => {  //imperial_decreee.png check
+new Card(null, "Spawn Enemies", "punishment", null, (player, enemies, game) => {  //imperial_decreee.png check
     enemies.push(game.spawnEnemy());
     enemies.push(game.spawnEnemy());
 }, imperial_decree),
 
-new Card("No Jump", "punishment", 10000, (player) => {  //chains_caesar.png check
+new Card(null, "No Jump", "punishment", 10000, (player) => {  //chains_caesar.png check
     player.canJump = false;
 }, (player) => {
     player.canJump = true;
 }, chains_caesar),
 
-new Card("Cards Cost HP", "punishment", null, (player) => {  //hunger_plebs.png $
+new Card(null, "Cards Cost HP", "punishment", null, (player) => {  //hunger_plebs.png $
     player.cardCostHP = true;
 }, null, hunger_plebs),
 
-new Card("Lose Heart", "punishment", null, (player) => {  //wrath_jupiter.png check
+new Card(null, "Lose Heart", "punishment", null, (player) => {  //wrath_jupiter.png check
     player.hearts -= 1;
 }, null, wrath_jupiter),
 
-new Card("Fog", "punishment", 12000,  //ampitheatre_fog.png check
+new Card(null, "Fog", "punishment", 12000,  //ampitheatre_fog.png check
     (player) => { player.fogActive = true; },
     (player) => { player.fogActive = false; }, amphitheatre_fog
 ),  
 
-new Card("Weak Damage", "punishment", 15000, (player) => {  //lanistas_betrayal.png check
+new Card(null, "Weak Damage", "punishment", 15000, (player) => {  //lanistas_betrayal.png check
     player.damage *= 0.6;
 }, (player) => {
     player.damage /= 0.6;
 }, lanistas_betreyal),
 
-new Card("Double Death Penalty", "punishment", null, (player) => {  //senates_judgment.png check
+new Card(null, "Double Death Penalty", "punishment", null, (player) => {  //senates_judgment.png check
     player.doubleDeathPenalty = true;
 }, null, senates_judgement)
 
 ];
 
-export { Card, cards };
+export { 
+    Card, 
+    cards,
+    blade_mars,
+    blessing_venus,
+    colosseums_fury,
+    divine_shield,
+    eye_emperor,
+    favor_people,
+    gladiators_blood,
+    lion_roar,
+    amphitheatre_fog,
+    chains_caesar,
+    hunger_plebs,
+    imperial_decree,
+    lanistas_betreyal,
+    senates_judgement,
+    wrath_jupiter
+};

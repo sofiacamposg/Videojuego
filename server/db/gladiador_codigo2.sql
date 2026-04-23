@@ -219,7 +219,7 @@ SELECT
 FROM MatchGame m
 INNER JOIN Player p ON m.player_id = p.player_id;
 
--- This one shows progress, the stats while we were pplaying
+-- This one shows progress, the stats while the player is playing
 CREATE VIEW vw_match_progress AS
 SELECT
     sl.match_id,
@@ -305,7 +305,6 @@ INNER JOIN MatchGame m ON sl.match_id = m.match_id
 INNER JOIN Player p ON m.player_id = p.player_id
 INNER JOIN Card c ON d.card_id = c.card_id
 GROUP BY p.username, c.card_name;
-
 
 -------& TRIGGER
 -- Trigger: update player counters after inserting a match
