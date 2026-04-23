@@ -39,7 +39,7 @@ let keysDown = {}; //To track keyboard input for player movement
 let jumpPressed = false; //Prevents continuous jumping when holding the key
 
 let killedEnemies = 0;
-const conditionEnemies = 1;
+const conditionEnemies = 10;
 
 //========================= CARD SYSTEM =========================
 let cardEventTriggered = false;
@@ -91,7 +91,7 @@ pauseBox.addButton("Home", 440, 390, 120, 35, () => {
 //====LEVEL TRANSITION MESSAGE BOX AND BUTTON NEXT LEVEL======
 let levelCompletedBox = new MessageBox(
     "LEVEL COMPLETED",
-    "You survived the arena.",
+    "You survived the arena.\n The emperor is watching, do your best!",
     250, 150, 500, 300
 );
 

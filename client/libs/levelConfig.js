@@ -1,7 +1,7 @@
 //LEVEL CONFIGURATIONS
 //Player Configurations 
 export const playerConfigs = {
-    Guerrero: {
+    Warrior: {
         hp: 120, maxHp: 120, speed: 0.5, damage: 20,
         walkRightSrc: "./assets/player1/1.png",
         walkLeftSrc: "./assets/player1/2.png",
@@ -11,25 +11,25 @@ export const playerConfigs = {
         attackLeftSrc: "./assets/player1/attackleft.png",
     },
 
-    Lancero: {
-    hp: 100, maxHp: 100, speed: 0.6, damage: 25,
-    walkRightSrc:   "./assets/player2/5.png",
-    walkLeftSrc:    "./assets/player2/6.png",
-    jumpRightSrc:   "./assets/player2/7.png",
-    jumpLeftSrc:    "./assets/player2/8.png",
-    attackRightSrc: "./assets/player2/attackright.png",
-    attackLeftSrc:  "./assets/player2/attackleft.png",
-},
+    Lancer: {
+        hp: 100, maxHp: 100, speed: 0.6, damage: 25,
+        walkRightSrc:   "./assets/player2/5.png",
+        walkLeftSrc:    "./assets/player2/6.png",
+        jumpRightSrc:   "./assets/player2/7.png",
+        jumpLeftSrc:    "./assets/player2/8.png",
+        attackRightSrc: "./assets/player2/attackright.png",
+        attackLeftSrc:  "./assets/player2/attackleft.png",
+    },
 
-    Pesado: {
-    hp: 150, maxHp: 150, speed: 0.4, damage: 15,
-    walkRightSrc:   "./assets/player3/9.png",
-    walkLeftSrc:    "./assets/player3/10.png",
-    jumpRightSrc:   "./assets/player3/11.png",
-    jumpLeftSrc:    "./assets/player3/12.png",
-    attackRightSrc: "./assets/player3/attackright.png",
-    attackLeftSrc:  "./assets/player3/attackleft.png",
-}
+    Heavy: {
+        hp: 150, maxHp: 150, speed: 0.4, damage: 15,
+        walkRightSrc:   "./assets/player3/9.png",
+        walkLeftSrc:    "./assets/player3/10.png",
+        jumpRightSrc:   "./assets/player3/11.png",
+        jumpLeftSrc:    "./assets/player3/12.png",
+        attackRightSrc: "./assets/player3/attackright.png",
+        attackLeftSrc:  "./assets/player3/attackleft.png",
+    },
 };
 
 //Configurations for each level

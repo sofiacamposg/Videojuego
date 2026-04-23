@@ -72,6 +72,7 @@ class PlayerBase extends AnimatedObject {
     this.lifeSteal = false;
     this.hearts = 5;
     this.maxHearts = 5;
+    this.range = 1;
   }
 
   update(goLeft, goRight, jumpPressed, platforms, groundY, deltaTime){  //manage movement, hurtbox, attack
@@ -170,6 +171,7 @@ class PlayerBase extends AnimatedObject {
   }
   
   takeDamage(hit){  //damage made by enemy, look EnemyBase to understand the whole logic
+    if (this.invincible) {return; }
     this.hp -= hit;
     if (this.hp <= 0) {
       this.hearts--;  //lose a heart
@@ -197,14 +199,14 @@ class PlayerBase extends AnimatedObject {
   createHitbox(){  //data hitbox, left/right
     if (this.direction === "right") {
       this.attackHitbox = {
-        x: this.position.x + this.halfSize.x + this.HITBOX_OFFSET,
+        x: (this.position.x + this.halfSize.x + this.HITBOX_OFFSET) * this.range,
         y: this.position.y - this.HITBOX_HEIGHT * 1.2,
         width: this.HITBOX_WIDTH,
         height: this.HITBOX_HEIGHT
       };
     } else {
       this.attackHitbox = {
-        x: this.position.x - this.halfSize.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET,
+        x: (this.position.x - this.halfSize.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET) * this.range,
         y: this.position.y - this.HITBOX_HEIGHT * 1.2,
         width: this.HITBOX_WIDTH,
         height: this.HITBOX_HEIGHT
