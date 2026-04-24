@@ -31,6 +31,10 @@ let jumpPressed = false;
 let killedEnemies = 0;
 const conditionEnemies = 1;
 
+// Sonido de ataque
+const swordSound = new Audio("./assets/music/ataque_espada.mp3");
+swordSound.volume = 0.5;
+
 //========================= CARD SYSTEM =========================
 let cardEventTriggered = false;
 let cardOptions = [];
@@ -391,6 +395,8 @@ function handleKeyDownLevel1(event){
         if(!player.playeratack){
             player.playeratack = true;
             player.attackFrames = 0;
+            swordSound.currentTime = 0;
+            swordSound.play();
         }
     }
 }

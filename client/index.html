@@ -19,6 +19,11 @@
         </div>
     </header>
 
+    <audio id="bgMusic" loop>
+        <source src="./assets/music/background.mp3" type="audio/mpeg">
+        <source src="./assets/music/background.ogg" type="audio/ogg">
+    </audio>
+
     <main class="layout">
 
         <!-- LEFT -->
@@ -142,6 +147,16 @@
 
     window.toggleStats = toggleStats;
     window.toggleDescription = toggleDescription;
+
+    // Música de fondo
+    const bgMusic = document.getElementById("bgMusic");
+    bgMusic.volume = 0.4;
+
+    document.addEventListener("click", () => {
+        if (bgMusic.paused) {
+            bgMusic.play();
+        }
+    });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

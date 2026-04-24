@@ -16,23 +16,18 @@ function setPlayerLevel3(existingPlayer){
     initPlatforms();
 }
 //========================= GAME CORE VARIABLES =========================
-//* GAME'S LOGIC
 let currentLevel = 3;
-//world size
 let worldWidth = 2000;
 let worldHeight = 600;
 let cameraX = 0;
 let canvasRef = { width: 1000 };
 
-// Mouse
 let mouseX = 0
 let mouseY = 0
 
 let player
 
-//LEVEL TIMER
 let levelTimer = 0;
-
 let randomEventTime = Math.random() * (40000 - 20000) + 20000;
 
 let keysDown = {};
@@ -41,9 +36,12 @@ let jumpPressed = false;
 let killedEnemies = 0;
 const conditionEnemies = 15;
 
+// Sonido de ataque
+const swordSound = new Audio("./assets/music/ataque_espada.mp3");
+swordSound.volume = 0.5;
+
 //========================= CARD SYSTEM =========================
 let cardEventTriggered = false;
-
 let cardOptions = [];
 
 const cardSystem = new cardsOnCanvas();
@@ -86,7 +84,6 @@ pauseBox.addButton("Home", 440, 390, 120, 35, () => {
     goToMenuLevel3 = true;
 });
 
-
 //========================= PLAYER SELECTION =========================
 function setSelectedCharacter(selectedCharacter){
     player = new PlayerBase(
@@ -110,7 +107,6 @@ let hazards = [];
 function initHazards(){
     hazards = [];
 
-    // Spikes fijos
     hazards.push(new Spikes(400,  420));
     hazards.push(new Spikes(650,  420));
     hazards.push(new Spikes(900,  420));
@@ -118,19 +114,18 @@ function initHazards(){
     hazards.push(new Spikes(1500, 420));
     hazards.push(new Spikes(1750, 420));
 
-    // Firepits: 3 o 4 por ronda, una por zona, MAS daño que level2
-const zonas = [
-    { min: 350,  max: 600  },
-    { min: 700,  max: 950  },
-    { min: 1050, max: 1300 },
-    { min: 1400, max: 1750 },
-];
-const cantidad = Math.random() < 0.5 ? 3 : 4;
-zonas.sort(() => Math.random() - 0.5).slice(0, cantidad).forEach(z => {
-    const fp = new FirePit(Math.random() * (z.max - z.min) + z.min, 410);
-    fp.damage = 5;
-    hazards.push(fp);
-});
+    const zonas = [
+        { min: 350,  max: 600  },
+        { min: 700,  max: 950  },
+        { min: 1050, max: 1300 },
+        { min: 1400, max: 1750 },
+    ];
+    const cantidad = Math.random() < 0.5 ? 3 : 4;
+    zonas.sort(() => Math.random() - 0.5).slice(0, cantidad).forEach(z => {
+        const fp = new FirePit(Math.random() * (z.max - z.min) + z.min, 410);
+        fp.damage = 5;
+        hazards.push(fp);
+    });
 }
 
 initHazards();
@@ -164,14 +159,12 @@ function drawPlatforms(ctx){
 let backgroundImage = new Image();
 backgroundImage.src = currentLevelConfig.background;
 
-
 //========================= SPAWN SYSTEM =========================
 let spawnTimer = 0;
 let spawnInterval = 4000;
 
 //========================= API CONNECTION — CARD FETCH =========================
 async function generateCardOptions(){
-
     try{
         const response = await fetch("http://localhost:3000/cards/random");
 
@@ -203,7 +196,6 @@ async function generateCardOptions(){
 
     }catch(err){
         console.log("Card API error, using fallback:", err);
-
         cardOptions = [
             { card_name: "People Favor", effect_name: "People Favor", effect_type: "POWER_UP" },
             { card_name: "Mars Blade", effect_name: "Mars Blade", effect_type: "POWER_UP" },
@@ -213,9 +205,7 @@ async function generateCardOptions(){
 }
 
 async function triggerCardEvent(){
-
     console.log("EVENT TRIGGERED");
-
     await generateCardOptions();
 
     const convertedCards = cardOptions.map(apiCard =>
@@ -245,7 +235,7 @@ function drawLevel3(ctx, canvas, deltaTime){
     player.draw(ctx);
     drawPlatforms(ctx);
     enemies.forEach(enemy => enemy.draw(ctx));
-    hazards.forEach(h => h.draw(ctx)); // draw spikes & firepits
+    hazards.forEach(h => h.draw(ctx));
 
     ctx.restore();
 
@@ -323,7 +313,6 @@ function update(deltaTime){
     enemies = enemies.filter(alive => alive.hp > 0);
     killedEnemies += totalLenEnemies - enemies.length;
 
-    // update hazards (collision + damage cooldown)
     hazards.forEach(h => h.update(player, deltaTime));
 
     spawnTimer += deltaTime;
@@ -357,7 +346,6 @@ function handleMouseMoveLevel3(event, canvas){
 }
 
 function handleClickLevel3(){
-
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
@@ -376,7 +364,6 @@ function handleKeyDownLevel3(event){
 
     if(event.key === "Escape"){
         isPaused = !isPaused;
-
         if(isPaused){
             pauseBox.show();
         } else {
@@ -399,13 +386,14 @@ function handleKeyDownLevel3(event){
         if(!player.playeratack){
             player.playeratack = true;
             player.attackFrames = 0;
+            swordSound.currentTime = 0;
+            swordSound.play();
         }
     }
 }
 
 function handleKeyUpLevel3(event){
     keysDown[event.key] = false;
-
     if(event.key === " "){
         jumpPressed = false;
     }
@@ -424,7 +412,7 @@ function resetLevel3(){
     killedEnemies = 0;
 
     initPlatforms();
-    initHazards(); // reset spikes & firepits
+    initHazards();
 
     cameraX = 0;
     spawnTimer = 0;
