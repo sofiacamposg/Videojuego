@@ -31,13 +31,81 @@ COMMIT;
 
 -- Insert Cards catalog TODO: AÑADIR LAS DEMÁS CARTAS
 SET AUTOCOMMIT = 0;
-INSERT INTO Card (card_name, description, type, effect_from, effect_modifies, effect_to, value_effect, duration) VALUES
-('People Favor Card', 'A card that boosts speed temporarily', 'PERMANENT', 'player', 'speed',  1),
-('Mars Blade Card', 'A card that boosts damage temporarily', 2),
-('Venus Blessing Card', 'A card that restores health permanently', 3),
-('Imperial Decree Card', 'A punishment card that spawns more enemies', 4),
-('Caesar Chains Card', 'A punishment card that disables jumping', 5),
-('Jupiter Wrath Card', 'A punishment card that removes life instantly', 6);
+INSERT INTO Card (card_name, description, effect_type, duration_type, effect_from, effect_modifies, effect_operator, effect_reverse_operator, value_effect, reverse_value, duration) VALUES
+('Favor of the People', 
+'Movement speed increases by 20% for the level duration', 
+'POWER_UP', 'PERMANENT', 
+'player', 'speed', '*', '/', 1.2, 1.2, 0),
+
+('Blade of Mars', 
+'Attack damage increases by 30% for the level duration', 
+'POWER_UP', 'PERMANENT', 
+'player', 'damage', '*', '/', 1.3, 1.3, 0),
+
+('Blessing of Venus', 
+'Instantly recover 1 heart', 
+'POWER_UP', 'PERMANENT', 
+'player', 'hearts', '+', '-', 1.0, 1.0, 0),
+
+('Divine Shield', 
+'Absorbs the next hit with no damage taken', 
+'POWER_UP', 'PERMANENT', 
+'player', 'invincible', '=', '=', 1.0, 0.0, 0),
+
+('Lions Roar', 
+'All current enemies are slowed for 5 seconds', 
+'POWER_UP', 'TEMPORARY', 
+'enemy', 'isSlowed', '=', '=', 1.0, 0.0, 5000),
+
+('Gladiators Blood', 
+'Each enemy kill restores a small amount of HP for the level duration', 
+'POWER_UP', 'PERMANENT', 
+'player', 'lifeSteal', '=', '=', 1.0, 0.0, 0),
+
+('Colloseums fury', 
+'Basic attack gains area of effect for 8 seconds', 
+'POWER_UP', 'TEMPORARY', 
+'player', 'range', '*', '/', 1.3, 1.3, 8000),
+
+('Eye of the Emperor', --TODO
+'Reveals the type of the next 3 cards before selection', 
+'POWER_UP', 'PERMANENT', 
+'game', 'revealNextCard', '=', '=', 1.0, 0.0, 0),
+---
+('Imperial Decreee',   --TODO
+'2 additional enemies spawn immediately', 
+'PUNISHMENT', 'PERMANENT', 
+'game', 'spawnExtra', '=', '=', 2.0, 0.0, 0),
+
+('Chains of Caesar', 
+'Jump is disabled for 10 seconds', 
+'PUNISHMENT', 'TEMPORARY', 
+'player', 'canJump', '=', '=', 0.0, 1.0, 10000),
+
+('Hunger of the Plebs',   --TODO
+'Using any card costs half a heart of health', 
+'PUNISHMENT', 'PERMANENT', 
+'player', 'cardCostHP', '=', '=', 1.0, 0.0, 0),
+
+('Wrath of Jupiter',   
+'Instantly lose 1 heart', 
+'PUNISHMENT', 'PERMANENT', 
+'player', 'hearts', '-', '+', 1.0, 1.0, 0),
+
+('Ampitheatre Fog', --TODO
+'Screen is partially darkened for 12 seconds', 
+'PUNISHMENT', 'TEMPORARY', 
+'game', 'fogActive', '=', '=', 1.0, 0.0, 12000),
+
+('Lanistas Betrayal', 
+'Player damage reduced by 40% for 15 seconds', 
+'PUNISHMENT', 'TEMPORARY', 
+'player', 'damage', '*', '/', 0.6, 0.6, 15000),
+
+('Senates Judgment', 
+'If the player dies during this level, 2 lives are lost instead of 1', 
+'PUNISHMENT', 'PERMANENT', 
+'player', 'doubleDeath', '=', '=', 1.0, 0.0, 0);
 COMMIT;
 
 -- Insert Enemys catalog
