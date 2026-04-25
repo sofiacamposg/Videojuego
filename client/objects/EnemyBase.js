@@ -64,10 +64,12 @@ class EnemyBase extends AnimatedObject {
   }
 
   walk(deltaTime){  //x position 
+    let direction = this.speed < 0 ? -1 : 1;  //change direction, the < is ro keep the direction of bounce
+
     if (this.isSlowed) {  //lions roar effect
-      this.speed = this.speedBase* 0.2; 
+      this.speed = this.speedBase * 0.2 * direction; 
     } else {
-      this.speed = this.speedBase;
+      this.speed = this.speedBase * direction;
     }
     this.spriteImage = (this.speed < 0) ? this.spriteRight : this.spriteLeft;
     this.updateAnimation(20);
