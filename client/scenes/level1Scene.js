@@ -5,7 +5,7 @@ import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
 import { applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
 import { handleMouseMove } from "../libs/game_functions.js";
 import { level1Config, playerConfigs } from "../libs/levelConfig.js";
-import { spawnEnemy, generatePlatform, updateCamera, updateCoins, drawCoins, saveMatch } from "../libs/level_functions.js";
+import { spawnEnemy, generatePlatform, updateCamera, updateCoins, drawCoins, saveMatch, drawFog, imperialDecree } from "../libs/level_functions.js";
 "use strict"
 
 let currentLevelConfig = level1Config;
@@ -46,7 +46,7 @@ let cardOptions = [];
 const cardSystem = new cardsOnCanvas();
 
 const game = {
-    spawnEnemy: () => spawnEnemy(cameraX + canvasRef.width + 100, 450, currentLevelConfig.enemyConfig)
+    spawnEnemy: () => spawnEnemy(cameraX + canvasRef.width + 100, 450, currentLevelConfig.enemyConfig),
 };
 
 
@@ -277,6 +277,8 @@ function drawLevel1(ctx, canvas, deltaTime){
 
     ctx.restore();
 
+    drawFog(ctx, canvas, game);  //amphitheatre fog effect
+
     drawHealthBar(ctx, 30, 20, 100, 30, player.hp, player.maxHp);
     ctx.font = "50px Arial";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
@@ -434,6 +436,7 @@ function update(deltaTime){
     }
 
     cardSystem.update(deltaTime);
+    imperialDecree(game, enemies);
 }
 
 //========================= INPUT HANDLERS =========================

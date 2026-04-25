@@ -32,19 +32,18 @@ class cardsOnCanvas {
     // ========================= OFFERED CARDS =========================
 
     show(allCards, player, enemies, game = null) {
-        const shuffled = [...allCards].sort(() => Math.random() - 0.5);
-        this.offeredCards  = shuffled.slice(0, 3);
+        this.offeredCards = allCards;
         this.selectedIndex = null;
-        this.isActive      = true;
-        this._player  = player;
+        this.isActive = true;
+        this._player = player;
         this._enemies = enemies;
-        this._game    = game;
+        this._game = game;
         this.cardBox.show();
     }
 
     close() {
-        this.isActive      = false;
-        this.offeredCards  = [];
+        this.isActive = false;
+        this.offeredCards = [];
         this.selectedIndex = null;
         this.cardBox.hide();
     }
@@ -120,9 +119,9 @@ class cardsOnCanvas {
         if (card.duration && card.removeEffect) {
             this.activeEffects.push({
                 card,
-                player:  this._player,
+                player: this._player,
                 enemies: this._enemies,
-                game:    this._game,
+                game: this._game,
                 endTime: card.duration
             });
         }
@@ -162,24 +161,24 @@ class cardsOnCanvas {
 
         if (this.playerDeck.length === 0) {
             ctx.fillStyle = "white";
-            ctx.font      = "24px 'VT323'";
+            ctx.font = "24px 'VT323'";
             ctx.fillText("No cards yet", W / 2, H / 2);
             return;
         }
 
-        const cardW   = 140;
-        const cardH   = 200;
-        const cols    = 3;
+        const cardW = 140;
+        const cardH = 200;
+        const cols = 3;
         const spacingX = 220;
         const spacingY = 240;
-        const startX  = (W - (cols * cardW + (cols - 1) * (spacingX - cardW))) / 2;
-        const startY  = 110;
+        const startX = (W - (cols * cardW + (cols - 1) * (spacingX - cardW))) / 2;
+        const startY = 110;
 
         for (let i = 0; i < this.playerDeck.length; i++) {
             const col = i % cols;
             const row = Math.floor(i / cols);
-            const x   = startX + col * spacingX;
-            const y   = startY + row * spacingY;
+            const x = startX + col * spacingX;
+            const y = startY + row * spacingY;
             this.drawCard(ctx, this.playerDeck[i], x, y, cardW, cardH, this.selectedDeckIndex === i);
         }
     }
@@ -187,19 +186,19 @@ class cardsOnCanvas {
     handleDeckClick(mx, my, canvas) {
         if (!this.isDeckOpen) return null;
 
-        const cardW    = 140;
-        const cardH    = 200;
-        const cols     = 3;
+        const cardW = 140;
+        const cardH = 200;
+        const cols = 3;
         const spacingX = 220;
         const spacingY = 240;
-        const startX   = (canvas.width - (cols * cardW + (cols - 1) * (spacingX - cardW))) / 2;
-        const startY   = 110;
+        const startX = (canvas.width - (cols * cardW + (cols - 1) * (spacingX - cardW))) / 2;
+        const startY = 110;
 
         for (let i = 0; i < this.playerDeck.length; i++) {
             const col = i % cols;
             const row = Math.floor(i / cols);
-            const x   = startX + col * spacingX;
-            const y   = startY + row * spacingY;
+            const x = startX + col * spacingX;
+            const y = startY + row * spacingY;
             if (mx >= x && mx <= x + cardW && my >= y && my <= y + cardH) {
                 this.selectedDeckIndex = i;
                 return;
@@ -226,30 +225,32 @@ class cardsOnCanvas {
     // ========================= HELPERS =========================
 
     drawCard(ctx, card, x, y, w, h, isSelected) {
+        //* para test
         if (card.image && card.image.complete && card.image.naturalWidth > 0) {
             ctx.drawImage(card.image, x, y, w, h);
         } else {
             ctx.drawImage(this.cardBackImage, x, y, w, h);
+        }    
+        if (this._game?.revealNextCard) {
+            const isPowerUp = card.type === "POWER_UP";
+            ctx.fillStyle = "white";
+            ctx.font = "bold 30px 'VT323'";
+            ctx.textAlign = "center";
+            ctx.fillText(isPowerUp ? "POWER UP" : "PUNISHMENT", x + w / 2, y + h + 22);
+            ctx.textAlign = "left";
         }
 
         if (isSelected) {
-            ctx.shadowColor = card.type === "powerup" ? "#D4A537" : "#C0392B";
-            ctx.shadowBlur  = 15;
-            ctx.strokeStyle = card.type === "powerup" ? "#D4A537" : "#C0392B";
-            ctx.lineWidth   = 3;
+            ctx.shadowColor = "#ffed66";
+            ctx.shadowBlur = 15;
+            ctx.strokeStyle = "#ffc739";
+            ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.roundRect(x, y, w, h, 8);
             ctx.stroke();
-            ctx.shadowBlur  = 0;
+            ctx.shadowBlur = 0;
             ctx.shadowColor = "transparent";
         }
-
-        //nombre bajo la carta
-        ctx.fillStyle = "white";
-        ctx.font      = "14px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText(card.name, x + w / 2, y + h + 16);
-        ctx.textAlign = "left";
     }
 
     drawConfirmButton(ctx, cx, topY) {
@@ -263,7 +264,7 @@ class cardsOnCanvas {
         ctx.fill();
 
         ctx.fillStyle = "#1A0E00";
-        ctx.font      = "30px 'VT323'";
+        ctx.font = "30px 'VT323'";
         ctx.textAlign = "center";
         ctx.fillText("CONFIRM", cx, topY + 28);
     }
