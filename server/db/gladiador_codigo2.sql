@@ -7,6 +7,7 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 -- saves the current sql mode and sets it to strict mode so invalid data is rejected instead of silently ignored
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
 
+DROP DATABASE IF EXISTS gladiator;
 CREATE DATABASE IF NOT EXISTS gladiator;
 USE gladiator;
 
@@ -21,10 +22,10 @@ CREATE TABLE Player (
     total_runs SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     total_losses SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     total_wins SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-    fame SMALLINT NOT NULL DEFAULT 0,  --used to buy upgrades
+    fame SMALLINT NOT NULL DEFAULT 0,  -- used to buy upgrades
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (player_id)
-    CONSTRAINT chk_coins CHECK (fame >= 0),
+    PRIMARY KEY (player_id),
+    CONSTRAINT chk_coins CHECK (fame >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table: Archetype
@@ -37,7 +38,7 @@ CREATE TABLE Archetype (
     damage_start SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (archetype_id)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table: Level
 -- Stores each level, target time, and description
@@ -50,7 +51,7 @@ CREATE TABLE Level (
     PRIMARY KEY (level_id),
     CONSTRAINT chk_level_number CHECK (level_number BETWEEN 1 AND 3),
     CONSTRAINT chk_target_time CHECK (target_time > 0)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table: Card
 -- Stores cards, effect and details for the js code 
@@ -69,7 +70,7 @@ CREATE TABLE Card (
     duration SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (card_id)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table: Enemy
 -- Keeps the enemy catalog used by the game
@@ -110,7 +111,7 @@ CREATE TABLE MatchGame (
         FOREIGN KEY (archetype_id) REFERENCES Archetype(archetype_id),
     CONSTRAINT chk_match_duration CHECK (duration_seconds >= 0),
     CONSTRAINT chk_level_reached CHECK (level_reached BETWEEN 1 AND 3),
-    CONSTRAINT chk_final_fame CHECK (final_fame >= 0),
+    CONSTRAINT chk_final_fame CHECK (final_fame >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table: SpecificLevel
@@ -137,36 +138,42 @@ CREATE TABLE SpecificLevel (
         FOREIGN KEY (level_card_id) REFERENCES LevelCard(level_card_id),
     CONSTRAINT chk_completion_time CHECK (completion_time >= 0),
     CONSTRAINT chk_remaining_hp CHECK (remaining_hp > 0),
-    CONSTRAINT chk_fame_gained CHECK (fame_gained > 0),
+    CONSTRAINT chk_fame_gained CHECK (fame_gained > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table: Deck
 -- Renamed from used card table, Stores which cards are on players deck
 CREATE TABLE Deck (
     deck_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    specific_level_id INT UNSIGNED NOT NULL,
     card_id SMALLINT UNSIGNED NOT NULL,
-    player_id SMALLINT UNSIGNED NOT NULL,
-    quantity SMALLINT NOT NULL DEFAULT 0,
+    effect_duration SMALLINT UNSIGNED NOT NULL,
     use_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
     PRIMARY KEY (deck_id),
-    CONSTRAINT fk_players_deck
-        FOREIGN KEY (player_id) REFERENCES Player(player_id),
+
+    CONSTRAINT fk_deck_specificlevel
+        FOREIGN KEY (specific_level_id) REFERENCES SpecificLevel(specific_level_id),
+
     CONSTRAINT fk_deck_card
-        FOREIGN KEY (card_id) REFERENCES Card(card_id),
-    CONSTRAINT chk_quantity CHECK (quantity < 6)
+        FOREIGN KEY (card_id) REFERENCES Card(card_id)
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table: Level Card
 -- Transition table to conect cards with specific level, cards earned during a run
 CREATE TABLE LevelCard (
     level_card_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    player_id SMALLINT UNSIGNED NOT NULL,
     card_id  SMALLINT UNSIGNED NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (level_card_id),
-    CONSTRAINT fk_players_deck
+    CONSTRAINT fk_levelcard_player
         FOREIGN KEY (player_id) REFERENCES Player(player_id),
-)
+	CONSTRAINT fk_levelcard_card
+    FOREIGN KEY (card_id) REFERENCES Card(card_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table: Statistics
 -- Stores general game stats, login count, user activity, and admin log info
@@ -187,7 +194,7 @@ CREATE TABLE Statistics (
     PRIMARY KEY (statistics_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-----& VIEW
+-- VIEW
 -- View: general stats summary
 CREATE VIEW vw_general_statistics AS
 SELECT
@@ -239,14 +246,13 @@ CREATE VIEW vw_match_cards_live AS
 SELECT
     d.specific_level_id,
     c.card_name,
-    e.effect_type,
+    c.effect_type,
     d.use_time,
     c.duration
 FROM Deck d
-INNER JOIN Card c ON d.card_id = c.card_id
-INNER JOIN Effect e ON c.effect_id = e.effect_id;
+INNER JOIN Card c ON d.card_id = c.card_id;
 
---This are User views and go on other tab
+-- This are User views and go on other tab
 CREATE VIEW vw_player_profile AS
 SELECT
     player_id,
@@ -309,7 +315,7 @@ INNER JOIN Player p ON m.player_id = p.player_id
 INNER JOIN Card c ON d.card_id = c.card_id
 GROUP BY p.username, c.card_name;
 
--------& TRIGGER
+-- TRIGGER
 -- Trigger: update player counters after inserting a match
 DELIMITER //
 CREATE TRIGGER trg_after_insert_match
@@ -358,45 +364,8 @@ BEGIN
 END //
 
 DELIMITER ;
--- Trigger: Validate an effect is not terporary and permanent at the same time
-DELIMITER //
 
-CREATE TRIGGER trg_before_insert_temporaryeffect
-BEFORE INSERT ON TemporaryEffect
-FOR EACH ROW
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM PermanentEffect
-        WHERE effect_id = NEW.effect_id
-    ) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'An effect cannot be both temporary and permanent.';
-    END IF;
-END //
-
-DELIMITER ;
-
--- Trigger: Validate an effect is not terporary and permanent at the same time
-DELIMITER //
-
-CREATE TRIGGER trg_before_insert_permanenteffect
-BEFORE INSERT ON PermanentEffect
-FOR EACH ROW
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM TemporaryEffect
-        WHERE effect_id = NEW.effect_id
-    ) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'An effect cannot be both permanent and temporary.';
-    END IF;
-END //
-
-DELIMITER ;
-
---& STORED PROCEDURES
+-- STORED PROCEDURES
 -- Stored Procedure: get all matches by player
 DELIMITER //
 CREATE PROCEDURE GetMatchesByPlayer(IN in_player_id SMALLINT UNSIGNED)
@@ -438,13 +407,11 @@ BEGIN
     SELECT
         c.card_id,
         c.card_name,
-        e.effect_name,
-        e.effect_type,
-        e.effect_value,
-        e.description
+        c.effect_type,
+        c.effect_value,
+        c.description
     FROM Card c
-    INNER JOIN Effect e ON c.effect_id = e.effect_id
-    WHERE e.effect_type = in_effect_type;
+    WHERE c.effect_type = in_effect_type;
 END //
 
 DELIMITER ;
@@ -487,8 +454,7 @@ BEGIN
         sl.specific_level_id,
         l.level_number,
         c.card_name,
-        e.effect_name,
-        e.effect_type,
+        c.effect_type,
         d.use_time,
         c.duration
     FROM MatchGame m
@@ -496,7 +462,6 @@ BEGIN
     INNER JOIN Level l ON sl.level_id = l.level_id
     INNER JOIN Deck d ON sl.specific_level_id = d.specific_level_id
     INNER JOIN Card c ON d.card_id = c.card_id
-    INNER JOIN Effect e ON c.effect_id = e.effect_id
     WHERE m.match_id = in_match_id
     ORDER BY l.level_number, d.use_time;
 END //
@@ -507,3 +472,4 @@ DELIMITER ;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET SQL_MODE=@OLD_SQL_MODE;
+SHOW TABLES
