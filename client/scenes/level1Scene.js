@@ -31,7 +31,7 @@ let nextLevelLevel1 = false;
 let levelTimer = 0;
 
 // random trigger between 20s and 40s (considering 1 minute per level)
-let randomEventTime = Math.random() * (40- 20) + 20;
+let randomEventTime = Math.random() * (40000 - 20000) + 20000;
 
 let keysDown = {};
 let jumpPressed = false;
@@ -542,7 +542,7 @@ function resetLevel1(){
     spawnTimer = 0;
 
     levelTimer = 0;
-    randomEventTime = Math.random() * (40 - 20) + 20;
+    randomEventTime = Math.random() * (40000 - 20000) + 20000;
     cardEventTriggered = false;
     cardSystem.close();
     cardSystem.isDeckOpen = false;

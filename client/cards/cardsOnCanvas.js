@@ -51,8 +51,6 @@ class cardsOnCanvas {
     draw(ctx, canvas) {
         if (!this.isActive) return;
 
-        this.cardBox.draw(ctx); //background + title via MessageBox
-
         const W = canvas.width;
         const H = canvas.height;
         const cardW = 220;
@@ -62,15 +60,19 @@ class cardsOnCanvas {
         const startX = (W - (count * cardW + (count - 1) * gap)) / 2;
         const cardY = (H - cardH) / 2;
 
+        //this.cardBox.buttons = [];
+        if (this.selectedIndex !== null) {
+            this.cardBox.addButton("CONFIRM", W / 2 - 90,
+                 cardY + cardH + 48, 180, 40, () => this.confirm());  //
+        }
+
+        this.cardBox.draw(ctx);
+
         this.offeredCards.forEach((card, i) => {
             const x = startX + i * (cardW + gap);
             const isSelected = this.selectedIndex === i;
             this.drawCard(ctx, card, x, cardY, cardW, cardH, isSelected);
         });
-
-        if (this.selectedIndex !== null) {
-            this.drawConfirmButton(ctx, W / 2, cardY + cardH + 48);
-        }
     }
 
     handleClick(mx, my, canvas) {
@@ -81,7 +83,7 @@ class cardsOnCanvas {
         const gap = 28;
         const count = 3;
         const startX = (canvas.width - (count * cardW + (count - 1) * gap)) / 2;
-        const cardY = (canvas.height - cardH) / 2;  //same as draw()
+        const cardY = (canvas.height - cardH) / 2;
 
         for (let i = 0; i < this.offeredCards.length; i++) {
             const x = startX + i * (cardW + gap);
@@ -90,18 +92,7 @@ class cardsOnCanvas {
             }
         }
 
-        if (this.selectedIndex !== null) {
-            const bW = 180;
-            const bH = 40;
-            const bX = canvas.width / 2 - bW / 2;
-            const bY = cardY + cardH + 48;  //same offset as drawConfirmButton call
-
-            if (mx >= bX && mx <= bX + bW && my >= bY && my <= bY + bH) {
-                return this.confirm();
-            }
-        }
-
-        return null;
+        return this.cardBox.handleClick(mx, my);
     }
 
     confirm() {
@@ -253,20 +244,5 @@ class cardsOnCanvas {
         }
     }
 
-    drawConfirmButton(ctx, cx, topY) {
-        const w = 180;
-        const h = 40;
-        const x = cx - w / 2;
-
-        ctx.fillStyle = "#D4A537";
-        ctx.beginPath();
-        ctx.roundRect(x, topY, w, h, 8);
-        ctx.fill();
-
-        ctx.fillStyle = "#1A0E00";
-        ctx.font = "30px 'VT323'";
-        ctx.textAlign = "center";
-        ctx.fillText("CONFIRM", cx, topY + 28);
-    }
 }
 export { cardsOnCanvas };
