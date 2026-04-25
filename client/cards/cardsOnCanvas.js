@@ -111,6 +111,10 @@ class cardsOnCanvas {
 
         card.applyEffect(this._player, this._enemies, this._game);
 
+        if (this._player.cardCostHP) { 
+            this._player.takeDamage(this._player.maxHp / 2);
+        }
+
         saveCardUse(1, card.id, card.duration || 0);
 
         if (card.duration && card.removeEffect) {

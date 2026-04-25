@@ -73,6 +73,8 @@ class PlayerBase extends AnimatedObject {
     this.hearts = 5;
     this.maxHearts = 5;
     this.range = 1;
+    this.doubleDeath = false;
+    this.cardCostHP = false;
   }
 
   update(goLeft, goRight, jumpPressed, platforms, groundY, deltaTime){  //manage movement, hurtbox, attack
@@ -171,9 +173,10 @@ class PlayerBase extends AnimatedObject {
   }
   
   takeDamage(hit){  //damage made by enemy, look EnemyBase to understand the whole logic
-    if (this.invincible) {return; }
+    if (this.invincible) { this.invincible = false; return; }  //divine shield effect
     this.hp -= hit;
     if (this.hp <= 0) {
+      if (this.doubleDeath) { this.hearts -= 1; this.doubleDeath = false; }  //senates judgment effect
       this.hearts--;  //lose a heart
       if (this.hearts > 0) {
         this.hp = this.maxHp;  //reset hp for next heart
