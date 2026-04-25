@@ -237,16 +237,14 @@ async function giveLevelRewards(){
         // take only the first rewardCount cards and add each one to the player's deck
         shuffled.slice(0, rewardCount).forEach(apiCard => {
             cardSystem.playerDeck.push({
-                id:       apiCard.card_id,
-                name:     apiCard.card_name,
-                type:     apiCard.effect_type,
+                id: apiCard.card_id,
+                name: apiCard.card_name,
+                type: apiCard.effect_type,
                 duration: apiCard.duration,                
                 image: cardImages[apiCard.card_name] || null,
                 //stores the function for later
                 applyEffect: (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
-                removeEffect: apiCard.duration > 0
-                    ? (player, enemies, game) => reverseEffect(apiCard, player, enemies, game)
-                    : null,
+                removeEffect: apiCard.duration > 0 ? (player, enemies, game) => reverseEffect(apiCard, player, enemies, game) : null,
             });
         });
     } catch(err) {

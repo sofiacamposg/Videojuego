@@ -45,6 +45,7 @@ class cardsOnCanvas {
         this.isActive = false;
         this.offeredCards = [];
         this.selectedIndex = null;
+        this.cardBox.buttons = [];
         this.cardBox.hide();
     }
 
@@ -59,12 +60,6 @@ class cardsOnCanvas {
         const count = 3;
         const startX = (W - (count * cardW + (count - 1) * gap)) / 2;
         const cardY = (H - cardH) / 2;
-
-        //this.cardBox.buttons = [];
-        if (this.selectedIndex !== null) {
-            this.cardBox.addButton("CONFIRM", W / 2 - 90,
-                 cardY + cardH + 48, 180, 40, () => this.confirm());  //
-        }
 
         this.cardBox.draw(ctx);
 
@@ -89,6 +84,8 @@ class cardsOnCanvas {
             const x = startX + i * (cardW + gap);
             if (mx >= x && mx <= x + cardW && my >= cardY && my <= cardY + cardH) {
                 this.selectedIndex = i;
+                this.cardBox.buttons = [];
+                this.cardBox.addButton("CONFIRM", canvas.width / 2 - 90, cardY + cardH + 48, 180, 40, () => this.confirm());
             }
         }
 
