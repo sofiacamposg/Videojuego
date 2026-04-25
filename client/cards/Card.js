@@ -95,7 +95,6 @@ const cardImages = {  //images matched with their image
 
 export {
     Card,
-    cards,
     applyEffect,
     reverseEffect,
     cardImages,

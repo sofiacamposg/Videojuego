@@ -2,7 +2,7 @@ import { PlayerBase } from "../objects/PlayerBase.js";
 import { Vector } from "../libs/Vector.js";
 import { MessageBox } from "../objects/MessageBox.js";
 import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
-import { cards, applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
+import { applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
 import { handleMouseMove } from "../libs/game_functions.js";
 import { level1Config, playerConfigs } from "../libs/levelConfig.js";
 import { spawnEnemy, generatePlatform, updateCamera, updateCoins, drawCoins, saveMatch } from "../libs/level_functions.js";
@@ -174,27 +174,23 @@ let spawnInterval = 4000;
 //========================= API CONNECTION — CARD FETCH =========================
 async function generateCardOptions(){
     try{
-        const response = await fetch("http://localhost:3000/cards/random");
+        const response = await fetch("http://localhost:3000/cards/random"); //ask the server for 15 random cards from the db
 
-        if(!response.ok) throw new Error("API failed");
+        if(!response.ok) throw new Error("API failed");  //edge case
 
-        const data = await response.json();
-
+        const data = await response.json();  //convert the server response into a js array we can work with
+        //split the 15 cards into two groups
         let powerUps = data.filter(c => c.effect_type === "POWER_UP");
         let punishments = data.filter(c => c.effect_type === "PUNISHMENT");
 
-        const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+        if(powerUps.length < 2 || punishments.length < 1) throw new Error("Not enough cards");  //endge case
 
-        powerUps = shuffle(powerUps);
-        punishments = shuffle(punishments);
-
-        if(powerUps.length < 2 || punishments.length < 1) throw new Error("Not enough cards");
-
+        const shuffle = arr => arr.sort(() => Math.random() - 0.5);  //shuffle just the 3 picked cards so their position on screen is random
         cardOptions = shuffle([powerUps[0], powerUps[1], punishments[0]]);
 
     }catch(err){
         console.log("Card API error, using fallback:", err);
-        //fallback uses same shape as DB so triggerCardEvent can build the card objects correctly
+        //server is down or something broke — use hardcoded cards so the game doesn't stop
         cardOptions = [
             { card_id: null, card_name: "Favor of the People", effect_type: "POWER_UP",  effect_from: "player", effect_modifies: "speed",  effect_operator: "*", effect_reverse_operator: "/", value_effect: 1.2, reverse_value: 1.2, duration: 0 },
             { card_id: null, card_name: "Blade of Mars",        effect_type: "POWER_UP",  effect_from: "player", effect_modifies: "damage", effect_operator: "*", effect_reverse_operator: "/", value_effect: 1.3, reverse_value: 1.3, duration: 0 },
@@ -205,34 +201,56 @@ async function generateCardOptions(){
 
 async function triggerCardEvent(){
     console.log("EVENT TRIGGERED");
-    await generateCardOptions();
+    await generateCardOptions();  //waits for cardOption array
 
-    // build card objects from the DB data — the DB already has all the effect info
-    // so we don't need the old effectNameToCard lookup anymore
+    // build card objects from the DB data for the js to use
     const convertedCards = cardOptions.map(apiCard => ({
         id:    apiCard.card_id,
         name:  apiCard.card_name,
-        type:  apiCard.effect_type,        //POWER_UP or PUNISHMENT
+        type:  apiCard.effect_type,  //POWER_UP or PUNISHMENT
         duration: apiCard.duration,
-        image: cardImages[apiCard.card_name] || null,  //grab the sprite that matches this card name
+        image: cardImages[apiCard.card_name] || null,  //grab the sprite that matches the card name
 
-        //bind applyEffect/reverseEffect from Card.js, passing the apiCard data so it knows what to modify
-        applyEffect:  (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
-        removeEffect: apiCard.duration > 0
-            ? (player, enemies, game) => reverseEffect(apiCard, player, enemies, game)
-            : null,  //permanent cards don't need a reversal
+        //instead of calling applyEffect right now, we store it as a recipe to run later
+        //apicard stays inside (closure) so it remembers which card's data to use
+        // it only actually runs when the player confirms their pick
+        applyEffect: (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
+        removeEffect: apiCard.duration > 0 ? (player, enemies, game) => reverseEffect(apiCard, player, enemies, game) : null,
     }));
-
-    cardSystem.show(convertedCards, player, enemies, game);
+    cardSystem.show(convertedCards, player, enemies, game);  //show cards for the player to select
 }
-//================REWARD CARDS FOR LEVEL TRANSITION=====================
-function giveLevelRewards(){
 
-    const rewardCount = levelTimer < 60000 ? 2 : 1;
-    const powerUps = cards.filter(c => c.type === "POWER_UP");
-    const shuffled = [...powerUps].sort(() => Math.random() - 0.5);
-    for(let i = 0; i < rewardCount && i < shuffled.length; i++){
-        cardSystem.playerDeck.push(shuffled[i]);
+//================ REWARD CARDS FOR LEVEL TRANSITION =====================
+async function giveLevelRewards(){
+    const rewardCount = levelTimer < 60000 ? 2 : 1;  //if the player beat the level fast (under 60s) they get 2 cards, otherwise just 1
+
+    try {
+        const response = await fetch("http://localhost:3000/cards/random");  //ask the server for random cards
+        if(!response.ok) throw new Error("API failed");  //edge case
+        const data = await response.json();
+       
+        const powerUps = data.filter(c => c.effect_type === "POWER_UP"); //rewards are only power ups
+
+        // [...powerUps] makes a copy so we don't mess with the original array
+        const shuffled = [...powerUps].sort(() => Math.random() - 0.5);
+
+        // take only the first rewardCount cards and add each one to the player's deck
+        shuffled.slice(0, rewardCount).forEach(apiCard => {
+            cardSystem.playerDeck.push({
+                id:       apiCard.card_id,
+                name:     apiCard.card_name,
+                type:     apiCard.effect_type,
+                duration: apiCard.duration,                
+                image: cardImages[apiCard.card_name] || null,
+                //stores the function for later
+                applyEffect: (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
+                removeEffect: apiCard.duration > 0
+                    ? (player, enemies, game) => reverseEffect(apiCard, player, enemies, game)
+                    : null,
+            });
+        });
+    } catch(err) {
+        console.log("Could not fetch reward cards:", err);
     }
 }
 

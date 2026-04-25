@@ -134,8 +134,7 @@ app.get("/cards/random", (req, res) => {
     db.query(query, (err, result) => {
         if (err) {
             console.log(err);
-            res.send(err.message);
-            return;
+            return res.status(500).json({ error: err.message }); //send proper error status so the frontend catch picks it up
         }
 
         res.json(result);

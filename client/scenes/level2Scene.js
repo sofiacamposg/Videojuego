@@ -2,7 +2,7 @@ import { PlayerBase } from "../objects/PlayerBase.js";
 import { Vector } from "../libs/Vector.js";
 import { MessageBox } from "../objects/MessageBox.js";
 import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
-import { cards, applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
+import { applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
 import { handleMouseMove } from "../libs/game_functions.js";
 import { level2Config, playerConfigs } from "../libs/levelConfig.js";
 import { spawnEnemy, generatePlatform, updateCamera } from "../libs/level_functions.js";
@@ -170,22 +170,13 @@ async function generateCardOptions(){
         let powerUps = data.filter(c => c.effect_type === "POWER_UP");
         let punishments = data.filter(c => c.effect_type === "PUNISHMENT");
 
-        const shuffle = arr => arr.sort(() => Math.random() - 0.5);
-
-        powerUps = shuffle(powerUps);
-        punishments = shuffle(punishments);
-
         if(powerUps.length < 2 || punishments.length < 1){
             throw new Error("Not enough cards");
         }
 
-        let selected = [
-            powerUps[0],
-            powerUps[1],
-            punishments[0]
-        ];
-
-        cardOptions = shuffle(selected);
+        //shuffle just the 3 picked cards so their position on screen is random — the api already randomized the pool
+        const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+        cardOptions = shuffle([powerUps[0], powerUps[1], punishments[0]]);
 
     }catch(err){
         console.log("Card API error, using fallback:", err);
@@ -218,13 +209,34 @@ async function triggerCardEvent(){
     cardSystem.show(convertedCards, player, enemies, game);
 }
 //================REWARD CARDS FOR LEVEL TRANSITION=====================
-function giveLevelRewards(){
-
+async function giveLevelRewards(){
     const rewardCount = levelTimer < 60000 ? 2 : 1;
-    const powerUps = cards.filter(c => c.type === "POWER_UP");
-    const shuffled = [...powerUps].sort(() => Math.random() - 0.5);
-    for(let i = 0; i < rewardCount && i < shuffled.length; i++){
-        cardSystem.playerDeck.push(shuffled[i]);
+
+    try {
+        const response = await fetch("http://localhost:3000/cards/random");
+        if(!response.ok) throw new Error("API failed");
+        const data = await response.json();
+
+        //only give power ups as rewards
+        const powerUps = data.filter(c => c.effect_type === "POWER_UP");
+        const shuffled = [...powerUps].sort(() => Math.random() - 0.5);
+
+        //convert to card objects the same way triggerCardEvent does
+        shuffled.slice(0, rewardCount).forEach(apiCard => {
+            cardSystem.playerDeck.push({
+                id:    apiCard.card_id,
+                name:  apiCard.card_name,
+                type:  apiCard.effect_type,
+                duration: apiCard.duration,
+                image: cardImages[apiCard.card_name] || null,
+                applyEffect:  (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
+                removeEffect: apiCard.duration > 0
+                    ? (player, enemies, game) => reverseEffect(apiCard, player, enemies, game)
+                    : null,
+            });
+        });
+    } catch(err) {
+        console.log("Could not fetch reward cards:", err);
     }
 }
 //========================= DRAW LOOP =========================
