@@ -67,12 +67,12 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 'POWER_UP', 'TEMPORARY', 
 'player', 'range', '*', '/', 1.3, 1.3, 8000),
 
-('Eye of the Emperor', -- TODO
+('Eye of the Emperor',
 'Reveals the type of the next 3 cards before selection',
 'POWER_UP', 'PERMANENT',
 'game', 'revealNextCard', '=', '=', 1.0, 0.0, 0),
-
-('Imperial Decreee', -- TODO
+---
+('Imperial Decreee',
 '2 additional enemies spawn immediately', 
 'PUNISHMENT', 'PERMANENT', 
 'game', 'spawnExtra', '=', '=', 2.0, 0.0, 0),
@@ -82,7 +82,7 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 'PUNISHMENT', 'TEMPORARY', 
 'player', 'canJump', '=', '=', 0.0, 1.0, 10000),
 
-('Hunger of the Plebs',   -- TODO
+('Hunger of the Plebs', 
 'Using any card costs half a heart of health', 
 'PUNISHMENT', 'PERMANENT', 
 'player', 'cardCostHP', '=', '=', 1.0, 0.0, 0),
@@ -92,7 +92,7 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 'PUNISHMENT', 'PERMANENT', 
 'player', 'hearts', '-', '+', 1.0, 1.0, 0),
 
-('Ampitheatre Fog', -- TODO
+('Ampitheatre Fog', 
 'Screen is partially darkened for 12 seconds', 
 'PUNISHMENT', 'TEMPORARY', 
 'game', 'fogActive', '=', '=', 1.0, 0.0, 12000),

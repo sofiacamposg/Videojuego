@@ -5,9 +5,7 @@ import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
 import { applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
 import { handleMouseMove } from "../libs/game_functions.js";
 import { level1Config, playerConfigs } from "../libs/levelConfig.js";
-import { spawnEnemy, generatePlatform, updateCamera, updateCoins, drawCoins, saveMatch } from "../libs/level_functions.js";
-import { loadPlayerStats } from "../main.js";
-
+import { spawnEnemy, generatePlatform, updateCamera, updateCoins, drawCoins, saveMatch, drawFog, imperialDecree } from "../libs/level_functions.js";
 "use strict"
 
 let currentLevelConfig = level1Config;
@@ -32,7 +30,7 @@ let nextLevelLevel1 = false;
 let levelTimer = 0;
 
 // random trigger between 20s and 40s (considering 1 minute per level)
-let randomEventTime = Math.random() * (40- 20) + 20;
+let randomEventTime = Math.random() * (40000 - 20000) + 20000;
 
 let keysDown = {};
 let jumpPressed = false;
@@ -47,7 +45,7 @@ let cardOptions = [];
 const cardSystem = new cardsOnCanvas();
 
 const game = {
-    spawnEnemy: () => spawnEnemy(cameraX + canvasRef.width + 100, 450, currentLevelConfig.enemyConfig)
+    spawnEnemy: () => spawnEnemy(cameraX + canvasRef.width + 100, 450, currentLevelConfig.enemyConfig),
 };
 
 
@@ -250,16 +248,14 @@ async function giveLevelRewards(){
         // take only the first rewardCount cards and add each one to the player's deck
         shuffled.slice(0, rewardCount).forEach(apiCard => {
             cardSystem.playerDeck.push({
-                id:       apiCard.card_id,
-                name:     apiCard.card_name,
-                type:     apiCard.effect_type,
+                id: apiCard.card_id,
+                name: apiCard.card_name,
+                type: apiCard.effect_type,
                 duration: apiCard.duration,                
                 image: cardImages[apiCard.card_name] || null,
                 //stores the function for later
                 applyEffect: (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
-                removeEffect: apiCard.duration > 0
-                    ? (player, enemies, game) => reverseEffect(apiCard, player, enemies, game)
-                    : null,
+                removeEffect: apiCard.duration > 0 ? (player, enemies, game) => reverseEffect(apiCard, player, enemies, game) : null,
             });
         });
     } catch(err) {
@@ -289,6 +285,8 @@ function drawLevel1(ctx, canvas, deltaTime){
     enemies.forEach(enemy => enemy.draw(ctx));
 
     ctx.restore();
+
+    drawFog(ctx, canvas, game);  //amphitheatre fog effect
 
     drawHealthBar(ctx, 30, 20, 100, 30, player.hp, player.maxHp);
     ctx.font = "50px Arial";
@@ -391,7 +389,7 @@ function update(deltaTime){
     player.attackEnemy(enemies);
 
     let totalLenEnemies = enemies.length;
-    enemies = enemies.filter(alive => alive.hp > 0);  //remove dead enemies
+    enemies = enemies.filter(alive => !alive.isDying);  //remove dead enemies
     let prevKilled = killedEnemies;
     killedEnemies += totalLenEnemies - enemies.length;
     updateCoins(player, prevKilled, killedEnemies);
@@ -433,6 +431,7 @@ function update(deltaTime){
     }
 
     cardSystem.update(deltaTime);
+    imperialDecree(game, enemies);
 }
 
 //========================= INPUT HANDLERS =========================
@@ -537,7 +536,7 @@ function resetLevel1(){
     spawnTimer = 0;
 
     levelTimer = 0;
-    randomEventTime = Math.random() * (40 - 20) + 20;
+    randomEventTime = Math.random() * (40000 - 20000) + 20000;
     cardEventTriggered = false;
     cardSystem.close();
     cardSystem.isDeckOpen = false;

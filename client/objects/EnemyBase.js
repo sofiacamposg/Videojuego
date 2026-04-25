@@ -15,7 +15,8 @@ class EnemyBase extends AnimatedObject {
       walkLeftSrc = "",
       attackRightSrc = "",
       attackLeftSrc = "",
-      deathSrc = "",
+      deathLeftSrc = "",
+      deathRightSrc = "",
     } = config;
 
     super(position, 200, 200, "white", "enemy", 4);
@@ -35,28 +36,41 @@ class EnemyBase extends AnimatedObject {
     this.attackRight.src = attackRightSrc;
     this.attackLeft = new Image(); 
     this.attackLeft.src = attackLeftSrc;
-    this.spriteDeath = new Image();
-    this.spriteDeath.src = deathSrc;
+    this.spriteDeathLeft = new Image();
+    this.spriteDeathLeft.src = deathLeftSrc;
+    this.spriteDeathRight = new Image();
+    this.spriteDeathRight.src = deathRightSrc;
 
     this.spriteImage = this.spriteLeft;
     this.spriteRect = new Rect(0, 0, 575, 608);
     this.setAnimation(0, 3, true, 200);
     //hitbox data
-    this.HITBOX_WIDTH = 60;
+    this.HITBOX_WIDTH = 70;
     this.HITBOX_HEIGHT = 50;
     this.HITBOX_OFFSET = 70;
     //attack data
     this.attackFrames = 0;
     this.attackDuration = 1000;
     this.attackHitbox = null;
+    this.isDying = false;
+    this.deathTimer = 0;
+    this.DEATH_DURATION = 400;
     this.hasHitPlayer = false;  //flag to limit only one hit per swing
     this.isSlowed = false; //lions roar effect
   }
 
   update(player, deltaTime) {  //manage movement, hurtbox, attack
+    if (this.hp <= 0) {
+      this.updateAnimation(deltaTime);
+      this.deathTimer += deltaTime;
+      if (this.deathTimer >= this.DEATH_DURATION) {
+        this.isDying = true;
+      }
+      return;
+    }
     this.walk(deltaTime);  //movement in x
     this.updateCollider();  //move de hurtbox with the enemy position
-    this.attackHitbox = null;  //hitbox not activated
+    this.createHitbox();
 
     //attack funtions
     this.shouldAttack(player, deltaTime); // is the player near enough to attack him?
@@ -64,10 +78,12 @@ class EnemyBase extends AnimatedObject {
   }
 
   walk(deltaTime){  //x position 
+    let direction = this.speed < 0 ? -1 : 1;  //change direction, the < is ro keep the direction of bounce
+
     if (this.isSlowed) {  //lions roar effect
-      this.speed = this.speedBase* 0.2; 
+      this.speed = this.speedBase * 0.2 * direction; 
     } else {
-      this.speed = this.speedBase;
+      this.speed = this.speedBase * direction;
     }
     this.spriteImage = (this.speed < 0) ? this.spriteRight : this.spriteLeft;
     this.updateAnimation(20);
@@ -75,20 +91,25 @@ class EnemyBase extends AnimatedObject {
   }
 
   takeDamage(hit, player) {  //damage made by player, look Playerbase to understand the whole logic
+    if (this.hp <= 0) return;  //if is dead, can´t take any more damage either reset the animation
     this.hp -= hit;
-    if (this.hp <= 0) {  //TODO hacer el flag de dying para que aparezca la animación
-      this.spriteImage = this.spriteDeath;
-      this.updateAnimation(500);
+    if (this.hp <= 0) {  //start animation of dying
       this.hp = 0;
-      if (player.lifeSteal){
-        player.hp = (player.hp >= player.maxHp) ? player.maxHp : player.hp + 20;
+      this.spriteImage = (this.speed < 0) ? this.spriteDeathRight : this.spriteDeathLeft;
+      this.setAnimation(0, 3, false, 100);  //faster and false to not repeat the animation
+      if (player.lifeSteal){  //gladiators blood effect
+        player.hp = Math.min(player.hp + 20, player.maxHp);  
       }
     }
+
   }
 
-  createHitbox() {  //data hitbox
+  createHitbox() {
+    const facingRight = this.speed < 0;
     this.attackHitbox = {
-      x: this.position.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET,
+      x: facingRight
+        ? this.position.x + this.HITBOX_OFFSET
+        : this.position.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET,
       y: this.position.y - this.HITBOX_HEIGHT * 1.5,
       width: this.HITBOX_WIDTH,
       height: this.HITBOX_HEIGHT,
@@ -96,11 +117,10 @@ class EnemyBase extends AnimatedObject {
   }
 
   shouldAttack(player, deltaTime){  //logic to know when to attack
-    //is my hitbox and his hurtbox touhing and is infront of me?
-    if (hitboxOverlap(this.collider, player)) {
+    //is my hitbox and his hurtbox touhing and is in front of me?
+    if (hitboxOverlap(this.attackHitbox, player)) {
       this.spriteImage = (this.speed < 0) ? this.attackRight : this.attackLeft;
       this.updateAnimation(20);
-      this.createHitbox();  //ememy hitbox to attack
       this.attackFrames += deltaTime;  
       if (this.attackFrames >= this.attackDuration) {  //if enemy already hit the player
         this.attackFrames = 0;  //reset everything

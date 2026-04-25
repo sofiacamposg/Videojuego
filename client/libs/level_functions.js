@@ -2,6 +2,8 @@ import { EnemyBase } from "../objects/EnemyBase.js";
 import { Vector } from "../libs/Vector.js";
 import { playerConfigs } from "./levelConfig.js";
 
+
+//===== CARDS =======
 //Save cards usage
 export async function saveCardUse(levelId, cardId, duration) {
     await fetch("http://localhost:3000/deck", {
@@ -15,6 +17,23 @@ export async function saveCardUse(levelId, cardId, duration) {
             effect_duration: duration || 0
         })
     });
+}
+
+export function drawFog(ctx, canvas, game) {
+    if (!game.fogActive) return;
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+}
+
+export function imperialDecree(game, enemies){
+    if (game.spawnExtra > 0){
+        for (let i = 0; i < game.spawnExtra; i++){
+            enemies.push(game.spawnEnemy());
+        }
+        game.spawnExtra = 0;
+    }
 }
 
 //============== MATCH ====================
@@ -69,3 +88,4 @@ export function drawCoins(ctx, x, y, coins) {
     ctx.font = "20px Arial";
     ctx.fillText("🌟 " + coins, x, y);
 }
+
