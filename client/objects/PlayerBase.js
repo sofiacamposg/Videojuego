@@ -56,7 +56,7 @@ class PlayerBase extends AnimatedObject {
     this.playeratack = false;
     this.attackFrames = 0;
     this.attackDuration = 10;
-     //hitbox for platform colission
+     //hitbox platform colission
     this.hitbox = {
         width: 40,   // AJUSTA esto
         height: 80   // AJUSTA esto
@@ -199,16 +199,16 @@ class PlayerBase extends AnimatedObject {
   createHitbox(){  //data hitbox, left/right
     if (this.direction === "right") {
       this.attackHitbox = {
-        x: (this.position.x + this.halfSize.x + this.HITBOX_OFFSET) * this.range,
+        x: (this.position.x + this.halfSize.x + this.HITBOX_OFFSET),
         y: this.position.y - this.HITBOX_HEIGHT * 1.2,
-        width: this.HITBOX_WIDTH,
+        width: this.HITBOX_WIDTH * this.range,
         height: this.HITBOX_HEIGHT
       };
     } else {
       this.attackHitbox = {
-        x: (this.position.x - this.halfSize.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET) * this.range,
+        x: (this.position.x - this.halfSize.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET),
         y: this.position.y - this.HITBOX_HEIGHT * 1.2,
-        width: this.HITBOX_WIDTH,
+        width: this.HITBOX_WIDTH * this.range,
         height: this.HITBOX_HEIGHT
       };
     }
