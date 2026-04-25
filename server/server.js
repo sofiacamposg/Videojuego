@@ -1,3 +1,12 @@
+//=====IMPORTS=====
+const express = require("express");
+const mysql = require("mysql2");
+const app = express();
+//=====CONFIG=====
+const cors = require("cors");
+app.use(cors());
+app.use(express.json());
+
 /* entra a mysql desde la terminal (sudo mysql) y pon los comandos:
 * CREATE USER 'gladiator'@'localhost' IDENTIFIED BY 'gladiator123';
 que hace? crea un usuario llamado gladiator que se conecta desde esta misma computadora, con contraseña gladiator123
