@@ -50,6 +50,7 @@ class EnemyBase extends AnimatedObject {
     this.attackDuration = 1000;
     this.attackHitbox = null;
     this.hasHitPlayer = false;  //flag to limit only one hit per swing
+    this.isSlowed = false; //lions roar effect
   }
 
   update(player, deltaTime) {  //manage movement, hurtbox, attack
@@ -63,6 +64,11 @@ class EnemyBase extends AnimatedObject {
   }
 
   walk(deltaTime){  //x position 
+    if (this.isSlowed) {  //lions roar effect
+      this.speed = this.speedBase* 0.2; 
+    } else {
+      this.speed = this.speedBase;
+    }
     this.spriteImage = (this.speed < 0) ? this.spriteRight : this.spriteLeft;
     this.updateAnimation(20);
     this.position.x -= this.speed * deltaTime;
@@ -120,7 +126,6 @@ class EnemyBase extends AnimatedObject {
 
   bounce(){  //logic to change speed and damage everytime the enemy bounce
     let direction = this.speed > 0 ? -1 : 1;  //change direction
-    if (this.isSlowed) this.speed *= 0.2;  //check for lions roar effect
     //random damage after bounce
     let minDamage = this.damage - 3;
     let maxDamage = this.damage + 3;
