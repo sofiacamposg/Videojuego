@@ -12,7 +12,6 @@ CREATE DATABASE IF NOT EXISTS gladiator;
 USE gladiator;
 
 -- Table: Player
--- Stores player account data, demographic/basic information, and general counters
 CREATE TABLE Player (
     player_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
     name VARCHAR(30) NOT NULL,
@@ -29,7 +28,6 @@ CREATE TABLE Player (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table: Archetype
--- Stores the initial stats of each playable archetype
 CREATE TABLE Archetype (
     archetype_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
     name VARCHAR(30) NOT NULL UNIQUE,
@@ -41,7 +39,6 @@ CREATE TABLE Archetype (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table: Level
--- Stores each level, target time, and description
 CREATE TABLE Level (
     level_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
     level_number TINYINT UNSIGNED NOT NULL UNIQUE,
@@ -53,8 +50,7 @@ CREATE TABLE Level (
     CONSTRAINT chk_target_time CHECK (target_time > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Table: Card
--- Stores cards, effect and details for the js code 
+-- Table: Card — all effect data lives here directly (no separate Effect table)
 CREATE TABLE Card (
     card_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
     card_name VARCHAR(40) NOT NULL UNIQUE,
@@ -63,17 +59,16 @@ CREATE TABLE Card (
     duration_type ENUM('TEMPORARY', 'PERMANENT') NOT NULL,
     effect_from VARCHAR(6) NOT NULL,
     effect_modifies VARCHAR(15) NOT NULL,
-    effect_operator CHAR NOT NULL,
+    effect_operator CHAR(1) NOT NULL,
     effect_reverse_operator CHAR(1) NOT NULL,
-    value_effect FLOAT(5) NOT NULL,
-    reverse_value FLOAT(5) NOT NULL,
+    value_effect FLOAT NOT NULL,
+    reverse_value FLOAT NOT NULL DEFAULT 0,
     duration SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (card_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table: Enemy
--- Keeps the enemy catalog used by the game
 CREATE TABLE Enemy (
     enemy_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
     level_id SMALLINT UNSIGNED NOT NULL,
@@ -83,15 +78,13 @@ CREATE TABLE Enemy (
     damage_start SMALLINT UNSIGNED NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (enemy_id),
-    CONSTRAINT fk_enemy_level
-        FOREIGN KEY (level_id) REFERENCES Level(level_id),
+    CONSTRAINT fk_enemy_level FOREIGN KEY (level_id) REFERENCES Level(level_id),
     CONSTRAINT chk_enemy_hp CHECK (hp_start > 0),
     CONSTRAINT chk_enemy_speed CHECK (speed_start > 0),
     CONSTRAINT chk_enemy_damage CHECK (damage_start > 0)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 
--- Table: Match
--- Stores each run of the game and whether the player won or lost
+-- Table: MatchGame
 CREATE TABLE MatchGame (
     match_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     player_id SMALLINT UNSIGNED NOT NULL,
@@ -105,44 +98,36 @@ CREATE TABLE MatchGame (
     result ENUM('WIN', 'LOSE') NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (match_id),
-    CONSTRAINT fk_match_player
-        FOREIGN KEY (player_id) REFERENCES Player(player_id),
-    CONSTRAINT fk_match_archetype
-        FOREIGN KEY (archetype_id) REFERENCES Archetype(archetype_id),
+    CONSTRAINT fk_match_player FOREIGN KEY (player_id) REFERENCES Player(player_id),
+    CONSTRAINT fk_match_archetype FOREIGN KEY (archetype_id) REFERENCES Archetype(archetype_id),
     CONSTRAINT chk_match_duration CHECK (duration_seconds >= 0),
     CONSTRAINT chk_level_reached CHECK (level_reached BETWEEN 1 AND 3),
     CONSTRAINT chk_final_fame CHECK (final_fame >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Table: SpecificLevel
--- Stores stats for a specific level inside one match
+-- Table: SpecificLevel — stats for each level inside a match
 CREATE TABLE SpecificLevel (
     specific_level_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     match_id INT UNSIGNED NOT NULL,
     level_id SMALLINT UNSIGNED NOT NULL,
     enemy_id SMALLINT UNSIGNED NOT NULL,
-    finished BOOL NOT NULL DEFAULT FALSE, 
+    finished BOOL NOT NULL DEFAULT FALSE,
     level_card_id SMALLINT UNSIGNED NOT NULL,
     completion_time SMALLINT UNSIGNED NOT NULL,
     remaining_hp SMALLINT UNSIGNED NOT NULL,
     fame_gained SMALLINT UNSIGNED NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (specific_level_id),
-    CONSTRAINT fk_specificlevel_match
-        FOREIGN KEY (match_id) REFERENCES MatchGame(match_id),
-    CONSTRAINT fk_specificlevel_level
-        FOREIGN KEY (level_id) REFERENCES Level(level_id),
-    CONSTRAINT fk_enemy_level
-        FOREIGN KEY (enemy_id) REFERENCES Enemy(enemy_id),
-    CONSTRAINT fk_levelcard
-        FOREIGN KEY (level_card_id) REFERENCES LevelCard(level_card_id),
+    CONSTRAINT fk_specificlevel_match FOREIGN KEY (match_id) REFERENCES MatchGame(match_id),
+    CONSTRAINT fk_specificlevel_level FOREIGN KEY (level_id) REFERENCES Level(level_id),
+    CONSTRAINT fk_specificlevel_enemy FOREIGN KEY (enemy_id) REFERENCES Enemy(enemy_id),
+    CONSTRAINT fk_specificlevel_levelcard FOREIGN KEY (level_card_id) REFERENCES LevelCard(level_card_id),
     CONSTRAINT chk_completion_time CHECK (completion_time >= 0),
     CONSTRAINT chk_remaining_hp CHECK (remaining_hp > 0),
     CONSTRAINT chk_fame_gained CHECK (fame_gained > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Table: Deck
--- Renamed from used card table, Stores which cards are on players deck
+-- Table: Deck — cards currently in a player's deck
 CREATE TABLE Deck (
     deck_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     specific_level_id INT UNSIGNED NOT NULL,
@@ -176,7 +161,6 @@ CREATE TABLE LevelCard (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Table: Statistics
--- Stores general game stats, login count, user activity, and admin log info
 CREATE TABLE Statistics (
     statistics_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
     name VARCHAR(30) NOT NULL,
@@ -194,7 +178,7 @@ CREATE TABLE Statistics (
     PRIMARY KEY (statistics_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- VIEW
+-- & VIEW
 -- View: general stats summary
 CREATE VIEW vw_general_statistics AS
 SELECT
@@ -216,8 +200,7 @@ SELECT
     p.total_losses
 FROM Player p;
 
--- VIEW FOR OUL LIFE STATS
--- This shows life, fame and current level
+-- View: match HUD — life, fame, level during a run
 CREATE VIEW vw_match_hud AS
 SELECT
     m.match_id,
@@ -229,7 +212,7 @@ SELECT
 FROM MatchGame m
 INNER JOIN Player p ON m.player_id = p.player_id;
 
--- This one shows progress, the stats while the player is playing
+-- View: level progress within a match
 CREATE VIEW vw_match_progress AS
 SELECT
     sl.match_id,
@@ -241,10 +224,10 @@ SELECT
 FROM SpecificLevel sl
 INNER JOIN Level l ON sl.level_id = l.level_id;
 
--- We can use this one to show  if we are currently using a card(effect)
+-- View: cards active in a match (no longer needs Effect join — data is in Card)
 CREATE VIEW vw_match_cards_live AS
 SELECT
-    d.specific_level_id,
+    d.deck_id,
     c.card_name,
     c.effect_type,
     d.use_time,
@@ -264,7 +247,7 @@ SELECT
     total_losses
 FROM Player;
 
--- This one is like the winrate
+-- View: player winrate
 CREATE VIEW vw_player_winrate AS
 SELECT
     player_id,
@@ -278,7 +261,7 @@ SELECT
     END AS winrate
 FROM Player;
 
--- This works for the admin and user, is the player match history
+-- View: player match history
 CREATE VIEW vw_player_match_history AS
 SELECT
     m.match_id,
@@ -292,7 +275,7 @@ SELECT
 FROM MatchGame m
 INNER JOIN Player p ON m.player_id = p.player_id;
 
--- This one is the total fame acumulated
+-- View: total fame per player
 CREATE VIEW vw_player_total_fame AS
 SELECT
     p.player_id,
@@ -302,7 +285,7 @@ FROM Player p
 LEFT JOIN MatchGame m ON p.player_id = m.player_id
 GROUP BY p.player_id, p.username;
 
--- This also works both for the admin and user because it shows which cards the user uses the most
+-- View: most used cards per player
 CREATE VIEW vw_player_card_usage AS
 SELECT
     p.username,
@@ -315,7 +298,7 @@ INNER JOIN Player p ON m.player_id = p.player_id
 INNER JOIN Card c ON d.card_id = c.card_id
 GROUP BY p.username, c.card_name;
 
--- TRIGGER
+-- & TRIGGER
 -- Trigger: update player counters after inserting a match
 DELIMITER //
 CREATE TRIGGER trg_after_insert_match
@@ -337,7 +320,7 @@ BEGIN
 END //
 DELIMITER ;
 
--- Trigger: update user count when a new player is inserted
+-- Trigger: update user count when a new player registers
 DELIMITER //
 CREATE TRIGGER trg_after_insert_player
 AFTER INSERT ON Player
@@ -350,9 +333,8 @@ BEGIN
 END //
 DELIMITER ;
 
--- Trigger: each time a card is registered as used in Deck, add 1 to user_movement_count
+-- Trigger: count card usage in Statistics
 DELIMITER //
-
 CREATE TRIGGER trg_after_insert_deck
 AFTER INSERT ON Deck
 FOR EACH ROW
@@ -365,14 +347,12 @@ END //
 
 DELIMITER ;
 
--- STORED PROCEDURES
+-- & STORED PROCEDURES
 -- Stored Procedure: get all matches by player
 DELIMITER //
 CREATE PROCEDURE GetMatchesByPlayer(IN in_player_id SMALLINT UNSIGNED)
 BEGIN
-    SELECT *
-    FROM MatchGame
-    WHERE player_id = in_player_id;
+    SELECT * FROM MatchGame WHERE player_id = in_player_id;
 END //
 DELIMITER ;
 
@@ -399,9 +379,8 @@ BEGIN
 END //
 DELIMITER ;
 
---Obbtains cards for effect type (POWER UP OR PUNISHMENT)
+-- Stored Procedure: get cards by type (reads from Card directly)
 DELIMITER //
-
 CREATE PROCEDURE GetCardsByType(IN in_effect_type ENUM('POWER_UP', 'PUNISHMENT'))
 BEGIN
     SELECT
@@ -413,12 +392,10 @@ BEGIN
     FROM Card c
     WHERE c.effect_type = in_effect_type;
 END //
-
 DELIMITER ;
 
--- Stored procedure to get a match summary, for our socre scene
+-- Stored Procedure: match summary for score scene
 DELIMITER //
-
 CREATE PROCEDURE GetMatchSummary(IN in_match_id INT UNSIGNED)
 BEGIN
     SELECT
@@ -431,9 +408,7 @@ BEGIN
         m.life,
         m.result,
         COUNT(sl.specific_level_id) AS levels_played,
-        SUM(sl.fame_gained) AS total_fame_from_levels,
-        SUM(sl.powerups_obtained) AS total_powerups,
-        SUM(sl.punishments_obtained) AS total_punishments
+        SUM(sl.fame_gained) AS total_fame_from_levels
     FROM MatchGame m
     INNER JOIN Player p ON m.player_id = p.player_id
     INNER JOIN Archetype a ON m.archetype_id = a.archetype_id
@@ -441,32 +416,75 @@ BEGIN
     WHERE m.match_id = in_match_id
     GROUP BY m.match_id;
 END //
-
 DELIMITER ;
 
---Stored procedure to get used cards in a match
+-- Stored Procedure: get cards used in a match
 DELIMITER //
-
 CREATE PROCEDURE GetCardsUsedInMatch(IN in_match_id INT UNSIGNED)
 BEGIN
     SELECT
-        m.match_id,
-        sl.specific_level_id,
-        l.level_number,
+        d.deck_id,
         c.card_name,
         c.effect_type,
         d.use_time,
         c.duration
-    FROM MatchGame m
-    INNER JOIN SpecificLevel sl ON m.match_id = sl.match_id
-    INNER JOIN Level l ON sl.level_id = l.level_id
-    INNER JOIN Deck d ON sl.specific_level_id = d.specific_level_id
+    FROM Deck d
     INNER JOIN Card c ON d.card_id = c.card_id
     WHERE m.match_id = in_match_id
-    ORDER BY l.level_number, d.use_time;
+    ORDER BY d.use_time;
 END //
-
 DELIMITER ;
+
+-- VIEW CURRENT STATS
+CREATE OR REPLACE VIEW vw_player_current_state AS
+SELECT
+    p.player_id,
+    p.username,
+
+    -- datos del último match
+    m.match_id,
+    m.level_reached AS current_level,
+    m.final_fame AS current_fame,
+
+    -- agregados del match
+    IFNULL(sl.enemy_kills, 0) AS enemy_kills,
+    IFNULL(d.cards_in_deck, 0) AS cards_in_deck,
+
+    -- stats generales
+    p.total_runs,
+    p.total_wins,
+    p.total_losses
+
+FROM Player p
+
+--  último match
+LEFT JOIN MatchGame m 
+    ON m.match_id = (
+        SELECT MAX(match_id)
+        FROM MatchGame
+        WHERE player_id = p.player_id
+    )
+
+--  kills (subquery separada)
+LEFT JOIN (
+    SELECT
+        m.player_id,
+        m.match_id,
+        SUM(CASE WHEN sl.finished = TRUE THEN 1 ELSE 0 END) AS enemy_kills
+    FROM MatchGame m
+    LEFT JOIN SpecificLevel sl ON m.match_id = sl.match_id
+    GROUP BY m.match_id
+) sl ON sl.match_id = m.match_id
+
+--  deck count (subquery separada)
+LEFT JOIN (
+    SELECT
+        sl.match_id,
+        COUNT(DISTINCT d.deck_id) AS cards_in_deck
+    FROM SpecificLevel sl
+    LEFT JOIN Deck d ON sl.specific_level_id = d.specific_level_id
+    GROUP BY sl.match_id
+) d ON d.match_id = m.match_id;
 
 -- restores all the settings that were saved at the beginning
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

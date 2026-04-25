@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Gladiator Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -13,8 +14,8 @@
         <p>Fight, survive, and earn glory in the Roman Colosseum</p>
 
         <div class="tutorial">
-            <a href="story.html" class="tutorialButton" target="_blank">Story</a>
-            <a href="instructions.html" class="tutorialButton" target="_blank">Instructions</a>
+            <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#storyModal">Story</button>
+            <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#instructionsModal">Instructions</button>
         </div>
     </header>
 
@@ -43,43 +44,103 @@
             <button class="dropdownButton" onclick="toggleStats()">
                 Player Stats
             </button>
-
+            <button onclick="openStatsPage()" class="btn btn-dark">
+                View Global Stats
+            </button>
             <div class="statsContent" id="statsContent">
 
                 <div class="statRow">
+                    <span class="statLabel">Username</span>
+                    <span class="statValue" id="username">-</span>
+                </div>
+
+                <div class="statRow">
+                    <span class="statLabel">Current Level</span>
+                    <span class="statValue" id="level">-</span>
+                </div>
+
+                <div class="statRow">
+                    <span class="statLabel">Fame</span>
+                    <span class="statValue" id="fame">-</span>
+                </div>
+
+                <div class="statRow">
+                    <span class="statLabel">Enemies Defeated</span>
+                    <span class="statValue" id="kills">-</span>
+                </div>
+
+                <div class="statRow">
+                    <span class="statLabel">Cards in Deck</span>
+                    <span class="statValue" id="cards">-</span>
+                </div>
+
+                <hr>
+
+                <div class="statRow">
                     <span class="statLabel">Total Runs</span>
-                    <span class="statValue">8</span>
+                    <span class="statValue" id="runs">-</span>
                 </div>
 
                 <div class="statRow">
                     <span class="statLabel">Wins</span>
-                    <span class="statValue">3</span>
+                    <span class="statValue" id="wins">-</span>
                 </div>
 
                 <div class="statRow">
                     <span class="statLabel">Defeats</span>
-                    <span class="statValue">5</span>
-                </div>
-
-                <div class="statRow">
-                    <span class="statLabel">Most Used Archetype</span>
-                    <span class="statValue">Warrior</span>
-                </div>
-
-                <div class="statRow">
-                    <span class="statLabel">Most Used Card</span>
-                    <span class="statValue">Shield Bash</span>
-                </div>
-
-                <div class="statRow">
-                    <span class="statLabel">Avg Completion Time</span>
-                    <span class="statValue">02:35</span>
+                    <span class="statValue" id="losses">-</span>
                 </div>
 
             </div>
+            
         </section>
 
     </main>
+
+    <!-- STORY MODAL -->
+    <div class="modal fade" id="storyModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="pixelText">STORY</h1>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Long ago, in the heart of the Roman Empire, the Colosseum stood as a symbol of power, blood, and glory. Warriors from distant lands were captured, trained, and forced to fight for the entertainment of the masses.</p>
+                    <p>You are one of them.</p>
+                    <p>A gladiator thrown into the arena with nothing but your weapon and your will to survive. Each battle brings new dangers, stronger enemies, and the unpredictable favor of the crowd.</p>
+                    <p>The Emperor watches. The people demand spectacle.</p>
+                    <p>Will you rise as a legend… or fall forgotten in the sand?</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INSTRUCTIONS MODAL -->
+    <div class="modal fade" id="instructionsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="pixelText">INSTRUCTIONS</h1>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h2>OBJECTIVE</h2>
+                    <p>Defeat the required number of enemies to complete each level. Survive long enough and prove your strength in the arena.</p>
+                    <h2>CONTROLS</h2>
+                    <p>← : Move Left</p>
+                    <p>→ : Move Right</p>
+                    <p>Space : Jump</p>
+                    <p>J : Attack</p>
+                    <h2>GAMEPLAY</h2>
+                    <p>Move across obstacles, avoid falling, and fight enemies. Each level becomes more dangerous as stronger enemies appear.</p>
+                    <p>During the match, you will be offered cards that can either help you or punish you. Choose wisely, every decision affects your survival.</p>
+                    <h2>IMPORTANT</h2>
+                    <p>If you die, you lose a life and restart the level. If you lose all your lives, the game is over and you restart from Level 1.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
     function toggleDescription() {
@@ -96,8 +157,14 @@
 
     window.toggleStats = toggleStats;
     window.toggleDescription = toggleDescription;
+
+    function openStatsPage() {
+        window.open("stats.html", "_blank");
+    }
+    window.openStatsPage = openStatsPage;
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="main.js"></script>
 </body>
 </html>

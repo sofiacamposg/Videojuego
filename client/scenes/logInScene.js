@@ -200,6 +200,7 @@ async function loginUser(){
         }
 
         const data = await res.json();
+        window.loggedPlayer = data;
         console.log("USER LOGGED:", data);
 
         loginSuccess = true; 

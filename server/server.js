@@ -1,3 +1,12 @@
+//=====IMPORTS=====
+const express = require("express");
+const mysql = require("mysql2");
+const app = express();
+//=====CONFIG=====
+const cors = require("cors");
+app.use(cors());
+app.use(express.json());
+
 /* entra a mysql desde la terminal (sudo mysql) y pon los comandos:
 * CREATE USER 'gladiator'@'localhost' IDENTIFIED BY 'gladiator123';
 que hace? crea un usuario llamado gladiator que se conecta desde esta misma computadora, con contraseña gladiator123
@@ -15,14 +24,7 @@ y ya luego encienden la api
 * node server.js
 si jala tiene que salir lo de Servidor en 'link' MySQL conectado
 */
-const express = require("express");
-const mysql = require("mysql2");
-const cors = require("cors");
 
-const app = express();
-
-app.use(cors());
-app.use(express.json());
 //=====DB CONNECTION =======
 const db = mysql.createConnection({
     host: "localhost",
@@ -142,8 +144,7 @@ app.get("/cards/random", (req, res) => {
     db.query(query, (err, result) => {
         if (err) {
             console.log(err);
-            res.send(err.message);
-            return;
+            return res.status(500).json({ error: err.message }); //send proper error status so the frontend catch picks it up
         }
 
         res.json(result);
@@ -324,4 +325,23 @@ app.get("/stats", (req, res) => {
 
 app.listen(3000, () => {
     console.log("Servidor en http://localhost:3000 ");
+});
+//================== PLAYER CURRENT STATE ====================
+app.get("/player/live/:id", (req, res) => {
+    db.query(
+        "SELECT * FROM vw_player_current_state WHERE player_id = ?",
+        [req.params.id],
+        (err, result) => {
+            if (err) {
+                console.log("ERROR:", err);
+                return res.status(500).send(err.message);
+            }
+
+            if (result.length === 0) {
+                return res.status(404).json({ error: "Player not found" });
+            }
+
+            res.json(result[0]);
+        }
+    );
 });

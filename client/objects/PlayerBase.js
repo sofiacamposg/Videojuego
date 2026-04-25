@@ -27,6 +27,7 @@ class PlayerBase extends AnimatedObject {
     this.maxHp = maxHp;
     this.speed = speed;
     this.damage = damage;
+    this.coins = 0; //coins to buy upgrades in the game
 
     this.setAnimation(0, 3, true, 200); 
     this.velocityY = 0;
@@ -55,7 +56,7 @@ class PlayerBase extends AnimatedObject {
     this.playeratack = false;
     this.attackFrames = 0;
     this.attackDuration = 10;
-     //hitbox for platform colission
+     //hitbox platform colission
     this.hitbox = {
         width: 40,   // AJUSTA esto
         height: 80   // AJUSTA esto
@@ -71,6 +72,9 @@ class PlayerBase extends AnimatedObject {
     this.lifeSteal = false;
     this.hearts = 5;
     this.maxHearts = 5;
+    this.range = 1;
+    this.doubleDeath = false;
+    this.cardCostHP = false;
   }
 
   update(goLeft, goRight, jumpPressed, platforms, groundY, deltaTime){  //manage movement, hurtbox, attack
@@ -169,8 +173,10 @@ class PlayerBase extends AnimatedObject {
   }
   
   takeDamage(hit){  //damage made by enemy, look EnemyBase to understand the whole logic
+    if (this.invincible) { this.invincible = false; return; }  //divine shield effect
     this.hp -= hit;
     if (this.hp <= 0) {
+      if (this.doubleDeath) { this.hearts -= 1; this.doubleDeath = false; }  //senates judgment effect
       this.hearts--;  //lose a heart
       if (this.hearts > 0) {
         this.hp = this.maxHp;  //reset hp for next heart
@@ -196,16 +202,16 @@ class PlayerBase extends AnimatedObject {
   createHitbox(){  //data hitbox, left/right
     if (this.direction === "right") {
       this.attackHitbox = {
-        x: this.position.x + this.halfSize.x + this.HITBOX_OFFSET,
+        x: (this.position.x + this.halfSize.x + this.HITBOX_OFFSET),
         y: this.position.y - this.HITBOX_HEIGHT * 1.2,
-        width: this.HITBOX_WIDTH,
+        width: this.HITBOX_WIDTH * this.range,
         height: this.HITBOX_HEIGHT
       };
     } else {
       this.attackHitbox = {
-        x: this.position.x - this.halfSize.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET,
+        x: (this.position.x - this.halfSize.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET),
         y: this.position.y - this.HITBOX_HEIGHT * 1.2,
-        width: this.HITBOX_WIDTH,
+        width: this.HITBOX_WIDTH * this.range,
         height: this.HITBOX_HEIGHT
       };
     }

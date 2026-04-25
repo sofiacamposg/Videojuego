@@ -67,12 +67,12 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 'POWER_UP', 'TEMPORARY', 
 'player', 'range', '*', '/', 1.3, 1.3, 8000),
 
-('Eye of the Emperor', --TODO
-'Reveals the type of the next 3 cards before selection', 
-'POWER_UP', 'PERMANENT', 
+('Eye of the Emperor', -- TODO
+'Reveals the type of the next 3 cards before selection',
+'POWER_UP', 'PERMANENT',
 'game', 'revealNextCard', '=', '=', 1.0, 0.0, 0),
----
-('Imperial Decreee',   --TODO
+
+('Imperial Decreee', -- TODO
 '2 additional enemies spawn immediately', 
 'PUNISHMENT', 'PERMANENT', 
 'game', 'spawnExtra', '=', '=', 2.0, 0.0, 0),
@@ -82,7 +82,7 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 'PUNISHMENT', 'TEMPORARY', 
 'player', 'canJump', '=', '=', 0.0, 1.0, 10000),
 
-('Hunger of the Plebs',   --TODO
+('Hunger of the Plebs',   -- TODO
 'Using any card costs half a heart of health', 
 'PUNISHMENT', 'PERMANENT', 
 'player', 'cardCostHP', '=', '=', 1.0, 0.0, 0),
@@ -92,7 +92,7 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 'PUNISHMENT', 'PERMANENT', 
 'player', 'hearts', '-', '+', 1.0, 1.0, 0),
 
-('Ampitheatre Fog', --TODO
+('Ampitheatre Fog', -- TODO
 'Screen is partially darkened for 12 seconds', 
 'PUNISHMENT', 'TEMPORARY', 
 'game', 'fogActive', '=', '=', 1.0, 0.0, 12000),
@@ -192,18 +192,88 @@ INSERT INTO MatchGame (player_id, archetype_id, end_time, duration_seconds, leve
 (28, 2, NOW(), 260, 3, 215, 4, 'WIN');
 COMMIT;
 
--- Dummy data for SpecificLevel
+-- Dummy data for LevelCard
 SET AUTOCOMMIT = 0;
-INSERT INTO SpecificLevel (
-    match_id, level_id, completion_time, remaining_hp, fame_gained,
-    powerups_obtained, punishments_obtained, finished
-) VALUES
-(1, 1, 50, 90, 20, 2, 1, TRUE),
-(1, 2, 60, 70, 30, 1, 1, TRUE),
-(1, 3, 70, 40, 70, 1, 2, TRUE),
-(2, 1, 45, 80, 25, 2, 1, TRUE),
-(2, 2, 95, 20, 45, 1, 2, FALSE),
-(3, 1, 40, 120, 35, 2, 1, TRUE);
+INSERT INTO LevelCard (player_id, card_id) VALUES
+(1,  1),
+(1,  3),
+(2,  2),
+(2,  5),
+(3,  4),
+(3,  7),
+(4,  1),
+(5,  6),
+(5,  8),
+(6,  2),
+(7,  3),
+(7,  9),
+(8,  4),
+(9,  5),
+(9,  10),
+(10, 6),
+(11, 7),
+(12, 8),
+(13, 9),
+(13, 11),
+(14, 10),
+(15, 12),
+(16, 1),
+(17, 13),
+(18, 2),
+(19, 14),
+(20, 15),
+(21, 3),
+(22, 4),
+(23, 5);
+COMMIT;
+
+-- Dummy data for SpecificLevel (30 rows across 13 matches)
+-- enemy_id matches level_id: level 1 → Lion(1), level 2 → Tiger(2), level 3 → Boar(3)
+SET AUTOCOMMIT = 0;
+INSERT INTO SpecificLevel (match_id, level_id, enemy_id, finished, level_card_id, completion_time, remaining_hp, fame_gained) VALUES
+-- match 1 (WIN, level 3)
+(1,  1, 1, TRUE,   1,  45, 90,  25),
+(1,  2, 2, TRUE,   2,  55, 70,  35),
+(1,  3, 3, TRUE,   3,  70, 40,  60),
+-- match 2 (LOSE, level 2)
+(2,  1, 1, TRUE,   4,  40, 80,  20),
+(2,  2, 2, FALSE,  5,  90, 20,  30),
+-- match 3 (WIN, level 3)
+(3,  1, 1, TRUE,   6,  38, 110, 30),
+(3,  2, 2, TRUE,   7,  52, 85,  40),
+(3,  3, 3, TRUE,   8,  65, 60,  65),
+-- match 4 (LOSE, level 1)
+(4,  1, 1, FALSE,  9,  88, 15,  10),
+-- match 5 (WIN, level 3)
+(5,  1, 1, TRUE,  10,  35, 95,  28),
+(5,  2, 2, TRUE,  11,  48, 75,  38),
+(5,  3, 3, TRUE,  12,  60, 50,  70),
+-- match 6 (LOSE, level 2)
+(6,  1, 1, TRUE,  13,  42, 85,  22),
+(6,  2, 2, FALSE, 14,  95, 10,  15),
+-- match 7 (WIN, level 3)
+(7,  1, 1, TRUE,  15,  40, 100, 26),
+(7,  2, 2, TRUE,  16,  58, 80,  36),
+(7,  3, 3, TRUE,  17,  72, 55,  68),
+-- match 8 (LOSE, level 1)
+(8,  1, 1, FALSE, 18,  75,  5,   8),
+-- match 9 (WIN, level 3)
+(9,  1, 1, TRUE,  19,  33, 120, 32),
+(9,  2, 2, TRUE,  20,  45, 90,  42),
+(9,  3, 3, TRUE,  21,  58, 65,  75),
+-- match 10 (LOSE, level 2)
+(10, 1, 1, TRUE,  22,  50, 70,  18),
+(10, 2, 2, FALSE, 23,  85, 15,  12),
+-- match 11 (WIN, level 3)
+(11, 1, 1, TRUE,  24,  37, 105, 30),
+(11, 2, 2, TRUE,  25,  50, 80,  40),
+(11, 3, 3, TRUE,  26,  68, 45,  72),
+-- match 12 (LOSE, level 1)
+(12, 1, 1, FALSE, 27,  92,  8,   5),
+-- match 13 (WIN, level 3)
+(13, 1, 1, TRUE,  28,  36, 115, 27),
+(13, 2, 2, TRUE,  29,  49, 88,  37),
+(13, 3, 3, TRUE,  30,  63, 58,  67);
 COMMIT;
 
 -- Dummy data for Deck
@@ -220,10 +290,11 @@ COMMIT;
 -- Dummy data for Statistics
 SET AUTOCOMMIT = 0;
 INSERT INTO Statistics (
+    name, username, password,
     logins_count, users_count, user_movements_count,
     matches_count, wins_count, losses_count, admin_log
 ) VALUES
-(25, 3, 140, 3, 2, 1, 'Initial dummy data loaded');
+('Admin', 'admin', 'hashed_admin_password', 25, 3, 140, 3, 2, 1, 'Initial dummy data loaded');
 COMMIT;
 
 SET AUTOCOMMIT = 0;
