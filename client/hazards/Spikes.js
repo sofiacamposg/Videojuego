@@ -11,7 +11,7 @@ class Spikes {
         this.damageCooldownMax = 800;
 
         this.image = new Image();
-this.image.src = "./assets/Spikes.png";
+        this.image.src = "./assets/Spikes.png";
     }
 
     update(player, deltaTime){

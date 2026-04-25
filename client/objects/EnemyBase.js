@@ -42,7 +42,7 @@ class EnemyBase extends AnimatedObject {
     this.spriteRect = new Rect(0, 0, 575, 608);
     this.setAnimation(0, 3, true, 200);
     //hitbox data
-    this.HITBOX_WIDTH = 60;
+    this.HITBOX_WIDTH = 70;
     this.HITBOX_HEIGHT = 50;
     this.HITBOX_OFFSET = 70;
     //attack data
@@ -56,7 +56,7 @@ class EnemyBase extends AnimatedObject {
   update(player, deltaTime) {  //manage movement, hurtbox, attack
     this.walk(deltaTime);  //movement in x
     this.updateCollider();  //move de hurtbox with the enemy position
-    this.attackHitbox = null;  //hitbox not activated
+    this.createHitbox();
 
     //attack funtions
     this.shouldAttack(player, deltaTime); // is the player near enough to attack him?
@@ -88,9 +88,12 @@ class EnemyBase extends AnimatedObject {
     }
   }
 
-  createHitbox() {  //data hitbox
+  createHitbox() {
+    const facingRight = this.speed < 0;
     this.attackHitbox = {
-      x: this.position.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET,
+      x: facingRight
+        ? this.position.x + this.HITBOX_OFFSET
+        : this.position.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET,
       y: this.position.y - this.HITBOX_HEIGHT * 1.5,
       width: this.HITBOX_WIDTH,
       height: this.HITBOX_HEIGHT,
@@ -98,11 +101,10 @@ class EnemyBase extends AnimatedObject {
   }
 
   shouldAttack(player, deltaTime){  //logic to know when to attack
-    //is my hitbox and his hurtbox touhing and is infront of me?
-    if (hitboxOverlap(this.collider, player)) {
+    //is my hitbox and his hurtbox touhing and is in front of me?
+    if (hitboxOverlap(this.attackHitbox, player)) {
       this.spriteImage = (this.speed < 0) ? this.attackRight : this.attackLeft;
       this.updateAnimation(20);
-      this.createHitbox();  //ememy hitbox to attack
       this.attackFrames += deltaTime;  
       if (this.attackFrames >= this.attackDuration) {  //if enemy already hit the player
         this.attackFrames = 0;  //reset everything
