@@ -118,6 +118,7 @@ class cardsOnCanvas {
                 card,
                 player:  this._player,
                 enemies: this._enemies,
+                game:    this._game,
                 endTime: card.duration
             });
         }
@@ -130,7 +131,7 @@ class cardsOnCanvas {
         this.activeEffects = this.activeEffects.filter(effect => {
             effect.endTime -= deltaTime;
             if (effect.endTime <= 0) {
-                effect.card.removeEffect(effect.player, effect.enemies);
+                effect.card.removeEffect(effect.player, effect.enemies, effect.game);
                 return false;
             }
             return true;
