@@ -45,7 +45,8 @@ export const level1Config = {  //   TODO agregar muerte del lado derecho
         walkLeftSrc: "./assets/enemy1/walkLeft.png",
         attackRightSrc: "./assets/enemy1/attackRight.png",
         attackLeftSrc: "./assets/enemy1/attackLeft.png",
-        deathSrc: "./assets/enemy1/death.png",
+        deathLeftSrc: "./assets/enemy1/deathLeft.png",
+        deathRightSrc: "./assets/enemy1/deathRight.png",
     },
 
     spawnPositions: [
@@ -66,7 +67,9 @@ export const level2Config = {
         walkLeftSrc: "./assets/enemy2/walkLeft.png",
         attackRightSrc: "./assets/enemy2/attackRight.png",
         attackLeftSrc: "./assets/enemy2/attackLeft.png",
-        deathSrc: "./assets/enemy2/death.png",
+        deathLeftSrc: "./assets/enemy2/death.png",
+        deathRightSrc: "./assets/enemy1/deathRight.png",
+
     },
 
     spawnPositions: [
@@ -86,11 +89,13 @@ export const level3Config = {
         walkLeftSrc: "./assets/enemy3/walkLeft.png",
         attackRightSrc: "./assets/enemy3/attackRight.png",
         attackLeftSrc: "./assets/enemy3/attackLeft.png",
-        deathSrc: "./assets/enemy3/death.png",
+        deathLeftSrc: "./assets/enemy3/death.png",
+        deathRightSrc: "./assets/enemy1/deathRight.png",
+
     },
 
     spawnPositions: [
-        {x: 800, y: 450},
+        {x: 700, y: 450},
         {x: 1000, y: 450}
     ]
 };

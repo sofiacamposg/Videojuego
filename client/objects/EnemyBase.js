@@ -15,7 +15,8 @@ class EnemyBase extends AnimatedObject {
       walkLeftSrc = "",
       attackRightSrc = "",
       attackLeftSrc = "",
-      deathSrc = "",
+      deathLeftSrc = "",
+      deathRightSrc = "",
     } = config;
 
     super(position, 200, 200, "white", "enemy", 4);
@@ -35,8 +36,10 @@ class EnemyBase extends AnimatedObject {
     this.attackRight.src = attackRightSrc;
     this.attackLeft = new Image(); 
     this.attackLeft.src = attackLeftSrc;
-    this.spriteDeath = new Image();
-    this.spriteDeath.src = deathSrc;
+    this.spriteDeathLeft = new Image();
+    this.spriteDeathLeft.src = deathLeftSrc;
+    this.spriteDeathRight = new Image();
+    this.spriteDeathRight.src = deathRightSrc;
 
     this.spriteImage = this.spriteLeft;
     this.spriteRect = new Rect(0, 0, 575, 608);
@@ -49,11 +52,22 @@ class EnemyBase extends AnimatedObject {
     this.attackFrames = 0;
     this.attackDuration = 1000;
     this.attackHitbox = null;
+    this.isDying = false;
+    this.deathTimer = 0;
+    this.DEATH_DURATION = 400;
     this.hasHitPlayer = false;  //flag to limit only one hit per swing
     this.isSlowed = false; //lions roar effect
   }
 
   update(player, deltaTime) {  //manage movement, hurtbox, attack
+    if (this.hp <= 0) {
+      this.updateAnimation(deltaTime);
+      this.deathTimer += deltaTime;
+      if (this.deathTimer >= this.DEATH_DURATION) {
+        this.isDying = true;
+      }
+      return;
+    }
     this.walk(deltaTime);  //movement in x
     this.updateCollider();  //move de hurtbox with the enemy position
     this.createHitbox();
@@ -77,15 +91,17 @@ class EnemyBase extends AnimatedObject {
   }
 
   takeDamage(hit, player) {  //damage made by player, look Playerbase to understand the whole logic
+    if (this.hp <= 0) return;  //if is dead, can´t take any more damage either reset the animation
     this.hp -= hit;
-    if (this.hp <= 0) {  //TODO hacer el flag de dying para que aparezca la animación
-      this.spriteImage = this.spriteDeath;
-      this.updateAnimation(500);
+    if (this.hp <= 0) {  //start animation of dying
       this.hp = 0;
-      if (player.lifeSteal){
-        player.hp = (player.hp >= player.maxHp) ? player.maxHp : player.hp + 20;
+      this.spriteImage = (this.speed < 0) ? this.spriteDeathRight : this.spriteDeathLeft;
+      this.setAnimation(0, 3, false, 100);  //faster and false to not repeat the animation
+      if (player.lifeSteal){  //gladiators blood effect
+        player.hp = Math.min(player.hp + 20, player.maxHp);  
       }
     }
+
   }
 
   createHitbox() {

@@ -391,7 +391,7 @@ function update(deltaTime){
     player.attackEnemy(enemies);
 
     let totalLenEnemies = enemies.length;
-    enemies = enemies.filter(alive => alive.hp > 0);  //remove dead enemies
+    enemies = enemies.filter(alive => !alive.isDying);  //remove dead enemies
     let prevKilled = killedEnemies;
     killedEnemies += totalLenEnemies - enemies.length;
     updateCoins(player, prevKilled, killedEnemies);
