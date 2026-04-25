@@ -1,7 +1,7 @@
 //LEVEL CONFIGURATIONS
 //Player Configurations 
 export const playerConfigs = {
-    Guerrero: {
+    Warrior: {
         hp: 120, maxHp: 120, speed: 0.5, damage: 20,
         walkRightSrc: "./assets/player1/1.png",
         walkLeftSrc: "./assets/player1/2.png",
@@ -11,7 +11,7 @@ export const playerConfigs = {
         attackLeftSrc: "./assets/player1/attackleft.png",
     },
 
-    Lancero: {
+    Lancer: {
     hp: 100, maxHp: 100, speed: 0.6, damage: 25,
     walkRightSrc:   "./assets/player2/5.png",
     walkLeftSrc:    "./assets/player2/6.png",
@@ -21,7 +21,7 @@ export const playerConfigs = {
     attackLeftSrc:  "./assets/player2/attackleft.png",
 },
 
-    Pesado: {
+    Heavy: {
     hp: 150, maxHp: 150, speed: 0.4, damage: 15,
     walkRightSrc:   "./assets/player3/9.png",
     walkLeftSrc:    "./assets/player3/10.png",

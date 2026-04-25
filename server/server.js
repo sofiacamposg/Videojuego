@@ -15,6 +15,14 @@ y ya luego encienden la api
 * node server.js
 si jala tiene que salir lo de Servidor en 'link' MySQL conectado
 */
+const express = require("express");
+const mysql = require("mysql2");
+const cors = require("cors");
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
 //=====DB CONNECTION =======
 const db = mysql.createConnection({
     host: "localhost",
