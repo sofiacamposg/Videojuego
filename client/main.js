@@ -253,7 +253,8 @@ function main() {
 
 function gameLoop(newTime) {
     let deltaTime = (newTime - oldTime);
-    if (deltaTime > 50) deltaTime = 50; 
+    oldTime = newTime;
+    //if (deltaTime > 50) deltaTime = 50; 
 
     if(currentScene === "level1" && nextLevelLevel1){
         currentPlayer = getPlayerLevel1();

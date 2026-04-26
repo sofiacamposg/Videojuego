@@ -20,23 +20,28 @@ let worldWidth = 2000;
 let worldHeight = 600;
 let cameraX = 0;
 let canvasRef = { width: 1000 };
+let cameraX = 0;
+let canvasRef = { width: 1000 };
 
 let mouseX = 0
 let mouseY = 0
 
 let player
 let nextLevelLevel1 = false;
+let nextLevelLevel1 = false;
 
 let levelTimer = 0;
-
-// random trigger between 20s and 40s (considering 1 minute per level)
 let randomEventTime = Math.random() * (40000 - 20000) + 20000;
 
 let keysDown = {};
 let jumpPressed = false;
 
 let killedEnemies = 0;
-const conditionEnemies = 10;
+const conditionEnemies = 1;
+
+// Sonido de ataque
+const swordSound = new Audio("./assets/music/ataque_espada.mp3");
+swordSound.volume = 0.5;
 
 //========================= CARD SYSTEM =========================
 let cardEventTriggered = false;
@@ -272,7 +277,7 @@ function drawLevel1(ctx, canvas, deltaTime){
     for(let i = 0; i < worldWidth; i += canvas.width){
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height);
     }
-
+    //TODO
     if(!isPaused && (!cardSystem.isActive || showDeckPreview)){
         update(deltaTime);
     }
@@ -305,6 +310,10 @@ function drawLevel1(ctx, canvas, deltaTime){
     }
 
     // cardsOnCanvas dibuja la selección de cartas y el deck del jugador
+    if(levelCompleted){
+        levelCompletedBox.draw(ctx);
+    }
+
     cardSystem.draw(ctx, canvas);
     cardSystem.drawDeck(ctx, canvas);
 
@@ -496,6 +505,8 @@ function handleKeyDownLevel1(event){
         if(!player.playeratack){
             player.playeratack = true;
             player.attackFrames = 0;
+            swordSound.currentTime = 0;
+            swordSound.play();
         }
     }
 }

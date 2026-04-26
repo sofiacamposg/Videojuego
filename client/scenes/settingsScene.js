@@ -29,11 +29,13 @@ const volumeBar = { x: 500, y: 400, w: 300, h: 30 };
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
+// Referencia a la música
+const bgMusic = document.getElementById("bgMusic");
+
 // Dibuja toda la pantalla de settings
 function drawSettings(ctx, canvas) {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(backgroundImage,0,0,canvas.width,canvas.height);
-
 
     ctx.fillStyle = "white";
     ctx.font = "40px 'VT323'";
@@ -50,7 +52,7 @@ function drawSettings(ctx, canvas) {
     drawToggle(ctx); // botón ON/OFF
     if(volumeOn) drawVolumeBar(ctx); // solo muestra barra si está encendido
 
-     // botones reutilizables
+    // botones reutilizables
     drawButton(ctx, buttonBack, mouseX, mouseY);
     drawButton(ctx, buttonConfirm, mouseX, mouseY);
 }
@@ -124,6 +126,11 @@ function handleClickSettings(ctx){
     if(handleClick(mouseX, mouseY, buttonConfirm, ctx)){
         savedVolumeOn = volumeOn;
         savedVolumeLevel = volumeLevel;
+
+        // Aplica los cambios a la música
+        bgMusic.muted = !savedVolumeOn;
+        bgMusic.volume = savedVolumeLevel / 100;
+
         return "confirm";
     }
 
@@ -145,7 +152,6 @@ function startDragging(){
 function stopDragging(){
     draggingVolume = false;
 }
-
 
 // Se ejecuta cuando entras a settings
 function resetSettings(){
