@@ -5,7 +5,7 @@ import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
 import { applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
 import { handleMouseMove } from "../libs/game_functions.js";
 import { level1Config, playerConfigs } from "../libs/levelConfig.js";
-import { spawnEnemy, generatePlatform, updateCamera, updateCoins, drawCoins, saveMatch, drawFog, imperialDecree } from "../libs/level_functions.js";
+import { spawnEnemy, generatePlatform, updateCamera, updateCoins, drawCoins, saveMatch, drawFog, imperialDecree, loadPlayerStats } from "../libs/level_functions.js";
 "use strict"
 
 let currentLevelConfig = level1Config;
@@ -20,14 +20,11 @@ let worldWidth = 2000;
 let worldHeight = 600;
 let cameraX = 0;
 let canvasRef = { width: 1000 };
-let cameraX = 0;
-let canvasRef = { width: 1000 };
 
 let mouseX = 0
 let mouseY = 0
 
 let player
-let nextLevelLevel1 = false;
 let nextLevelLevel1 = false;
 
 let levelTimer = 0;
@@ -139,7 +136,7 @@ let gameOverBox = new MessageBox(
 gameOverBox.addButton("Restart", 440, 340, 120, 35, async () => {
     console.log("RESTART GAME OVER CLICKED");
     //Updates live stats, runs and defeats
-    await saveMatch({
+    await saveMatch({  //TODO
         player_id: window.loggedPlayer.player_id,
         archetype_id: 1, //NO SIRVE, CAMBIARLO, ES HARDCORE
         duration_seconds: Math.floor(levelTimer / 1000),
@@ -238,7 +235,8 @@ async function triggerCardEvent(){
 
 //================ REWARD CARDS FOR LEVEL TRANSITION =====================
 async function giveLevelRewards(){
-    const rewardCount = levelTimer < 60000 ? 2 : 1;  //if the player beat the level fast (under 60s) they get 2 cards, otherwise just 1
+    // targetTime lives in levelConfig so it can also be used for fame calculations
+    const rewardCount = levelTimer < currentLevelConfig.targetTime ? 2 : 1;
 
     try {
         const response = await fetch("http://localhost:3000/cards/random");  //ask the server for random cards
@@ -294,7 +292,7 @@ function drawLevel1(ctx, canvas, deltaTime){
     drawFog(ctx, canvas, game);  //amphitheatre fog effect
 
     drawHealthBar(ctx, 30, 20, 100, 30, player.hp, player.maxHp);
-    ctx.font = "50px Arial";
+    ctx.font = "50px VT323";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     drawCoins(ctx, 30, 100, player.coins);
     pauseBox.draw(ctx);
@@ -304,11 +302,7 @@ function drawLevel1(ctx, canvas, deltaTime){
         gameOverBox.draw(ctx);
         return;
     }
-
-    if(levelCompleted){
-        levelCompletedBox.draw(ctx);
-    }
-
+    
     // cardsOnCanvas dibuja la selección de cartas y el deck del jugador
     if(levelCompleted){
         levelCompletedBox.draw(ctx);
@@ -429,7 +423,7 @@ function update(deltaTime){
             result: "WIN"
         });
         //Reload Player Stats
-        loadPlayerStats(window.loggedPlayer.player_id);
+        loadPlayerStats(window.loggedPlayer.player_id, "level1");
     }
 
     cameraX = updateCamera(player.position.x, canvasRef.width, worldWidth);

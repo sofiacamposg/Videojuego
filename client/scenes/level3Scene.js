@@ -11,10 +11,12 @@ import { Spikes } from "../hazards/Spikes.js";
 "use strict"
 
 let currentLevelConfig = level3Config;
-function setPlayerLevel3(existingPlayer){
+function setPlayerLevel3(existingPlayer, deck = []){
     player = existingPlayer;
+    //carry over the cards the player earned in previous levels
+    cardSystem.playerDeck = [...deck];
     initPlatforms();
-    gameCompleted = false;  
+    gameCompleted = false;
     levelCompleted = false;
     showDeckPreview = false;
     deckPreviewTimer = 0;

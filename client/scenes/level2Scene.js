@@ -10,8 +10,10 @@ import { FirePit } from "../hazards/FirePit.js";
 "use strict"
 
 let currentLevelConfig = level2Config;
-function setPlayerLevel2(existingPlayer){
+function setPlayerLevel2(existingPlayer, deck = []){
     player = existingPlayer;
+    //carry over the cards the player earned in the previous level
+    cardSystem.playerDeck = [...deck];
     initPlatforms();
 }
 //========================= GAME CORE VARIABLES =========================
@@ -500,3 +502,8 @@ export {
     goToMenuLevel2,
     nextLevelLevel2
 }
+export {
+    killedEnemies,
+    currentLevel,
+    cardSystem
+};

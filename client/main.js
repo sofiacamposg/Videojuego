@@ -10,19 +10,20 @@ handleKeyDownLevel3, handleKeyUpLevel3, goToMenuLevel3, isGameCompleted } from "
 import { drawCreateAccount, handleMouseMoveCreateAccount, handleClickCreateAccount, handleKeyDownCreateAccount, resetCreateAccount } from "./scenes/createAccountScene.js";
 import { drawSettings, handleMouseMoveSettings, handleClickSettings, startDragging, stopDragging, resetSettings } from "./scenes/settingsScene.js";
 import { drawScoreScene, handleClickScoreScene } from "./scenes/scoreScene.js";
+import { loadPlayerStats } from "./libs/level_functions.js";
 //API update (THIS RIGHT NOW ISNT FROM API, INSTEAD OF POSTING AND THENN GETTING, WE JUST GRABBING JS VARIABLES)
 import {
     killedEnemies,
     currentLevel,
     cardSystem
 } from "./scenes/level1Scene.js";
-/*import {
+import {
     killedEnemies as killedEnemies2,
     currentLevel as currentLevel2,
     cardSystem as cardSystem2
 } from "./scenes/level2Scene.js";
 
-import {
+/*import {
     killedEnemies as killedEnemies3,
     currentLevel as currentLevel3,
     cardSystem as cardSystem3
@@ -39,6 +40,7 @@ let currentPlayer = null;
 let selectedCharacter = null;
 
 //API Connection, current player stats
+/*moved to level_functions.js
 async function loadPlayerStats(playerId) {
     console.log("LOADING STATS...");
     try {
@@ -63,6 +65,7 @@ async function loadPlayerStats(playerId) {
         console.error("Error loading player stats:", err);
     }
 }
+*/
 //This is beacause there are some variables that update in JS
 function updateLiveStats() {
     if (!window.loggedPlayer) return;
@@ -166,7 +169,7 @@ function main() {
                 currentPlayer = getPlayerLevel1();
                 //API
                 setTimeout(() => {
-                    loadPlayerStats(window.loggedPlayer.player_id);
+                    loadPlayerStats(window.loggedPlayer.player_id, currentScene);
                 }, 500);
                 currentScene = 'level1';
             }
@@ -258,13 +261,13 @@ function gameLoop(newTime) {
 
     if(currentScene === "level1" && nextLevelLevel1){
         currentPlayer = getPlayerLevel1();
-        setPlayerLevel2(currentPlayer);
+        setPlayerLevel2(currentPlayer, cardSystem.playerDeck);
         resetLevel1();
         currentScene = "level2";
     }
     if(currentScene === "level2" && nextLevelLevel2){
         currentPlayer = getPlayerLevel2();
-        setPlayerLevel3(currentPlayer);
+        setPlayerLevel3(currentPlayer, cardSystem2.playerDeck);
         resetLevel2();
         currentScene = "level3";
     }
@@ -296,4 +299,3 @@ function gameLoop(newTime) {
 }
 
 main();
-export { loadPlayerStats };
