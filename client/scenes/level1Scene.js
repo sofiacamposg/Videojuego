@@ -51,17 +51,17 @@ const game = {
 };
 
 
-//========================= PAUSE SYSTEM =========================
+//========================= PAUSE SYSTEM ========================= 
 let isPaused = false;
 let goToMenuLevel1 = false;
 
-let pauseBox = new MessageBox(
+let pauseBox = new MessageBox(  //-> level funtion
     "PAUSED",
     "Game is paused",
     250, 150, 500, 300
 );
 
-//========================= CONFIRM BOX =========================
+//========================= CONFIRM BOX ========================= -> level function
 let confirmBox = new MessageBox(
     "ARE YOU SURE?",
     "",
@@ -99,7 +99,7 @@ pauseBox.addButton("Home", 440, 390, 120, 35, () => {
     };
     confirmBox.show();
 });
-//====LEVEL TRANSITION MESSAGE BOX AND BUTTON NEXT LEVEL======
+//====LEVEL TRANSITION MESSAGE BOX AND BUTTON NEXT LEVEL======  -> level function
 let levelCompletedBox = new MessageBox(
     "LEVEL COMPLETED",
     "You survived the arena.\n The emperor is watching, do your best!",
@@ -126,7 +126,7 @@ let enemies = currentLevelConfig.spawnPositions.map(pos =>
     spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
 );
 
-//========================= GAME OVER =========================
+//========================= GAME OVER ========================= -> level function
 let gameOver = false;
 let gameOverBox = new MessageBox(
     "Game Over",

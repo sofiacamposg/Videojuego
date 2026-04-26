@@ -36,6 +36,8 @@ export const playerConfigs = {
 export const level1Config = {  //   TODO agregar muerte del lado derecho
     background: "./assets/Coliseo1.png",
     targetTime: 60000,
+    conditionEnemies: 8,
+
 
     enemyConfig: {
         hp: 100,
@@ -59,6 +61,8 @@ export const level1Config = {  //   TODO agregar muerte del lado derecho
 export const level2Config = {
     background: "./assets/Coliseo2.png",
     targetTime: 90000,
+    conditionEnemies: 9,
+
 
     enemyConfig: {
         hp: 120,
@@ -82,6 +86,7 @@ export const level2Config = {
 export const level3Config = {
     background: "./assets/Coliseo3.png",
     targetTime: 120000,
+    conditionEnemies: 10,
 
     enemyConfig: {
         hp: 120,

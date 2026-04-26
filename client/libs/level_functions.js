@@ -1,7 +1,7 @@
 import { EnemyBase } from "../objects/EnemyBase.js";
 import { Vector } from "../libs/Vector.js";
 import { playerConfigs } from "./levelConfig.js";
-
+import { MessageBox } from "../objects/MessageBox.js";
 
 //===== CARDS =======
 //Save cards usage
@@ -79,11 +79,11 @@ export function updateCamera(playerX, canvasWidth, worldWidth){
     return cameraX;
 }
 
-export function updateCoins(player, prevKilled, newKilled) {
+export function updateFame(player, prevKilled, newKilled) {
     player.coins += Math.floor(newKilled / 3) - Math.floor(prevKilled / 3);
 }
 
-export function drawCoins(ctx, x, y, coins) {
+export function drawFame(ctx, x, y, coins) {
     ctx.fillStyle = "gold";
     ctx.font = "20px VT323";
     ctx.fillText("🌟 " + coins, x, y);
@@ -111,3 +111,92 @@ export async function loadPlayerStats(playerId, currentScene) {
     }
 }
 
+export function pauseScreen (){  //pause screen config
+    let pauseBox = new MessageBox(
+        "PAUSED",
+        "Game is paused",
+        250, 150, 500, 300
+    );
+}
+
+export function confirmScreen (){  //screen appears when user click on restart or home
+    let confirmBox = new MessageBox(
+        "ARE YOU SURE?",
+        "",
+        300, 200, 400, 200
+    );
+    let confirmAction = null;
+    
+    confirmBox.addButton("Yes", 340, 320, 100, 35, () => {
+        confirmBox.hide();
+        pauseBox.hide();
+        isPaused = false;
+        if(confirmAction) confirmAction();
+        confirmAction = null;
+    });
+    
+    confirmBox.addButton("No", 460, 320, 100, 35, () => {
+        confirmBox.hide();
+    });
+    
+    pauseBox.addButton("Continue", 440, 290, 120, 35, () => {
+        isPaused = false;
+        pauseBox.hide();
+    });
+    
+    pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
+        confirmAction = () => {
+            resetLevel1();
+        };
+        confirmBox.show();
+    });
+    
+    pauseBox.addButton("Home", 440, 390, 120, 35, () => {
+        confirmAction = () => {
+            goToMenuLevel1 = true;
+        };
+        confirmBox.show();
+    });
+}
+
+export function levelTransitionSCreen (){  //message shown between levels
+    let levelCompletedBox = new MessageBox(
+        "LEVEL COMPLETED",
+        "You survived the arena.\n The emperor is watching, do your best!",
+        250, 150, 500, 300
+    );
+    
+    levelCompletedBox.addButton("Next Level", 420, 350, 150, 40, () => {
+        levelCompletedBox.hide();
+        showDeckPreview = true;  //TODO
+        deckPreviewTimer = 0;
+        cardSystem.isDeckOpen = true;
+    });
+}
+
+export function gameOverScreen() {  //screen and config when hearts = 0
+    let gameOver = false;
+    let gameOverBox = new MessageBox(
+        "Game Over",
+        "You died!\n The emperor is dissapointed in you",
+        250, 150, 500, 300
+    );
+    gameOverBox.addButton("Restart", 440, 340, 120, 35, async () => {
+        console.log("RESTART GAME OVER CLICKED");
+        //Updates live stats, runs and defeats
+        await saveMatch({  //TODO
+            player_id: window.loggedPlayer.player_id,
+            archetype_id: 1, //NO SIRVE, CAMBIARLO, ES HARDCORE
+            duration_seconds: Math.floor(levelTimer / 1000),
+            level_reached: currentLevel,
+            final_fame: killedEnemies,
+            life: Math.max(0, player.hearts),
+            result: "LOSE"
+        });
+        console.log("Lose saved");
+        resetLevel1();
+        gameOver = false;
+        gameOverBox.hide();
+    });
+    
+}
