@@ -6,24 +6,16 @@ import { applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
 import { handleMouseMove } from "../libs/game_functions.js";
 import { level1Config, level2Config, level3Config, playerConfigs } from "../libs/levelConfig.js";
 import { spawnEnemy, generatePlatform, updateCamera, updateFame, drawFame, saveMatch, drawFog, imperialDecree,
-        pauseScreen, loadPlayerStats, confirmScreen, levelTransitionSCreen,
-        gameOverScreen, drawHealthBar, drawHearts } from "../libs/level_functions.js";
+        loadPlayerStats, drawHealthBar, drawHearts } from "../libs/level_functions.js";
+import { FirePit } from "../hazards/FirePit.js";
+import { Spikes } from "../hazards/Spikes.js";
 "use strict"
 //* game core variables
 //? level transition 
 let levelCompleted = false;  
 let showDeckPreview = false;
 let currentLevel = 1;
-let currentLevelConfig;
-if (currentLevel === 1){
-    currentLevelConfig = level1Config;
-} else if (currentLevel === 2) {
-    currentLevelConfig = level2Config;
-} else if (currentLevel === 3){
-    currentLevelConfig = level3Config;
-} else {
-    //va a score;
-}
+let currentLevelConfig = level1Config;  //always starts at level 1, transitionToNextLevel() updates this
 let deckPreviewTimer = 0;
 let levelTimer = 0;  //how much does the player take in one level? (fame, cards gained)
 let randomEventTime = Math.random() * (40000 - 20000) + 20000;  //when will the event trigger?
@@ -76,6 +68,30 @@ function drawPlatforms(ctx){  //draw all the platforms in the array
         ctx.drawImage(platformImage, p.x, p.y - 70, p.width, p.height);
     });
 }
+//? hazards — spikes on level 2, firepits on level 3
+let hazards = [];
+function initHazards(){
+    hazards = [];
+    const zones = [
+        { min: 400, max: 700 },
+        { min: 800, max: 1100 },
+        { min: 1300, max: 1700 },
+    ];
+    const count = Math.random() < 0.5 ? 2 : 3;  //2 or 3 hazard spots per level
+    const pickedZones = zones.sort(() => Math.random() - 0.5).slice(0, count);
+
+    pickedZones.forEach(z => {
+        const x = Math.random() * (z.max - z.min) + z.min;
+        hazards.push(new Spikes(x, 410));  //spikes on both level 2 and 3
+    });
+
+    if (currentLevel === 3){  //level 3 also adds firepits on top of spikes
+        pickedZones.forEach(z => {
+            const x = Math.random() * (z.max - z.min) + z.min;
+            hazards.push(new FirePit(x, 410));
+        });
+    }
+}
 //? scenes
 let pauseBox = new MessageBox(  //paused scene
         "PAUSED",
@@ -115,8 +131,8 @@ let confirmBox = new MessageBox(  //screen appears when user click on restart or
         confirmBox.show();
     });
 let levelCompletedBox = new MessageBox(  //message shown between levels
-        "You survived the arena.\n The emperor is watching, do your best!",  //TODO
-        `Your hunt lasted ${Math.floor(levelTimer / 1000)} seconds. The people grant you ${fame} fame.`,
+        "You survived the arena. The emperor is watching!",
+        "",  //text gets filled in when the level actually ends
         250, 150, 500, 300
     );
     if (currentLevel <= 2){
@@ -260,9 +276,11 @@ function drawLevel(ctx, canvas, deltaTime){
     ctx.save();
     ctx.translate(-cameraX, 0);  //shift drawing so the camera follows the player
 
-    player.draw(ctx);  
+    player.draw(ctx);
     drawPlatforms(ctx);
     enemies.forEach(enemy => enemy.draw(ctx));
+    if (currentLevel >= 2) 
+        hazards.forEach(h => h.draw(ctx));  //firepits active from level 2
 
     ctx.restore();  //undo the camera shift so next things draw at their normal position
 
@@ -292,9 +310,12 @@ function drawLevel(ctx, canvas, deltaTime){
     if(showDeckPreview){
         cardSystem.drawDeck(ctx, canvas);
         deckPreviewTimer += deltaTime;
-        if(deckPreviewTimer >= 5000){ //Only during 5 seconds
+        if(deckPreviewTimer >= 5000){  //after 5 seconds, move to the next level
             showDeckPreview = false;
             cardSystem.isDeckOpen = false;
+            if (currentLevel <= 3) 
+                transitionToNextLevel();
+            //TODO: go to score scene
         }
     }
 }
@@ -378,6 +399,9 @@ function updateLevel(deltaTime){
         platforms.push(generatePlatform(last));
     }
 
+    if (currentLevel >= 2) 
+        hazards.forEach(h => h.update(player, deltaTime));  //firepits active from level 2
+
     cardSystem.update(deltaTime);  //tick card timers and effects
     imperialDecree(game, enemies);  //check if the imperial decree card effect needs to fire
 }
@@ -455,25 +479,53 @@ function handleKeyUpLevel1(event){
 function resetGoToMenu(){
     goToMenu = false;
 }
+function transitionToNextLevel(){  //? called after deck preview ends, sets up the next level
+    currentLevelConfig = currentLevel === 2 ? level2Config : level3Config;  //pick config based on new level
+    backgroundImage.src = currentLevelConfig.background;  //swap background
 
-//* reset
+    levelCompleted = false;
+    showDeckPreview = false;
+    deckPreviewTimer = 0;
+    levelCompletedBox.hide();
+
+    enemies = currentLevelConfig.spawnPositions.map(pos =>
+        spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
+    );
+    killedEnemies = 0;
+
+    initPlatforms();
+    if (currentLevel >= 2) initHazards();  //firepits start from level 2
+
+    cameraX = 0;
+    spawnTimer = 0;
+    levelTimer = 0;
+    randomEventTime = Math.random() * (40000 - 20000) + 20000;
+    cardEventTriggered = false;
+    cardSystem.close();
+    cardSystem.isDeckOpen = false;
+}
+//* goes back to level 1, resets everything
 function resetLevel1(){
+    currentLevel = 1;  //TODO
+    currentLevelConfig = level1Config;
+    backgroundImage.src = level1Config.background;  //swap back to level 1 background
+
     player.position.x = 200;
     player.position.y = 350;
     player.velocityY = 0;
     player.hp = player.maxHp;
     player.hearts = player.maxHearts;
 
-    //levelCompleted variables
     levelCompleted = false;
     showDeckPreview = false;
     deckPreviewTimer = 0;
     levelCompletedBox.hide();
-    // reset enemies
-    enemies = currentLevelConfig.spawnPositions.map(pos =>
-        spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
+
+    enemies = level1Config.spawnPositions.map(pos =>
+        spawnEnemy(pos.x, pos.y, level1Config.enemyConfig)
     );
     killedEnemies = 0;
+    hazards = [];  //no firepits in level 1
 
     gameOver = false;
     isPaused = false;
@@ -483,14 +535,13 @@ function resetLevel1(){
 
     cameraX = 0;
     spawnTimer = 0;
-
     levelTimer = 0;
     randomEventTime = Math.random() * (40000 - 20000) + 20000;
     cardEventTriggered = false;
     cardSystem.close();
     cardSystem.isDeckOpen = false;
 }
-function getPlayer() { return player; }  //lets main.js grab the player object when needed
+function getPlayer() { return player; }  //lets main grab the player object when needed
 
 //* exports to main
 export {

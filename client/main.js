@@ -17,17 +17,6 @@ import {
     currentLevel,
     cardSystem
 } from "./scenes/levelBase.js";  //live stats come from levelBase now
-import {
-    killedEnemies as killedEnemies2,
-    currentLevel as currentLevel2,
-    cardSystem as cardSystem2
-} from "./scenes/level2Scene.js";
-
-/*import {
-    killedEnemies as killedEnemies3,
-    currentLevel as currentLevel3,
-    cardSystem as cardSystem3
-} from "./scenes/level3Scene.js";*/
 
 const canvasWidth = 1000;
 const canvasHeight = 600;
@@ -40,32 +29,6 @@ let currentPlayer = null;
 let selectedCharacter = null;
 
 //API Connection, current player stats
-/*moved to level_functions.js
-async function loadPlayerStats(playerId) {
-    console.log("LOADING STATS...");
-    try {
-        const res = await fetch(`http://localhost:3000/player/live/${playerId}`);
-        const data = await res.json();
-
-        document.getElementById("username").textContent = data.username;
-        let currentLevelText = "-";
-        if (currentScene === "level1") currentLevelText = 1;
-        else if (currentScene === "level2") currentLevelText = 2;
-        else if (currentScene === "level3") currentLevelText = 3;
-        document.getElementById("level").textContent = currentLevelText; //JS
-        document.getElementById("fame").textContent = data.current_fame || 0;
-        document.getElementById("kills").textContent = data.enemy_kills || 0; //JS
-        document.getElementById("cards").textContent = data.cards_in_deck || 0;
-
-        document.getElementById("runs").textContent = data.total_runs;
-        document.getElementById("wins").textContent = data.total_wins;
-        document.getElementById("losses").textContent = data.total_losses;
-
-    } catch (err) {
-        console.error("Error loading player stats:", err);
-    }
-}
-*/
 //This is beacause there are some variables that update in JS
 function updateLiveStats() {
     if (!window.loggedPlayer) return;
@@ -81,18 +44,6 @@ function updateLiveStats() {
         kills = killedEnemies;
         cards = cardSystem.playerDeck.length;
     }
-
-    /*if (currentScene === "level2") {
-        level = currentLevel2;
-        kills = killedEnemies2;
-        cards = cardSystem2.playerDeck.length;
-    }
-
-    if (currentScene === "level3") {
-        level = currentLevel3;
-        kills = killedEnemies3;
-        cards = cardSystem3.playerDeck.length;
-    }*/
 
     document.getElementById("level").textContent = level;
     document.getElementById("kills").textContent = kills;
@@ -186,18 +137,7 @@ function main() {
                 currentScene = "menu";
             }
         }
-        //LEVEL 2 SCENE
-        else if (currentScene === 'level2'){
-            clicked = handleClickLevel2(ctx); //& manejo de clicks en level1 (aún no implementado)
-
-            if(goToMenuLevel2){
-                //& si level1 pide volver al menú, resetea todas las escenas involucradas
-                resetLogIn();
-                resetSelect();
-                resetLevel2();
-                currentScene = "menu";
-            }
-        }
+        //level2 and level3 clicks are handled by levelBase — currentScene stays 'level1' across all 3 levels
         //LEVEL 1 SCENE
         else if (currentScene === 'level3'){
             clicked = handleClickLevel3(ctx); //& manejo de clicks en level1 (aún no implementado)
@@ -266,16 +206,7 @@ function gameLoop(newTime) {
         resetLevel1();
         currentScene = "level2";
     }*/
-    if(currentScene === "level2" && nextLevelLevel2){
-        currentPlayer = getPlayerLevel2();
-        setPlayerLevel3(currentPlayer, cardSystem2.playerDeck);
-        resetLevel2();
-        currentScene = "level3";
-    }
-    if(currentScene === "level3" && isGameCompleted()){
-        resetLevel3();
-        currentScene = "score";
-    }
+    //TODO: level2→level3 and level3→score transitions are now internal to levelBase
     if(currentScene === 'menu') drawMenu(ctx,canvas);
     else if(currentScene === 'settings') drawSettings(ctx,canvas);
     else if(currentScene === 'login') drawLogIn(ctx,canvas);
@@ -285,14 +216,7 @@ function gameLoop(newTime) {
         drawLevel(ctx,canvas, deltaTime);  //levelBase handles all 3 levels now
         updateLiveStats();
     }
-    else if(currentScene === 'level2'){
-        drawLevel2(ctx,canvas,deltaTime);
-        //updateLiveStats();
-    } 
-    else if(currentScene === 'level3') {
-        drawLevel3(ctx,canvas,deltaTime);
-        //updateLiveStats();
-    }
+    //level2 and level3 are drawn by drawLevel — currentScene stays 'level1' across all 3
     else if(currentScene === 'score') drawScoreScene(ctx,canvas,deltaTime);
 
     oldTime = newTime;
