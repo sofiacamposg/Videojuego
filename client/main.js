@@ -58,7 +58,6 @@ function main() {
     ctx = canvas.getContext("2d"); 
 
     let clicked;
-    //TODO falta handler de score
     canvas.addEventListener("click", (event) => {
         //MENU SCENE
         if(currentScene === 'menu'){
