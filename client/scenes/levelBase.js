@@ -6,12 +6,24 @@ import { applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
 import { handleMouseMove } from "../libs/game_functions.js";
 import { level1Config, level2Config, level3Config, playerConfigs } from "../libs/levelConfig.js";
 import { spawnEnemy, generatePlatform, updateCamera, updateFame, drawFame, saveMatch, drawFog, imperialDecree,
-        pauseScreen, loadPlayerStats } from "../libs/level_functions.js";
+        pauseScreen, loadPlayerStats, confirmScreen, levelTransitionSCreen,
+        gameOverScreen, drawHealthBar, drawHearts } from "../libs/level_functions.js";
 "use strict"
 //* game core variables
 //? level transition 
 let levelCompleted = false;  
 let showDeckPreview = false;
+let currentLevel = 1;
+let currentLevelConfig;
+if (currentLevel === 1){
+    currentLevelConfig = level1Config;
+} else if (currentLevel === 2) {
+    currentLevelConfig = level2Config;
+} else if (currentLevel === 3){
+    currentLevelConfig = level3Config;
+} else {
+    //va a score;
+}
 let deckPreviewTimer = 0;
 let levelTimer = 0;  //how much does the player take in one level? (fame, cards gained)
 let randomEventTime = Math.random() * (40000 - 20000) + 20000;  //when will the event trigger?
@@ -43,7 +55,7 @@ const game = {  //imperial decree effect
 };
 //? pause
 let isPaused = false;
-let goToMenuLevel1 = false;
+let goToMenu = false;
 //? platforms
 let platforms = [];  //array to store platforms displayed
 let platformImage = new Image();
@@ -64,6 +76,87 @@ function drawPlatforms(ctx){  //draw all the platforms in the array
         ctx.drawImage(platformImage, p.x, p.y - 70, p.width, p.height);
     });
 }
+//? scenes
+let pauseBox = new MessageBox(  //paused scene
+        "PAUSED",
+        "Game is paused",
+        250, 150, 500, 300
+    );
+let confirmBox = new MessageBox(  //screen appears when user click on restart or home
+        "ARE YOU SURE?",
+        "",
+        300, 200, 400, 200
+    );
+    let confirmAction = null;
+    confirmBox.addButton("Yes", 340, 320, 100, 35, () => {
+        confirmBox.hide();
+        pauseBox.hide();
+        isPaused = false;
+        if(confirmAction) confirmAction();
+        confirmAction = null;
+    });  
+    confirmBox.addButton("No", 460, 320, 100, 35, () => {
+        confirmBox.hide();
+    });
+    pauseBox.addButton("Continue", 440, 290, 120, 35, () => {
+        isPaused = false;
+        pauseBox.hide();
+    });
+    pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
+        confirmAction = () => {
+            resetLevel1();
+        };
+        confirmBox.show();
+    });
+    pauseBox.addButton("Home", 440, 390, 120, 35, () => {
+        confirmAction = () => {
+            goToMenu = true;
+        };
+        confirmBox.show();
+    });
+let levelCompletedBox = new MessageBox(  //message shown between levels
+        "You survived the arena.\n The emperor is watching, do your best!",  //TODO
+        `Your hunt lasted ${Math.floor(levelTimer / 1000)} seconds. The people grant you ${fame} fame.`,
+        250, 150, 500, 300
+    );
+    if (currentLevel <= 2){
+        levelCompletedBox.addButton("Ready for more?", 420, 350, 150, 40, () => {
+        levelCompletedBox.hide();
+        showDeckPreview = true;  //TODO
+        deckPreviewTimer = 0;
+        cardSystem.isDeckOpen = true;
+        });
+    } else {
+        levelCompletedBox.addButton("You survived another game!", 420, 350, 150, 40, () => {
+        levelCompletedBox.hide();
+        showDeckPreview = true;  //TODO
+        deckPreviewTimer = 0;
+        cardSystem.isDeckOpen = true;
+        });
+    }
+let gameOver = false;  //screen and config when hearts = 0
+    let gameOverBox = new MessageBox(
+        "Game Over",
+        "You died!\n The emperor is dissapointed in you",
+        250, 150, 500, 300
+    );
+    gameOverBox.addButton("Restart", 440, 340, 120, 35, async () => {
+        console.log("RESTART GAME OVER CLICKED");
+        //Updates live stats, runs and defeats
+        await saveMatch({  //TODO
+            player_id: window.loggedPlayer.player_id,
+            archetype_id: 1, //NO SIRVE, CAMBIARLO, ES HARDCORE
+            duration_seconds: Math.floor(levelTimer / 1000),
+            level_reached: currentLevel,
+            final_fame: killedEnemies,
+            life: Math.max(0, player.hearts),
+            result: "LOSE"
+        });
+        console.log("Lose saved");
+        resetLevel1();
+        gameOver = false;
+        gameOverBox.hide();
+    }); 
 //? initial config for all the game
 function setSelectedCharacter(selectedCharacter){
     player = new PlayerBase(
@@ -151,7 +244,7 @@ async function giveLevelRewards(){  //? reward cards, depending on fame, after l
         console.log("Could not fetch reward cards:", err);
     }
 }
-//* draw everything :)
+//* draw everything and update:)
 function drawLevel(ctx, canvas, deltaTime){
     if (!player) return;  //skip if no player is loaded yet
     canvasRef = canvas;  //save canvas so other functions know the screen size
@@ -161,13 +254,13 @@ function drawLevel(ctx, canvas, deltaTime){
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); }
     //TODO
     if(!isPaused && (!cardSystem.isActive || showDeckPreview)){  //only run game logic when not paused and no card menu is open
-        update(deltaTime);
+        updateLevel(deltaTime);
     }
 
     ctx.save();
     ctx.translate(-cameraX, 0);  //shift drawing so the camera follows the player
 
-    player.draw(ctx);
+    player.draw(ctx);  
     drawPlatforms(ctx);
     enemies.forEach(enemy => enemy.draw(ctx));
 
@@ -178,7 +271,7 @@ function drawLevel(ctx, canvas, deltaTime){
     drawHealthBar(ctx, 30, 20, 100, 30, player.hp, player.maxHp);
     ctx.font = "50px VT323";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
-    drawCoins(ctx, 30, 100, player.coins);
+    drawFame(ctx, 30, 100, player.fame);
     pauseBox.draw(ctx);
     confirmBox.draw(ctx);
 
@@ -202,8 +295,215 @@ function drawLevel(ctx, canvas, deltaTime){
         if(deckPreviewTimer >= 5000){ //Only during 5 seconds
             showDeckPreview = false;
             cardSystem.isDeckOpen = false;
-            nextLevelLevel1 = true; //Then switch scenes
         }
     }
 }
+function updateLevel(deltaTime){
+    if (!player) return;  //skip if no player is loaded yet
+    levelTimer += deltaTime;  //keep track of how long the player has been in this level
 
+    if(player.hearts <= 0){  //player ran out of hearts, game over
+        gameOver = true;
+        gameOverBox.show();
+        return;
+    }
+
+    if (!cardEventTriggered && levelTimer >= randomEventTime) {  //trigger the mid-level card event
+        console.log("EVENT TRIGGERED");
+        cardEventTriggered = true;
+        triggerCardEvent();
+    }
+
+    player.isMoving = false;  //reset movement flag before checking keys
+
+    const goLeft  = keysDown["ArrowLeft"];
+    const goRight = keysDown["ArrowRight"];
+    const groundY = 450;  //floor height, everything below this is out of bounds
+
+    player.update(goLeft, goRight, jumpPressed, platforms, groundY, deltaTime);
+    jumpPressed = false;  //consume the jump so it only fires once per press
+
+    //keep player inside the world, can't walk off the edges
+    if (player.position.x < player.halfSize.x)
+        player.position.x = player.halfSize.x;
+    if (player.position.x > worldWidth - player.halfSize.x)
+        player.position.x = worldWidth - player.halfSize.x;
+    
+    enemies.forEach(enemy => {
+        enemy.update(player, deltaTime);
+        if (enemy.position.x - enemy.halfSize.x <= 0 && enemy.speed > 0)
+            enemy.bounce();  //bounce enemies
+        else if (enemy.position.x + enemy.halfSize.x >= worldWidth && enemy.speed < 0)
+            enemy.bounce();
+    });
+
+    player.attackEnemy(enemies);  //check if player hit any enemy this frame
+
+    let totalLenEnemies = enemies.length;
+    enemies = enemies.filter(alive => !alive.isDying);  //remove dead enemies
+    let prevKilled = killedEnemies;
+    killedEnemies += totalLenEnemies - enemies.length;  //count how many died this frame
+    updateFame(player, currentLevelConfig, levelTimer);  //give "coins" (fame) for the time spent in the level
+
+    spawnTimer += deltaTime;
+    if (spawnTimer >= spawnInterval) {  //time to spawn a new enemy
+        if (killedEnemies < currentLevelConfig.conditionEnemies) {  //only spawn if the kill goal isn't reached yet
+            enemies.push(spawnEnemy(cameraX + canvasRef.width + 100, 450, currentLevelConfig.enemyConfig));
+        }
+        console.log(`enemies: ${enemies.length}`);
+        spawnTimer = 0;
+    }
+
+    if(killedEnemies >= currentLevelConfig.conditionEnemies && !levelCompleted){  //level done
+        levelCompleted = true;
+        currentLevel ++;
+        giveLevelRewards();  //give the player their reward cards
+        levelCompletedBox.show();
+        saveMatch({  //save the match result to the db
+            player_id: 1,
+            archetype_id: 1,
+            duration_seconds: levelTimer,
+            level_reached: currentLevel,
+            final_fame: killedEnemies,
+            life: player.hearts,
+            result: "WIN"
+        });
+        loadPlayerStats(window.loggedPlayer.player_id, "level1");  //refresh live stats
+    }
+
+    cameraX = updateCamera(player.position.x, canvasRef.width, worldWidth);  //move camera to follow player
+
+    let last = platforms[platforms.length - 1];
+    if(player.position.x > last.x - 500){  //player is getting close to the end, add more platforms
+        platforms.push(generatePlatform(last));
+    }
+
+    cardSystem.update(deltaTime);  //tick card timers and effects
+    imperialDecree(game, enemies);  //check if the imperial decree card effect needs to fire
+}
+//* handlers
+function handleMouseMoveLevel1(event, canvas){
+    const pos = handleMouseMove(event, canvas);
+    mouseX = pos.x;
+    mouseY = pos.y;
+}
+function handleClickLevel1(){
+
+    if(levelCompleted){
+        return levelCompletedBox.handleClick(mouseX, mouseY);
+    }
+    if(gameOver){
+        return gameOverBox.handleClick(mouseX, mouseY);
+    }
+    if(confirmBox.visible){
+        return confirmBox.handleClick(mouseX, mouseY);
+    }
+    if(isPaused){
+        return pauseBox.handleClick(mouseX, mouseY);
+    }
+    if(cardSystem.isDeckOpen){
+        cardSystem.handleDeckClick(mouseX, mouseY, canvasRef);
+        return;
+    }
+    if(cardSystem.isActive){
+        cardSystem.handleClick(mouseX, mouseY, canvasRef);
+        return;
+    }
+}
+function handleKeyDownLevel1(event){
+    if(event.repeat) return;
+
+    if(event.key === "Escape"){
+        if(confirmBox.visible){
+            confirmBox.hide();
+            return;
+        }
+        isPaused = !isPaused;
+        if(isPaused){
+            pauseBox.show();
+        } else {
+            pauseBox.hide();
+        }
+        return;
+    }
+
+    if(isPaused) return;
+
+    keysDown[event.key] = true;
+
+    if(event.key === "c" || event.key === "C"){
+        cardSystem.toggleDeck();
+    }
+    if(event.key === " "){
+        jumpPressed = true;
+    }
+    if(event.key === "j"){
+        if(!player.playeratack){
+            player.playeratack = true;
+            player.attackFrames = 0;
+            swordSound.currentTime = 0;
+            swordSound.play();
+        }
+    }
+}
+function handleKeyUpLevel1(event){
+    keysDown[event.key] = false;
+    if(event.key === " "){
+        jumpPressed = false;
+    }
+}
+function resetGoToMenu(){
+    goToMenu = false;
+}
+
+//* reset
+function resetLevel1(){
+    player.position.x = 200;
+    player.position.y = 350;
+    player.velocityY = 0;
+    player.hp = player.maxHp;
+    player.hearts = player.maxHearts;
+
+    //levelCompleted variables
+    levelCompleted = false;
+    showDeckPreview = false;
+    deckPreviewTimer = 0;
+    levelCompletedBox.hide();
+    // reset enemies
+    enemies = currentLevelConfig.spawnPositions.map(pos =>
+        spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
+    );
+    killedEnemies = 0;
+
+    gameOver = false;
+    isPaused = false;
+    pauseBox.hide();
+    confirmBox.hide();
+    initPlatforms();
+
+    cameraX = 0;
+    spawnTimer = 0;
+
+    levelTimer = 0;
+    randomEventTime = Math.random() * (40000 - 20000) + 20000;
+    cardEventTriggered = false;
+    cardSystem.close();
+    cardSystem.isDeckOpen = false;
+}
+//* exports to main
+export {
+    //getPlayerLevel,
+    drawLevel,
+    handleMouseMoveLevel1,
+    handleClickLevel1,
+    resetLevel1,
+    handleKeyDownLevel1,
+    handleKeyUpLevel1,
+    setSelectedCharacter,
+    goToMenu,
+    resetGoToMenu,
+    killedEnemies,
+    currentLevel,
+    levelTimer,
+    cardSystem
+};
