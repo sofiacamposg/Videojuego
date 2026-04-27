@@ -1,7 +1,7 @@
 import { EnemyBase } from "../objects/EnemyBase.js";
 import { Vector } from "../libs/Vector.js";
 import { playerConfigs } from "./levelConfig.js";
-
+import { MessageBox } from "../objects/MessageBox.js";
 
 //===== CARDS =======
 //Save cards usage
@@ -83,13 +83,62 @@ export function updateCamera(playerX, canvasWidth, worldWidth){
     return cameraX;
 }
 
-export function updateCoins(player, prevKilled, newKilled) {
-    player.coins += Math.floor(newKilled / 3) - Math.floor(prevKilled / 3);
+export function updateFame(player, currentLevelConfig, levelTimer) {
+    if (levelTimer <= currentLevelConfig.targetTime)
+        player.fame += 10;
+    else
+        player.fame += 5;
 }
 
-export function drawCoins(ctx, x, y, coins) {
+export function drawFame(ctx, x, y, fame) {
     ctx.fillStyle = "gold";
-    ctx.font = "20px Arial";
-    ctx.fillText("🌟 " + coins, x, y);
+    ctx.font = "20px VT323";
+    ctx.fillText("🌟 " + fame, x, y);
 }
 
+export async function loadPlayerStats(playerId, currentScene) {
+    try {
+        const res = await fetch(`http://localhost:3000/player/live/${playerId}`);
+        const data = await res.json();
+
+        document.getElementById("username").textContent = data.username;
+        let levelText = "-";
+        if (currentScene === "level1") levelText = 1;
+        else if (currentScene === "level2") levelText = 2;
+        else if (currentScene === "level3") levelText = 3;
+        document.getElementById("level").textContent = levelText;
+        document.getElementById("fame").textContent = data.current_fame || 0;
+        document.getElementById("kills").textContent = data.enemy_kills || 0;
+        document.getElementById("cards").textContent = data.cards_in_deck || 0;
+        document.getElementById("runs").textContent = data.total_runs;
+        document.getElementById("wins").textContent = data.total_wins;
+        document.getElementById("losses").textContent = data.total_losses;
+    } catch (err) {
+        console.error("Error loading player stats:", err);
+    }
+}
+
+export function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
+    // background (lost health)
+    ctx.fillStyle = "green";
+    ctx.fillText("HP: " + current, 30, 70);
+
+
+    ctx.fillStyle = "gray";
+    ctx.fillRect(x, y, width, height);
+
+    const healthWidth = (current / max) * width;
+    ctx.fillStyle = "green";
+    ctx.fillRect(x, y, healthWidth, height);
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, width, height);
+};
+
+export function drawHearts(ctx, x, y, current, max) {
+    for (let i = 0; i < max; i++) {
+        ctx.fillStyle = i < current ? "red" : "gray";
+        ctx.fillText("♥", x + i * 50, y);
+    }
+}
