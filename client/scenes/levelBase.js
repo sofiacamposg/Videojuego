@@ -72,23 +72,17 @@ function drawPlatforms(ctx){  //draw all the platforms in the array
 //? hazards — spikes on level 2, firepits on level 3
 let hazards = [];  //array to store platforms displayed
 function initHazards(){
-    hazards = [];  //clean the array before starting
-    const zones = [
-        { min: 400, max: 700 },
-        { min: 800, max: 1100 },
-        { min: 1300, max: 1700 },
-    ];
-    const count = Math.random() < 0.5 ? 2 : 3;  //2 or 3 hazard spots per level
-    const pickedZones = zones.sort(() => Math.random() - 0.5).slice(0, count);
-    pickedZones.forEach(z => {
-        const x = Math.random() * (z.max - z.min) + z.min;
-        hazards.push(new Spikes(x, 410));  //spikes on both level 2 and 3
-    });
-    if (currentLevel === 3){  //level 3 also adds firepits on top of spikes
-        pickedZones.forEach(z => {
-            const x = Math.random() * (z.max - z.min) + z.min;
-            hazards.push(new FirePit(x, 410));
-        });
+    hazards = [];
+    const safeZone = 400;  //no hazards near spawn
+    const count = Math.random() < 0.5 ? 3 : 4;  //3 or 4 hazards per level
+
+    for(let i = 0; i < count; i++){  //for spikes
+        hazards.push(new Spikes(randomRange(worldWidth - safeZone, safeZone), 410));
+    }
+    if(currentLevel === 3){  //TODO adds firepits on top of spikes
+        for(let i = 0; i < count; i++){
+            hazards.push(new FirePit(randomRange(worldWidth - safeZone, safeZone), 410));
+        }
     }
 }
 //? scenes
@@ -369,7 +363,6 @@ function updateLevel(deltaTime){
     }
 
     if(killedEnemies >= currentLevelConfig.conditionEnemies && !levelCompleted){  //level done
-        //levelTrans = true;
         levelCompleted = true;
         currentLevel ++;
         giveLevelRewards();  //give the player their reward cards
@@ -465,9 +458,6 @@ function handleKeyDownLevel(event){
 }
 function handleKeyUpLevel(event){
     keysDown[event.key] = false;
-    if(event.key === " "){
-        jumpPressed = false;
-    }
 }
 function resetGoToMenu(){
     goToMenu = false;
