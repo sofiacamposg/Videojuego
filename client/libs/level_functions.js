@@ -37,16 +37,20 @@ export function imperialDecree(game, enemies){
 }
 
 //============== MATCH ====================
+//for scoreScene, full summary of the match
 export async function saveMatch(data) {
     const res = await fetch("http://localhost:3000/match", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify(data)
     });
 
-    return await res.json();
+    const result = await res.json();
+
+    // keep the last match_id
+    window.lastMatchId = result.match_id;
+
+    return result;
 }
 
 //============== ENEMIES =====================

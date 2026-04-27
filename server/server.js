@@ -233,7 +233,8 @@ app.get("/match/summary/:id", (req, res) => {
         [req.params.id],
         (err, result) => {
             if (err) return res.status(500).send(err.message);
-            res.json(result[0]);
+
+            res.json(result[0][0]);
         }
     );
 });

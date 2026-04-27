@@ -9,7 +9,7 @@ import { setPlayerLevel3, drawLevel3, handleMouseMoveLevel3, handleClickLevel3, 
 handleKeyDownLevel3, handleKeyUpLevel3, goToMenuLevel3, isGameCompleted } from "./scenes/level3Scene.js";
 import { drawCreateAccount, handleMouseMoveCreateAccount, handleClickCreateAccount, handleKeyDownCreateAccount, resetCreateAccount } from "./scenes/createAccountScene.js";
 import { drawSettings, handleMouseMoveSettings, handleClickSettings, startDragging, stopDragging, resetSettings } from "./scenes/settingsScene.js";
-import { drawScoreScene, handleClickScoreScene } from "./scenes/scoreScene.js";
+import { drawScoreScene, handleClickScoreScene, handleMouseMoveScore, loadMatchSummary } from "./scenes/scoreScene.js";
 //API update (THIS RIGHT NOW ISNT FROM API, INSTEAD OF POSTING AND THENN GETTING, WE JUST GRABBING JS VARIABLES)
 import {
     killedEnemies,
@@ -34,7 +34,7 @@ const canvasHeight = 600;
 let canvas;
 let ctx;
 let oldTime = 0;
-let currentScene = "menu";
+let currentScene = "score";
 let currentPlayer = null;
 let selectedCharacter = null;
 
@@ -195,7 +195,7 @@ function main() {
                 currentScene = "menu";
             }
         }
-        //LEVEL 1 SCENE
+        //LEVEL 3 SCENE
         else if (currentScene === 'level3'){
             clicked = handleClickLevel3(ctx); //& manejo de clicks en level1 (aún no implementado)
 
@@ -205,6 +205,17 @@ function main() {
                 resetSelect();
                 resetLevel3();
                 currentScene = "menu";
+            }
+        }
+        //Score Scene
+        else if(currentScene === "score"){
+            clicked = handleClickScoreScene();
+            if(clicked === "exit"){
+                currentScene = "menu";
+            }
+            if(clicked === "again"){
+                resetLevel1();
+                currentScene = "level1";
             }
         }
     });
@@ -226,6 +237,7 @@ function main() {
         if(currentScene === 'level1') handleMouseMoveLevel1(event,canvas);
         if(currentScene === 'level2') handleMouseMoveLevel2(event,canvas);
         if(currentScene === 'level3') handleMouseMoveLevel3(event,canvas);
+        if(currentScene === 'score') handleMouseMoveScore(event, canvas);
     });
 
     window.addEventListener("keydown", (event) => {
@@ -270,6 +282,8 @@ function gameLoop(newTime) {
     if(currentScene === "level3" && isGameCompleted()){
         resetLevel3();
         currentScene = "score";
+        //Data of the match
+        loadMatchSummary();
     }
     if(currentScene === 'menu') drawMenu(ctx,canvas);
     else if(currentScene === 'settings') drawSettings(ctx,canvas);
