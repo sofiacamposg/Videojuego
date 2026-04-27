@@ -47,7 +47,8 @@ function updateLiveStats() {
 
     document.getElementById("level").textContent = level;
     document.getElementById("kills").textContent = kills;
-    document.getElementById("fame").textContent = getPlayer()?.fame ?? 0;
+    const p = getPlayer();
+    document.getElementById("fame").textContent = p ? p.fame : 0;
     document.getElementById("cards").textContent = cards;
 }
 
