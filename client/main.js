@@ -1,8 +1,8 @@
 import { drawMenu,  handleMouseMoveMenu, handleClickMenu } from "./scenes/menuScene.js";
 import { drawLogIn, handleMouseMoveLogIn, handleClickLogIn, handleKeyDownLogIn, resetLogIn } from "./scenes/logInScene.js";
 import { drawSelect, handleMouseMoveSelect, handleClickSelect, resetSelect, getSelectedCharacter } from "./scenes/selectScene.js";
-import { getPlayerLevel1, drawLevel1, handleMouseMoveLevel1, handleClickLevel1, resetLevel1, handleKeyDownLevel1,
-    handleKeyUpLevel1, setSelectedCharacter, goToMenuLevel1, nextLevelLevel1, resetGoToMenu } from "./scenes/level1Scene.js";
+import { getPlayer, drawLevel, handleMouseMoveLevel1, handleClickLevel1, resetLevel1, handleKeyDownLevel1,
+    handleKeyUpLevel1, setSelectedCharacter, goToMenu, resetGoToMenu } from "./scenes/levelBase.js";  //all 3 levels now live here
 import { getPlayerLevel2, setPlayerLevel2, drawLevel2, handleMouseMoveLevel2, handleClickLevel2,
  resetLevel2, handleKeyDownLevel2, handleKeyUpLevel2, goToMenuLevel2, nextLevelLevel2 } from "./scenes/level2Scene.js";
 import { setPlayerLevel3, drawLevel3, handleMouseMoveLevel3, handleClickLevel3, resetLevel3,
@@ -16,7 +16,7 @@ import {
     killedEnemies,
     currentLevel,
     cardSystem
-} from "./scenes/level1Scene.js";
+} from "./scenes/levelBase.js";  //live stats come from levelBase now
 import {
     killedEnemies as killedEnemies2,
     currentLevel as currentLevel2,
@@ -166,7 +166,7 @@ function main() {
             if (clicked === 'confirm'){
                 selectedCharacter = getSelectedCharacter();
                 setSelectedCharacter(selectedCharacter);
-                currentPlayer = getPlayerLevel1();
+                currentPlayer = getPlayer();  //grab the player that was just created
                 //API
                 setTimeout(() => {
                     loadPlayerStats(window.loggedPlayer.player_id, currentScene);
@@ -178,7 +178,7 @@ function main() {
         else if (currentScene === 'level1'){
             clicked = handleClickLevel1(ctx); //& manejo de clicks en level1 (aún no implementado)
 
-            if(goToMenuLevel1){
+            if(goToMenu){  //player clicked Home from the pause menu
                 resetGoToMenu();
                 resetLogIn();
                 resetSelect();
@@ -259,12 +259,13 @@ function gameLoop(newTime) {
     oldTime = newTime;
     //if (deltaTime > 50) deltaTime = 50; 
 
-    if(currentScene === "level1" && nextLevelLevel1){
-        currentPlayer = getPlayerLevel1();
+    //TODO: level transition will be handled inside levelBase once level2 and level3 are merged in
+    /*if(currentScene === "level1" && nextLevelLevel1){
+        currentPlayer = getPlayer();
         setPlayerLevel2(currentPlayer, cardSystem.playerDeck);
         resetLevel1();
         currentScene = "level2";
-    }
+    }*/
     if(currentScene === "level2" && nextLevelLevel2){
         currentPlayer = getPlayerLevel2();
         setPlayerLevel3(currentPlayer, cardSystem2.playerDeck);
@@ -281,7 +282,7 @@ function gameLoop(newTime) {
     else if(currentScene === 'createAccount') drawCreateAccount(ctx,canvas);
     else if(currentScene === 'start') drawSelect(ctx,canvas);   
     else if(currentScene === 'level1') {
-        drawLevel1(ctx,canvas, deltaTime);
+        drawLevel(ctx,canvas, deltaTime);  //levelBase handles all 3 levels now
         updateLiveStats();
     }
     else if(currentScene === 'level2'){

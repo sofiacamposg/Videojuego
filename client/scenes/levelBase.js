@@ -490,9 +490,11 @@ function resetLevel1(){
     cardSystem.close();
     cardSystem.isDeckOpen = false;
 }
+function getPlayer() { return player; }  //lets main.js grab the player object when needed
+
 //* exports to main
 export {
-    //getPlayerLevel,
+    getPlayer,
     drawLevel,
     handleMouseMoveLevel1,
     handleClickLevel1,
