@@ -26,6 +26,7 @@ let cameraX = 0;
 let canvasRef = { width: 1000 }; 
 let mouseX = 0
 let mouseY = 0
+let spikesWarningPulse = 0;
 let backgroundImage = new Image();
 backgroundImage.src = currentLevelConfig.background;
 //? player/enemy variables
@@ -91,6 +92,18 @@ let pauseBox = new MessageBox(  //paused scene
         "Game is paused",
         250, 150, 500, 300
     );
+
+//? spikes warning — appears when entering level 2
+let spikesWarningBox = new MessageBox(
+        "ATTENTION GLADIATOR!!!",
+        "THERE ARE SPIKES IN THE SAND NOW!\n TRY NOT TO STEP ON THEM OR YOU'LL LOSE LIFE!",
+        250, 150, 500, 300
+    );
+spikesWarningBox.addButton("OK", 420, 350, 160, 40, () => {
+    spikesWarningBox.hide();
+});
+
+
 let confirmBox = new MessageBox(  //screen appears when user click on restart or home
         "ARE YOU SURE?",
         "",
@@ -256,7 +269,7 @@ function drawLevel(ctx, canvas, deltaTime){
     for(let i = 0; i < worldWidth; i += canvas.width){  //duplicate the background image to fill the whole world
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); }
 
-    if(!isPaused && !levelCompleted && (!cardSystem.isActive || showDeckPreview)){  //only run game logic when not paused, not between levels, and no card menu is open
+    if(!isPaused && !levelCompleted && (!cardSystem.isActive || showDeckPreview) && !spikesWarningBox.visible){  //only run game logic when not paused, not between levels, and no card menu is open
         updateLevel(deltaTime);
     }
 
@@ -279,6 +292,30 @@ function drawLevel(ctx, canvas, deltaTime){
     drawFame(ctx, 30, 100, player.fame);
     pauseBox.draw(ctx);
     confirmBox.draw(ctx);
+
+    if(spikesWarningBox.visible){
+    spikesWarningPulse += deltaTime * 0.005;
+    let scale = 1 + Math.sin(spikesWarningPulse) * 0.05;
+
+    ctx.save();
+
+    // overlay red transparent
+    ctx.fillStyle = "rgba(255, 0, 0, 0.15)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // ✨ efecto de pulso (zoom leve)
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.scale(scale, scale);
+    ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+    spikesWarningBox.draw(ctx);
+
+    ctx.restore();
+} else {
+    spikesWarningBox.draw(ctx);
+}
+
+    spikesWarningBox.draw(ctx);
 
     if(gameOver){
         gameOverBox.draw(ctx);
@@ -408,6 +445,9 @@ function handleClickLevel(){
     if(confirmBox.visible){
         return confirmBox.handleClick(mouseX, mouseY);
     }
+    if(spikesWarningBox.visible){
+        return spikesWarningBox.handleClick(mouseX, mouseY);
+    }
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
@@ -473,6 +513,21 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
     showDeckPreview = false;
     deckPreviewTimer = 0;
     levelCompletedBox.hide();
+    //show spikes warning on level 2
+
+    if(currentLevel === 2){
+    spikesWarningPulse = 0;
+    spikesWarningBox.title = "ATTENTION GLADIATOR!!!";
+    spikesWarningBox.message = "THERE ARE SPIKES IN THE SAND NOW!\n TRY NOT TO STEP ON THEM OR YOU'LL LOSE LIFE!.";
+    spikesWarningBox.show();
+}
+    //show spikes warning on level 2 and firepits on level 3
+    if(currentLevel === 3){
+    spikesWarningPulse = 0;
+    spikesWarningBox.title = "ATTENTION GLADIATOR!!!";
+    spikesWarningBox.message = "THERE ARE NOW SPIKES AND FIRE PITS IN THE ARENA!\n AVOID BOTH OR YOU'LL LOSE LIFE QUICKLY!.";
+    spikesWarningBox.show();
+}
 
     enemies = currentLevelConfig.spawnPositions.map(pos =>
         spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
