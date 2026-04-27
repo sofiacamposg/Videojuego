@@ -406,12 +406,12 @@ function updateLevel(deltaTime){
     imperialDecree(game, enemies);  //check if the imperial decree card effect needs to fire
 }
 //* handlers
-function handleMouseMoveLevel1(event, canvas){
+function handleMouseMoveLevel(event, canvas){
     const pos = handleMouseMove(event, canvas);
     mouseX = pos.x;
     mouseY = pos.y;
 }
-function handleClickLevel1(){
+function handleClickLevel(){
 
     if(levelCompleted){
         return levelCompletedBox.handleClick(mouseX, mouseY);
@@ -434,7 +434,7 @@ function handleClickLevel1(){
         return;
     }
 }
-function handleKeyDownLevel1(event){
+function handleKeyDownLevel(event){
     if(event.repeat) return;
 
     if(event.key === "Escape"){
@@ -470,7 +470,7 @@ function handleKeyDownLevel1(event){
         }
     }
 }
-function handleKeyUpLevel1(event){
+function handleKeyUpLevel(event){
     keysDown[event.key] = false;
     if(event.key === " "){
         jumpPressed = false;
@@ -505,7 +505,7 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
     cardSystem.isDeckOpen = false;
 }
 //* goes back to level 1, resets everything
-function resetLevel1(){
+function resetLevel(){
     currentLevel = 1;  //TODO
     currentLevelConfig = level1Config;
     backgroundImage.src = level1Config.background;  //swap back to level 1 background
@@ -547,11 +547,11 @@ function getPlayer() { return player; }  //lets main grab the player object when
 export {
     getPlayer,
     drawLevel,
-    handleMouseMoveLevel1,
-    handleClickLevel1,
-    resetLevel1,
-    handleKeyDownLevel1,
-    handleKeyUpLevel1,
+    handleMouseMoveLevel,
+    handleClickLevel,
+    resetLevel,
+    handleKeyDownLevel,
+    handleKeyUpLevel,
     setSelectedCharacter,
     goToMenu,
     resetGoToMenu,
