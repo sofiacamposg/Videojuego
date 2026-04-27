@@ -259,7 +259,6 @@ function drawLevel(ctx, canvas, deltaTime){
     if(!isPaused && !levelCompleted && (!cardSystem.isActive || showDeckPreview)){  //only run game logic when not paused, not between levels, and no card menu is open
         updateLevel(deltaTime);
     }
-
     ctx.save();
     ctx.translate(-cameraX, 0);  //shift drawing so the camera follows the player
 
@@ -277,6 +276,22 @@ function drawLevel(ctx, canvas, deltaTime){
     ctx.font = "50px VT323";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     drawFame(ctx, 30, 100, player.fame);
+    //Timer
+    let timePassed = levelTimer / 1000;
+    /*let timeLeft = Math.max(0, timeTarget - timePassed);*/
+    let timeTarget = currentLevelConfig.targetTime / 1000;
+    const timerDiv = document.getElementById("level-timer");
+    if (timerDiv) {
+        timerDiv.textContent =
+            `${timePassed.toFixed(1)}s / ${timeTarget.toFixed(1)}s`;
+        if (timeTarget - timePassed < 3) {
+            timerDiv.style.color = "red";
+        } else {
+            timerDiv.style.color = "white";
+        }
+    }
+    
+
     pauseBox.draw(ctx);
     confirmBox.draw(ctx);
 
