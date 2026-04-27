@@ -2,6 +2,7 @@ import { AnimatedObject } from "../libs/AnimatedObject.js";
 import { hitboxOverlap } from "../libs/game_functions.js";
 import { Rect } from "../libs/Rect.js";
 
+
 class PlayerBase extends AnimatedObject {  
   constructor(position, config = {}) {
     const {

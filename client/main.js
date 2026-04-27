@@ -5,10 +5,9 @@ import { getPlayer, drawLevel, handleMouseMoveLevel, handleClickLevel, resetLeve
         handleKeyUpLevel, setSelectedCharacter, goToMenu, resetGoToMenu, goToScore, resetGoToScore } from "./scenes/levelBase.js";  //all 3 levels now live here
 import { drawCreateAccount, handleMouseMoveCreateAccount, handleClickCreateAccount, handleKeyDownCreateAccount, resetCreateAccount } from "./scenes/createAccountScene.js";
 import { drawSettings, handleMouseMoveSettings, handleClickSettings, startDragging, stopDragging, resetSettings } from "./scenes/settingsScene.js";
-import { drawScoreScene, handleClickScoreScene } from "./scenes/scoreScene.js";
+import { drawScoreScene, handleClickScoreScene, handleMouseMoveScore, loadMatchSummary } from "./scenes/scoreScene.js";
 import { loadPlayerStats } from "./libs/level_functions.js";
-
-
+import { loadPlayerConfigs, playerConfigs } from "./libs/levelConfig.js";
 //API update (THIS RIGHT NOW ISNT FROM API, INSTEAD OF POSTING AND THENN GETTING, WE JUST GRABBING JS VARIABLES)
 import {
     killedEnemies,
@@ -25,6 +24,9 @@ let oldTime = 0;
 let currentScene = "menu";
 let currentPlayer = null;
 let selectedCharacter = null;
+
+//API fetch info
+let configsReady = false;
 
 //API Connection, current player stats
 //This is beacause there are some variables that update in JS
@@ -45,7 +47,7 @@ function updateLiveStats() {
 
     document.getElementById("level").textContent = level;
     document.getElementById("kills").textContent = kills;
-    document.getElementById("fame").textContent = kills;
+    document.getElementById("fame").textContent = getPlayer()?.fame ?? 0;
     document.getElementById("cards").textContent = cards;
 }
 
@@ -133,6 +135,17 @@ function main() {
                 currentScene = "menu";
             }
         }
+        //Score Scene
+        else if(currentScene === "score"){
+            clicked = handleClickScoreScene();
+            if(clicked === "exit"){
+                currentScene = "menu";
+            }
+            if(clicked === "again"){
+                resetLevel();
+                currentScene = "level1";
+            }
+        }
     });
 
     canvas.addEventListener("mousedown", () => {
@@ -150,6 +163,7 @@ function main() {
         if(currentScene === 'createAccount') handleMouseMoveCreateAccount(event,canvas);
         if(currentScene === 'start') handleMouseMoveSelect(event,canvas);
         if(currentScene === 'level1') handleMouseMoveLevel(event,canvas);
+        if(currentScene === 'score') handleMouseMoveScore(event, canvas);
     });
 
     window.addEventListener("keydown", (event) => {
@@ -161,13 +175,25 @@ function main() {
     window.addEventListener("keyup", (event)=>{
         if(currentScene === 'level1') handleKeyUpLevel(event);
     });
-    requestAnimationFrame(gameLoop); 
+}
+
+//WE INIT RAF wen API fetch is ready
+async function init() {
+    console.log("Loading configs...");
+    await loadPlayerConfigs();
+    console.log("Configs ready:", playerConfigs);
+    configsReady = true;
+    requestAnimationFrame(gameLoop); // ahora sí arranca
 }
 
 function gameLoop(newTime) {
     let deltaTime = (newTime - oldTime);
-    if(deltaTime > 50) deltaTime = 50;  
-    oldTime = newTime;
+    if (deltaTime > 50) deltaTime = 50; 
+
+    if (!configsReady) {
+        requestAnimationFrame(gameLoop);
+        return;
+    }
 
     if(currentScene === 'menu') drawMenu(ctx,canvas);
     else if(currentScene === 'settings') drawSettings(ctx,canvas);
@@ -178,6 +204,8 @@ function gameLoop(newTime) {
         drawLevel(ctx,canvas, deltaTime);  //levelBase handles all 3 levels now
         updateLiveStats();
         if(goToScore){  //levelBase signals game complete after level 3 deck preview
+            //Data
+            loadMatchSummary();
             resetGoToScore();
             currentScene = 'score';
         }
@@ -189,3 +217,6 @@ function gameLoop(newTime) {
 }
 
 main();
+init();
+
+export { loadPlayerStats };
