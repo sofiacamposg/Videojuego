@@ -2,7 +2,7 @@ import { drawMenu,  handleMouseMoveMenu, handleClickMenu } from "./scenes/menuSc
 import { drawLogIn, handleMouseMoveLogIn, handleClickLogIn, handleKeyDownLogIn, resetLogIn } from "./scenes/logInScene.js";
 import { drawSelect, handleMouseMoveSelect, handleClickSelect, resetSelect, getSelectedCharacter } from "./scenes/selectScene.js";
 import { getPlayer, drawLevel, handleMouseMoveLevel, handleClickLevel, resetLevel, handleKeyDownLevel,
-        handleKeyUpLevel, setSelectedCharacter, goToMenu, resetGoToMenu } from "./scenes/levelBase.js";  //all 3 levels now live here
+        handleKeyUpLevel, setSelectedCharacter, goToMenu, resetGoToMenu, goToScore, resetGoToScore } from "./scenes/levelBase.js";  //all 3 levels now live here
 import { drawCreateAccount, handleMouseMoveCreateAccount, handleClickCreateAccount, handleKeyDownCreateAccount, resetCreateAccount } from "./scenes/createAccountScene.js";
 import { drawSettings, handleMouseMoveSettings, handleClickSettings, startDragging, stopDragging, resetSettings } from "./scenes/settingsScene.js";
 import { drawScoreScene, handleClickScoreScene } from "./scenes/scoreScene.js";
@@ -177,6 +177,10 @@ function gameLoop(newTime) {
     else if(currentScene === 'level1') {
         drawLevel(ctx,canvas, deltaTime);  //levelBase handles all 3 levels now
         updateLiveStats();
+        if(goToScore){  //levelBase signals game complete after level 3 deck preview
+            resetGoToScore();
+            currentScene = 'score';
+        }
     }
     else if(currentScene === 'score') drawScoreScene(ctx,canvas,deltaTime);
 

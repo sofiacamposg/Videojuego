@@ -3,7 +3,7 @@ import { Vector } from "../libs/Vector.js";
 import { MessageBox } from "../objects/MessageBox.js";
 import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
 import { applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
-import { handleMouseMove } from "../libs/game_functions.js";
+import { handleMouseMove, randomRange } from "../libs/game_functions.js";
 import { level1Config, level2Config, level3Config, playerConfigs } from "../libs/levelConfig.js";
 import { spawnEnemy, generatePlatform, updateCamera, updateFame, drawFame, saveMatch, drawFog, imperialDecree,
         loadPlayerStats, drawHealthBar, drawHearts } from "../libs/level_functions.js";
@@ -18,10 +18,10 @@ let currentLevel = 1;
 let currentLevelConfig = level1Config;  //always starts at level 1, transitionToNextLevel() updates this
 let deckPreviewTimer = 0;
 let levelTimer = 0;  //how much does the player take in one level? (fame, cards gained)
-let randomEventTime = Math.random() * (40000 - 20000) + 20000;  //when will the event trigger?
+let randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);  //when will the event trigger?
 //? world config
 let worldWidth = 2000;
-let worldHeight = 600;
+let worldHeight = 600;  //esto no lo usamos
 let cameraX = 0;
 let canvasRef = { width: 1000 }; 
 let mouseX = 0
@@ -48,6 +48,7 @@ const game = {  //imperial decree effect
 //? pause
 let isPaused = false;
 let goToMenu = false;
+let goToScore = false;  //signals main.js to switch to score scene after level 3
 //? platforms
 let platforms = [];  //array to store platforms displayed
 let platformImage = new Image();
@@ -69,9 +70,9 @@ function drawPlatforms(ctx){  //draw all the platforms in the array
     });
 }
 //? hazards — spikes on level 2, firepits on level 3
-let hazards = [];
+let hazards = [];  //array to store platforms displayed
 function initHazards(){
-    hazards = [];
+    hazards = [];  //clean the array before starting
     const zones = [
         { min: 400, max: 700 },
         { min: 800, max: 1100 },
@@ -79,7 +80,7 @@ function initHazards(){
     ];
     const count = Math.random() < 0.5 ? 2 : 3;  //2 or 3 hazard spots per level
     const pickedZones = zones.sort(() => Math.random() - 0.5).slice(0, count);
-
+    //TODO wtf con como pone los hazards
     pickedZones.forEach(z => {
         const x = Math.random() * (z.max - z.min) + z.min;
         hazards.push(new Spikes(x, 410));  //spikes on both level 2 and 3
@@ -101,17 +102,17 @@ let pauseBox = new MessageBox(  //paused scene
 let confirmBox = new MessageBox(  //screen appears when user click on restart or home
         "ARE YOU SURE?",
         "",
-        300, 200, 400, 200
+        300, 200, 400, 150
     );
     let confirmAction = null;
-    confirmBox.addButton("Yes", 340, 320, 100, 35, () => {
+    confirmBox.addButton("Yes", 390, 280, 100, 35, () => {
         confirmBox.hide();
         pauseBox.hide();
         isPaused = false;
         if(confirmAction) confirmAction();
         confirmAction = null;
     });  
-    confirmBox.addButton("No", 460, 320, 100, 35, () => {
+    confirmBox.addButton("No", 510, 280, 100, 35, () => {
         confirmBox.hide();
     });
     pauseBox.addButton("Continue", 440, 290, 120, 35, () => {
@@ -120,7 +121,7 @@ let confirmBox = new MessageBox(  //screen appears when user click on restart or
     });
     pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
         confirmAction = () => {
-            resetLevel1();
+            resetLevel();
         };
         confirmBox.show();
     });
@@ -131,25 +132,16 @@ let confirmBox = new MessageBox(  //screen appears when user click on restart or
         confirmBox.show();
     });
 let levelCompletedBox = new MessageBox(  //message shown between levels
-        "You survived the arena. The emperor is watching!",
-        "",  //text gets filled in when the level actually ends
+        "You survived the arena.",
+        "Good luck, the emperor is watching!",  //text gets filled in when the level actually ends
         250, 150, 500, 300
     );
-    if (currentLevel <= 2){
-        levelCompletedBox.addButton("Ready for more?", 420, 350, 150, 40, () => {
-        levelCompletedBox.hide();
-        showDeckPreview = true;  //TODO
-        deckPreviewTimer = 0;
-        cardSystem.isDeckOpen = true;
-        });
-    } else {
-        levelCompletedBox.addButton("You survived another game!", 420, 350, 150, 40, () => {
-        levelCompletedBox.hide();
-        showDeckPreview = true;  //TODO
-        deckPreviewTimer = 0;
-        cardSystem.isDeckOpen = true;
-        });
-    }
+    levelCompletedBox.addButton("Ready for more?", 420, 350, 160, 40, () => {
+    levelCompletedBox.hide();
+    showDeckPreview = true;  
+    deckPreviewTimer = 0;
+    cardSystem.isDeckOpen = true;
+    });
 let gameOver = false;  //screen and config when hearts = 0
     let gameOverBox = new MessageBox(
         "Game Over",
@@ -164,12 +156,12 @@ let gameOver = false;  //screen and config when hearts = 0
             archetype_id: 1, //NO SIRVE, CAMBIARLO, ES HARDCORE
             duration_seconds: Math.floor(levelTimer / 1000),
             level_reached: currentLevel,
-            final_fame: killedEnemies,
+            final_fame: player.fame,
             life: Math.max(0, player.hearts),
             result: "LOSE"
         });
         console.log("Lose saved");
-        resetLevel1();
+        resetLevel();
         gameOver = false;
         gameOverBox.hide();
     }); 
@@ -310,12 +302,13 @@ function drawLevel(ctx, canvas, deltaTime){
     if(showDeckPreview){
         cardSystem.drawDeck(ctx, canvas);
         deckPreviewTimer += deltaTime;
-        if(deckPreviewTimer >= 5000){  //after 5 seconds, move to the next level
+        if(deckPreviewTimer >= 3000){  //after 3 seconds, move to the next level
             showDeckPreview = false;
             cardSystem.isDeckOpen = false;
-            if (currentLevel <= 3) 
+            if (currentLevel <= 3)
                 transitionToNextLevel();
-            //TODO: go to score scene
+            else
+                goToScore = true;  //all 3 levels done, tell main.js to go to score scene
         }
     }
 }
@@ -362,7 +355,6 @@ function updateLevel(deltaTime){
 
     let totalLenEnemies = enemies.length;
     enemies = enemies.filter(alive => !alive.isDying);  //remove dead enemies
-    let prevKilled = killedEnemies;
     killedEnemies += totalLenEnemies - enemies.length;  //count how many died this frame
     updateFame(player, currentLevelConfig, levelTimer);  //give "coins" (fame) for the time spent in the level
 
@@ -376,20 +368,21 @@ function updateLevel(deltaTime){
     }
 
     if(killedEnemies >= currentLevelConfig.conditionEnemies && !levelCompleted){  //level done
+        //levelTrans = true;
         levelCompleted = true;
         currentLevel ++;
         giveLevelRewards();  //give the player their reward cards
         levelCompletedBox.show();
         saveMatch({  //save the match result to the db
-            player_id: 1,
+            player_id: window.loggedPlayer.player_id,
             archetype_id: 1,
-            duration_seconds: levelTimer,
+            duration_seconds: Math.floor(levelTimer / 1000),
             level_reached: currentLevel,
             final_fame: killedEnemies,
             life: player.hearts,
             result: "WIN"
         });
-        loadPlayerStats(window.loggedPlayer.player_id, "level1");  //refresh live stats
+        loadPlayerStats(window.loggedPlayer.player_id, `level${currentLevel - 1}`);  //refresh live stats
     }
 
     cameraX = updateCamera(player.position.x, canvasRef.width, worldWidth);  //move camera to follow player
@@ -412,7 +405,6 @@ function handleMouseMoveLevel(event, canvas){
     mouseY = pos.y;
 }
 function handleClickLevel(){
-
     if(levelCompleted){
         return levelCompletedBox.handleClick(mouseX, mouseY);
     }
@@ -479,6 +471,9 @@ function handleKeyUpLevel(event){
 function resetGoToMenu(){
     goToMenu = false;
 }
+function resetGoToScore(){
+    goToScore = false;
+}
 function transitionToNextLevel(){  //? called after deck preview ends, sets up the next level
     currentLevelConfig = currentLevel === 2 ? level2Config : level3Config;  //pick config based on new level
     backgroundImage.src = currentLevelConfig.background;  //swap background
@@ -499,7 +494,7 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
     cameraX = 0;
     spawnTimer = 0;
     levelTimer = 0;
-    randomEventTime = Math.random() * (40000 - 20000) + 20000;
+    randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);  //when will the event trigger
     cardEventTriggered = false;
     cardSystem.close();
     cardSystem.isDeckOpen = false;
@@ -555,6 +550,8 @@ export {
     setSelectedCharacter,
     goToMenu,
     resetGoToMenu,
+    goToScore,
+    resetGoToScore,
     killedEnemies,
     currentLevel,
     levelTimer,
