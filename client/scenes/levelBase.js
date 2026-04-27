@@ -80,12 +80,10 @@ function initHazards(){
     ];
     const count = Math.random() < 0.5 ? 2 : 3;  //2 or 3 hazard spots per level
     const pickedZones = zones.sort(() => Math.random() - 0.5).slice(0, count);
-    //TODO wtf con como pone los hazards
     pickedZones.forEach(z => {
         const x = Math.random() * (z.max - z.min) + z.min;
         hazards.push(new Spikes(x, 410));  //spikes on both level 2 and 3
     });
-
     if (currentLevel === 3){  //level 3 also adds firepits on top of spikes
         pickedZones.forEach(z => {
             const x = Math.random() * (z.max - z.min) + z.min;
@@ -151,9 +149,9 @@ let gameOver = false;  //screen and config when hearts = 0
     gameOverBox.addButton("Restart", 440, 340, 120, 35, async () => {
         console.log("RESTART GAME OVER CLICKED");
         //Updates live stats, runs and defeats
-        await saveMatch({  //TODO
+        await saveMatch({  
             player_id: window.loggedPlayer.player_id,
-            archetype_id: 1, //NO SIRVE, CAMBIARLO, ES HARDCORE
+            archetype_id: selectedArchetypeId, 
             duration_seconds: Math.floor(levelTimer / 1000),
             level_reached: currentLevel,
             final_fame: player.fame,
@@ -166,7 +164,10 @@ let gameOver = false;  //screen and config when hearts = 0
         gameOverBox.hide();
     }); 
 //? initial config for all the game
+const archetypeIds = { Warrior: 1, Lancer: 2, Heavy: 3 };  //match DB archetype IDs
+let selectedArchetypeId = 1;
 function setSelectedCharacter(selectedCharacter){
+    selectedArchetypeId = archetypeIds[selectedCharacter] ?? 1;
     player = new PlayerBase(
         new Vector(200,450),
         playerConfigs[selectedCharacter]
@@ -260,8 +261,8 @@ function drawLevel(ctx, canvas, deltaTime){
     ctx.clearRect(0, 0, canvas.width, canvas.height);  //clean the screen before drawing the new frame
     for(let i = 0; i < worldWidth; i += canvas.width){  //duplicate the background image to fill the whole world
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); }
-    //TODO
-    if(!isPaused && (!cardSystem.isActive || showDeckPreview)){  //only run game logic when not paused and no card menu is open
+
+    if(!isPaused && !levelCompleted && (!cardSystem.isActive || showDeckPreview)){  //only run game logic when not paused, not between levels, and no card menu is open
         updateLevel(deltaTime);
     }
 
@@ -375,7 +376,7 @@ function updateLevel(deltaTime){
         levelCompletedBox.show();
         saveMatch({  //save the match result to the db
             player_id: window.loggedPlayer.player_id,
-            archetype_id: 1,
+            archetype_id: selectedArchetypeId,
             duration_seconds: Math.floor(levelTimer / 1000),
             level_reached: currentLevel,
             final_fame: killedEnemies,
@@ -501,7 +502,7 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
 }
 //* goes back to level 1, resets everything
 function resetLevel(){
-    currentLevel = 1;  //TODO
+    currentLevel = 1; 
     currentLevelConfig = level1Config;
     backgroundImage.src = level1Config.background;  //swap back to level 1 background
 
