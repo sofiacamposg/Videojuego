@@ -7,8 +7,7 @@ import { drawCreateAccount, handleMouseMoveCreateAccount, handleClickCreateAccou
 import { drawSettings, handleMouseMoveSettings, handleClickSettings, startDragging, stopDragging, resetSettings } from "./scenes/settingsScene.js";
 import { drawScoreScene, handleClickScoreScene, handleMouseMoveScore, loadMatchSummary } from "./scenes/scoreScene.js";
 import { loadPlayerStats } from "./libs/level_functions.js";
-
-
+import { loadPlayerConfigs, playerConfigs } from "./libs/levelConfig.js";
 //API update (THIS RIGHT NOW ISNT FROM API, INSTEAD OF POSTING AND THENN GETTING, WE JUST GRABBING JS VARIABLES)
 import {
     killedEnemies,
@@ -25,6 +24,9 @@ let oldTime = 0;
 let currentScene = "menu";
 let currentPlayer = null;
 let selectedCharacter = null;
+
+//API fetch info
+let configsReady = false;
 
 //API Connection, current player stats
 //This is beacause there are some variables that update in JS
@@ -140,7 +142,7 @@ function main() {
                 currentScene = "menu";
             }
             if(clicked === "again"){
-                resetLevel1();
+                resetLevel();
                 currentScene = "level1";
             }
         }
@@ -173,12 +175,25 @@ function main() {
     window.addEventListener("keyup", (event)=>{
         if(currentScene === 'level1') handleKeyUpLevel(event);
     });
-    requestAnimationFrame(gameLoop); 
+}
+
+//WE INIT RAF wen API fetch is ready
+async function init() {
+    console.log("Loading configs...");
+    await loadPlayerConfigs();
+    console.log("Configs ready:", playerConfigs);
+    configsReady = true;
+    requestAnimationFrame(gameLoop); // ahora sí arranca
 }
 
 function gameLoop(newTime) {
     let deltaTime = (newTime - oldTime);
     if (deltaTime > 50) deltaTime = 50; 
+
+    if (!configsReady) {
+        requestAnimationFrame(gameLoop);
+        return;
+    }
 
     if(currentScene === 'menu') drawMenu(ctx,canvas);
     else if(currentScene === 'settings') drawSettings(ctx,canvas);
@@ -202,4 +217,6 @@ function gameLoop(newTime) {
 }
 
 main();
+init();
+
 export { loadPlayerStats };

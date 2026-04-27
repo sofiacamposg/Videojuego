@@ -1,6 +1,34 @@
 //LEVEL CONFIGURATIONS
 //Player Configurations 
-export const playerConfigs = {
+
+//API
+export let playerConfigs = {};
+export async function loadPlayerConfigs() {
+    const res = await fetch("http://localhost:3000/archetypes");
+    const data = await res.json();
+
+    const configs = {};
+
+    data.forEach(a => {
+        configs[a.name] = {
+            hp: a.hp_start,
+            maxHp: a.hp_start,
+            speed: a.speed_start / 10,
+            damage: a.damage_start,
+
+            walkRightSrc: `./assets/player${a.archetype_id}/1.png`,
+            walkLeftSrc: `./assets/player${a.archetype_id}/2.png`,
+            jumpRightSrc: `./assets/player${a.archetype_id}/3.png`,
+            jumpLeftSrc: `./assets/player${a.archetype_id}/4.png`,
+            attackRightSrc: `./assets/player${a.archetype_id}/attackright.png`,
+            attackLeftSrc: `./assets/player${a.archetype_id}/attackleft.png`,
+        };
+    });
+
+    playerConfigs = configs;
+}
+
+/*export const playerConfigs = {
     Warrior: {
         hp: 120, maxHp: 120, speed: 0.5, damage: 20,
         walkRightSrc: "./assets/player1/1.png",
@@ -30,7 +58,7 @@ export const playerConfigs = {
         attackRightSrc: "./assets/player3/attackright.png",
         attackLeftSrc:  "./assets/player3/attackleft.png",
     },
-};
+};*/
 
 //Configurations for each level
 export const level1Config = {  //   TODO agregar muerte del lado derecho
