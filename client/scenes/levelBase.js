@@ -325,8 +325,8 @@ function updateLevel(deltaTime){
 
     player.isMoving = false;  //reset movement flag before checking keys
 
-    const goLeft  = keysDown["ArrowLeft"];
-    const goRight = keysDown["ArrowRight"];
+    const goLeft  = keysDown["ArrowLeft"] || keysDown["a"] || keysDown["A"];
+    const goRight = keysDown["ArrowRight"] || keysDown["d"] || keysDown["D"];
     const groundY = 450;  //floor height, everything below this is out of bounds
 
     player.update(goLeft, goRight, jumpPressed, platforms, groundY, deltaTime);
@@ -424,6 +424,7 @@ function handleKeyDownLevel(event){
     if(event.repeat) return;
 
     if(event.key === "Escape"){
+        event.preventDefault()
         if(confirmBox.visible){
             confirmBox.hide();
             return;
@@ -441,13 +442,22 @@ function handleKeyDownLevel(event){
 
     keysDown[event.key] = true;
 
+    if(event.key === "ArrowLeft"){  //TODO no funciona :(
+        event.preventDefault();
+    }
+    if(event.key === "ArrowRight"){
+        event.preventDefault();
+    }
     if(event.key === "c" || event.key === "C"){
+        event.preventDefault()
         cardSystem.toggleDeck();
     }
     if(event.key === " "){
+        event.preventDefault()
         jumpPressed = true;
     }
     if(event.key === "j"){
+        event.preventDefault()
         if(!player.playeratack){
             player.playeratack = true;
             player.attackFrames = 0;

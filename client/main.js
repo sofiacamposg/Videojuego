@@ -166,6 +166,7 @@ function main() {
 
 function gameLoop(newTime) {
     let deltaTime = (newTime - oldTime);
+    if(deltaTime > 50) deltaTime = 50;  
     oldTime = newTime;
 
     if(currentScene === 'menu') drawMenu(ctx,canvas);
