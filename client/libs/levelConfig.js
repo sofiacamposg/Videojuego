@@ -101,8 +101,8 @@ export const level2Config = {
         walkLeftSrc: "./assets/enemy2/walkLeft.png",
         attackRightSrc: "./assets/enemy2/attackRight.png",
         attackLeftSrc: "./assets/enemy2/attackLeft.png",
-        deathLeftSrc: "./assets/enemy2/death.png",
-        deathRightSrc: "./assets/enemy1/deathRight.png",
+        deathLeftSrc: "./assets/enemy2/deathLeft.png",
+        deathRightSrc: "./assets/enemy2/deathRight.png",
 
     },
 
