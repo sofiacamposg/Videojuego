@@ -346,3 +346,21 @@ app.get("/player/live/:id", (req, res) => {
         }
     );
 });
+
+//LEVEL CONFIGS, ARCHETYPE, ENEMIES, LEVEL
+app.get("/enemies", (req, res) => {
+    db.query("SELECT * FROM Enemy", (err, result) => {
+        if (err) return res.status(500).send(err.message);
+        res.json(result);
+    });
+});
+
+app.get("/levels", (req, res) => {
+    db.query("SELECT * FROM Level", (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send(err.message);
+        }
+        res.json(result);
+    });
+});

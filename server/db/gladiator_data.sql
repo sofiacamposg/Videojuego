@@ -23,10 +23,10 @@ COMMIT;
 
 -- Insert the 3 levels
 SET AUTOCOMMIT = 0;
-INSERT INTO Level (level_number, target_time, description) VALUES
-(1, 30, 'First level of the arena'),
-(2, 30, 'Intermediate arena battle'),
-(3, 30, 'Final battle of the colosseum');
+INSERT INTO Level (level_number, target_time, condition_enemies, description) VALUES
+(1, 10000, 8, 'First level of the arena'),
+(2, 15000, 9, 'Intermediate arena battle'),
+(3, 20000, 10, 'Final battle of the colosseum');
 COMMIT;
 
 -- Insert Cards catalog TODO: AÑADIR LAS DEMÁS CARTAS
@@ -71,7 +71,7 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 'Reveals the type of the next 3 cards before selection',
 'POWER_UP', 'PERMANENT',
 'game', 'revealNextCard', '=', '=', 1.0, 0.0, 0),
----
+
 ('Imperial Decreee',
 '2 additional enemies spawn immediately', 
 'PUNISHMENT', 'PERMANENT', 
@@ -113,7 +113,7 @@ SET AUTOCOMMIT = 0;
 INSERT INTO Enemy (level_id, enemy_name, hp_start, speed_start, damage_start) VALUES
 (1, 'Lion', 50, 4, 8),
 (2, 'Tiger', 80, 5, 12),
-(3, 'Boar', 150, 3, 20);
+(3, 'Boar', 150, 6, 20);
 COMMIT;
 
 -- Dummy data for Player

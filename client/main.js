@@ -7,7 +7,7 @@ import { drawCreateAccount, handleMouseMoveCreateAccount, handleClickCreateAccou
 import { drawSettings, handleMouseMoveSettings, handleClickSettings, startDragging, stopDragging, resetSettings } from "./scenes/settingsScene.js";
 import { drawScoreScene, handleClickScoreScene, handleMouseMoveScore, loadMatchSummary } from "./scenes/scoreScene.js";
 import { loadPlayerStats } from "./libs/level_functions.js";
-import { loadPlayerConfigs, playerConfigs } from "./libs/levelConfig.js";
+import { loadPlayerConfigs, playerConfigs, loadEnemyConfigs, enemyConfigs, loadLevelConfigs, levelConfigsDB } from "./libs/levelConfig.js";
 //API update (THIS RIGHT NOW ISNT FROM API, INSTEAD OF POSTING AND THENN GETTING, WE JUST GRABBING JS VARIABLES)
 import {
     killedEnemies,
@@ -181,7 +181,11 @@ function main() {
 async function init() {
     console.log("Loading configs...");
     await loadPlayerConfigs();
+    await loadEnemyConfigs();
+    await loadLevelConfigs();
     console.log("Configs ready:", playerConfigs);
+    console.log("Configs ready:", enemyConfigs);
+    console.log("Configs ready:", levelConfigsDB);
     configsReady = true;
     requestAnimationFrame(gameLoop); // ahora sí arranca
 }
