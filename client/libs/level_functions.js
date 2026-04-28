@@ -47,8 +47,7 @@ export async function saveMatch(data) {
 
     const result = await res.json();
 
-    // keep the last match_id
-    window.lastMatchId = result.match_id;
+    window.lastMatchId = result.match_id;  // ESTO ES CLAVE
 
     return result;
 }

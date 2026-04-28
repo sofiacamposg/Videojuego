@@ -7,6 +7,7 @@ let mouseX = 0;
 let mouseY = 0;
 
 let matchData = null;  //later, API data
+let loaded = false;
 
 const buttonExit = {
     x: 200,
@@ -28,7 +29,9 @@ let cachedCtx;
 
 //fetch of the match
 export async function loadMatchSummary() {
-    if (!window.lastMatchId) return;
+    if (!window.lastMatchId || loaded) return;
+
+    loaded = true;
 
     try {
         const res = await fetch(`http://localhost:3000/match/summary/${window.lastMatchId}`);
@@ -73,33 +76,53 @@ function drawScoreScene(ctx, canvas) {
     ctx.font = "24px 'VT323'";
 
     const startX = panelX + 40;
-    let y = panelY + 100;
+    let y = panelY + 120;
     const gap = 40;
 
     if (matchData) {
-        ctx.fillStyle = "white";
-        ctx.fillText(`Player: ${matchData.player_name}`, startX, y); y += gap;
-        ctx.fillText(`Level: ${matchData.level_reached}`, startX, y); y += gap;
-        ctx.fillText(`Fame: ${matchData.final_fame}`, startX, y); y += gap;
-        ctx.fillText(`Time: ${matchData.duration_seconds}s`, startX, y); y += gap;
+        const centerX = panelX + panelW / 2;
 
-        // result-based color
-        ctx.fillStyle = matchData.result === "WIN" ? "lime" : "red";
-        ctx.fillText(`Result: ${matchData.result}`, startX, y);
+        //  línea vertical
+        ctx.strokeStyle = "#d4af37";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(centerX, panelY + 100);
+        ctx.lineTo(centerX, panelY + panelH - 30);
+        ctx.stroke();
 
-    } else {
-        ctx.fillStyle = "white";
-        ctx.fillText("Loading...", startX, y);
-    }
+        // estilos
+        ctx.font = "26px 'VT323'";
+        ctx.textBaseline = "middle";
 
-    if (matchData) {
-        ctx.fillText(`PLAYER: ${matchData.player_name}`, 350, 150);
-        ctx.fillText(`LEVEL: ${matchData.level_reached}`, 350, 200);
-        ctx.fillText(`FAME: ${matchData.final_fame}`, 350, 250);
-        ctx.fillText(`TIME: ${matchData.duration_seconds}s`, 350, 300);
-        ctx.fillText(`RESULT: ${matchData.result}`, 350, 350);
-    } else {
-        ctx.fillText("LOADING...", 400, 250);
+        let y = panelY + 100;
+        const gap = 45;
+
+        const labels = ["PLAYER", "LEVEL", "FAME", "TIME", "RESULT"];
+        const values = [
+            matchData.player_name,
+            matchData.level_reached,
+            matchData.final_fame,
+            matchData.duration_seconds + "s",
+            matchData.result
+        ];
+
+        for (let i = 0; i < labels.length; i++) {
+
+            // izquierda (labels)
+            ctx.textAlign = "right";
+            ctx.fillStyle = "#d4af37";
+            ctx.fillText(labels[i], centerX - 20, y);
+
+            // derecha (values)
+            ctx.textAlign = "left";
+            ctx.fillStyle = (labels[i] === "RESULT")
+                ? (matchData.result === "WIN" ? "lime" : "red")
+                : "white";
+
+            ctx.fillText(values[i], centerX + 20, y);
+
+            y += gap;
+        }
     }
 
     drawButton(ctx, buttonExit, mouseX, mouseY);

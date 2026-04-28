@@ -152,15 +152,42 @@ app.get("/cards/random", (req, res) => {
 });
 
 //GET real time stats view
-app.get("/match/hud/:id", (req, res) => {
-    db.query( //Select all from the view 
-        "SELECT * FROM vw_match_hud WHERE match_id = ?",
-        [req.params.id], //This retrieves the current match status for the player, to display on the screen while tha player is playing
-        (err, result) => {
-            if (err) return res.status(500).send(err.message);
-            res.json(result);
+app.post("/match", (req, res) => {
+
+    const {
+        player_id,
+        archetype_id,
+        duration_seconds,
+        level_reached,
+        final_fame,
+        life,
+        result
+    } = req.body;
+
+    const query = `
+        INSERT INTO MatchGame 
+        (player_id, archetype_id, duration_seconds, level_reached, final_fame, life, result)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const values = [
+        player_id,
+        archetype_id,
+        duration_seconds,
+        level_reached,
+        final_fame,
+        life,
+        result
+    ];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send(err);
         }
-    );
+
+        res.json({ match_id: result.insertId }); // 🔥 CLAVE
+    });
 });
 
 //GET Game Progress view

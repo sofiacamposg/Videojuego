@@ -60,7 +60,6 @@ class EnemyBase extends AnimatedObject {
   }
 
   update(player, deltaTime) {  //manage movement, hurtbox, attack
-    console.log("enemy speed:", this.speed);
     if (this.hp <= 0) {
       this.updateAnimation(deltaTime);
       this.deathTimer += deltaTime;
