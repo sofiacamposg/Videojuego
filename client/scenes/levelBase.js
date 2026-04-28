@@ -150,7 +150,10 @@ let gameOver = false;  //screen and config when hearts = 0
             level_reached: currentLevel,
             final_fame: player.fame,
             life: Math.max(0, player.hearts),
-            result: "LOSE"
+            result: "LOSE",
+            kills: killedEnemies,
+            cards_in_deck: cardSystem.playerDeck.length
+
         });
         console.log("Lose saved");
         resetLevel();
@@ -389,7 +392,9 @@ function updateLevel(deltaTime){
             level_reached: currentLevel,
             final_fame: killedEnemies,
             life: player.hearts,
-            result: "WIN"
+            result: "WIN",
+            kills: killedEnemies,
+            cards_in_deck: cardSystem.playerDeck.length
         });
         loadPlayerStats(window.loggedPlayer.player_id, `level${currentLevel - 1}`);  //refresh live stats
     }
