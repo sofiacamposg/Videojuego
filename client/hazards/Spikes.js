@@ -4,8 +4,8 @@ class Spikes {
     constructor(x, y){
         this.x = x;
         this.y = y;
-        this.width = 60;
-        this.height = 40;
+        this.width = 150;
+        this.height = 80;
         this.damage = 10;
         this.damageCooldown = 0;
         this.damageCooldownMax = 800;
