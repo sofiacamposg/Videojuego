@@ -351,7 +351,6 @@ function updateLevel(deltaTime){
     let totalLenEnemies = enemies.length;
     enemies = enemies.filter(alive => !alive.isDying);  //remove dead enemies
     killedEnemies += totalLenEnemies - enemies.length;  //count how many died this frame
-    updateFame(player, currentLevelConfig, levelTimer);  //give "coins" (fame) for the time spent in the level
 
     spawnTimer += deltaTime;
     if (spawnTimer >= spawnInterval) {  //time to spawn a new enemy
@@ -365,6 +364,7 @@ function updateLevel(deltaTime){
     if(killedEnemies >= currentLevelConfig.conditionEnemies && !levelCompleted){  //level done
         levelCompleted = true;
         currentLevel ++;
+        updateFame(player, currentLevelConfig, levelTimer);  //give "coins" (fame) for the time spent in the level
         giveLevelRewards();  //give the player their reward cards
         levelCompletedBox.show();
         saveMatch({  //save the match result to the db
