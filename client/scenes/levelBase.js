@@ -411,7 +411,7 @@ function updateLevel(deltaTime){
 
     spawnTimer += deltaTime;
     if (spawnTimer >= spawnInterval) {  //time to spawn a new enemy
-        if (killedEnemies < currentLevelConfig.conditionEnemies) {  //only spawn if the kill goal isn't reached yet
+        if (killedEnemies + enemies.length < currentLevelConfig.conditionEnemies) {  //only spawn if total enemies haven't reached the kill goal yet
             enemies.push(spawnEnemy(cameraX + canvasRef.width + 100, 450, currentLevelConfig.enemyConfig));
         }
         console.log(`enemies: ${enemies.length}`);

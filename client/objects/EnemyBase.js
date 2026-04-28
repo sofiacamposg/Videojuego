@@ -81,7 +81,7 @@ class EnemyBase extends AnimatedObject {
     let direction = this.speed < 0 ? -1 : 1;  //change direction, the < is ro keep the direction of bounce
 
     if (this.isSlowed) {  //lions roar effect
-      this.speed = this.speedBase * 0.2 * direction; 
+      this.speed = this.speedBase * 0.1 * direction; 
     } else {
       this.speed = this.speedBase * direction;
     }
@@ -98,7 +98,7 @@ class EnemyBase extends AnimatedObject {
       this.spriteImage = (this.speed < 0) ? this.spriteDeathRight : this.spriteDeathLeft;
       this.setAnimation(0, 3, false, 100);  //faster and false to not repeat the animation
       if (player.lifeSteal){  //gladiators blood effect
-        player.hp = Math.min(player.hp + 20, player.maxHp);  
+        player.hp = Math.min(player.hp + 30, player.maxHp);  
       }
     }
 

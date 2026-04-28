@@ -22,7 +22,7 @@ export async function saveCardUse(levelId, cardId, duration) {
 export function drawFog(ctx, canvas, game) {
     if (!game.fogActive) return;
     ctx.save();
-    ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+    ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
 }

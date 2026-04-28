@@ -70,7 +70,6 @@ class PlayerBase extends AnimatedObject {
     // card system
     this.canJump = true;
     this.invincible = false;
-    this.lifeSteal = false;
     this.hearts = 5;
     this.maxHearts = 5;
     this.range = 1;
