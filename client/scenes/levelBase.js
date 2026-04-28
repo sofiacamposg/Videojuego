@@ -150,7 +150,7 @@ let gameOver = false;  //screen and config when hearts = 0
         "You died!\n The emperor is dissapointed in you",
         250, 150, 500, 300
     );
-    gameOverBox.addButton("Restart", 440, 340, 120, 35, async () => {
+    gameOverBox.addButton("Go to Score", 440, 340, 120, 35, async () => {
         console.log("RESTART GAME OVER CLICKED");
         //Updates live stats, runs and defeats
         await saveMatch({  
@@ -160,9 +160,13 @@ let gameOver = false;  //screen and config when hearts = 0
             level_reached: currentLevel,
             final_fame: player.fame,
             life: Math.max(0, player.hearts),
-            result: "LOSE"
+            result: "LOSE",
+            kills: killedEnemies,
+            cards_in_deck: cardSystem.playerDeck.length
+
         });
-        console.log("Lose saved");
+        console.log("Lose saved, match saved, going to score");
+        goToScore = true;
         resetLevel();
         gameOver = false;
         gameOverBox.hide();
@@ -428,7 +432,9 @@ function updateLevel(deltaTime){
             level_reached: currentLevel,
             final_fame: killedEnemies,
             life: player.hearts,
-            result: "WIN"
+            result: "WIN",
+            kills: killedEnemies,
+            cards_in_deck: cardSystem.playerDeck.length
         });
         loadPlayerStats(window.loggedPlayer.player_id, `level${currentLevel - 1}`);  //refresh live stats
     }

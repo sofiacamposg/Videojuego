@@ -196,6 +196,7 @@ async function loginUser(onSuccess){
 
         const data = await res.json();
         window.loggedPlayer = data;
+        localStorage.setItem("player", JSON.stringify(data));
         console.log("USER LOGGED:", data);
 
         //login ok? call the callback to handle the scene change
