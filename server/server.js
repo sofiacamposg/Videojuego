@@ -61,45 +61,66 @@ app.get("/players", (req, res) => {
 //POST Log In
 app.post("/login", (req, res) => {
 
-    const { username, password } = req.body; //Fields from Player
+    const { username, password } = req.body;
 
-    const query = `
-        SELECT * FROM Player
-        WHERE username = ? AND password = ? 
-    `; // AND condition 
-
-    db.query(query, [username, password], (err, result) => {
-
-        if (err) {
+    //check Statistics first, if they're in there, they're an admin
+    db.query("SELECT * FROM Statistics WHERE username = ? AND password = ?", [username, password], (err, adminResult) => {
+        if (err) {  //case1: server error
             console.log("MYSQL ERROR:", err);
             return res.status(500).send("Server error");
         }
 
-        if (result.length === 0) {
-            return res.status(401).send("Invalid credentials");
+        if (adminResult.length > 0) {  //case2: found an admin, send back their data with role flag
+            console.log("ADMIN LOGGED:", adminResult[0]);
+            return res.json({ ...adminResult[0], role: "admin" });
         }
 
-        console.log("USER LOGGED:", result[0]);
+        //not an admin, check the regular players table
+        db.query("SELECT * FROM Player WHERE username = ? AND password = ?", [username, password], (err, playerResult) => {
+            if (err) {  //case 3: server error
+                console.log("MYSQL ERROR:", err);
+                return res.status(500).send("Server error");
+            }
 
-        res.json(result[0]); // Return User
+            if (playerResult.length === 0) {  //case 4: credentials not found
+                return res.status(401).send("Invalid credentials");
+            }
+
+            //case5: regular player found, send back their data with role flag
+            console.log("USER LOGGED:", playerResult[0]);
+            return res.json({ ...playerResult[0], role: "player" });
+        });
     });
 });
 
 //POST create account
 app.post("/register", (req, res) => {
-    const { username, password, name } = req.body; //Fields from Player we want to fill
-    const checkQuery = `SELECT * FROM Player WHERE username = ?`;
-    db.query(checkQuery, [username], (err, result) => {
+    const { username, password, name } = req.body;
+
+    // if username starts with @dm1n_, register as admin in Statistics instead of Player
+    if (username.startsWith("@dm1n_")) {
+        const cleanUsername = username.slice(6);  // strip the 6-char prefix
+        db.query("SELECT * FROM Statistics WHERE username = ?", [cleanUsername], (err, result) => {
+            if (err) return res.status(500).send("Server error");  //case1: check for errors
+            if (result.length > 0) return res.status(400).send("Admin already exists");  //case2: check if is an existing credential
+            //case3: insert in admin table
+            db.query("INSERT INTO Statistics (name, username, password) VALUES (?, ?, ?)", [name, cleanUsername, password], (err) => {
+                if (err) return res.status(500).send("Insert error");  //case3.1: error w server
+                console.log("ADMIN CREATED:", cleanUsername);  //case3.2: insert successfull
+                return res.json({ success: true, role: "admin" });
+            });
+        });
+        return;  // stop here so the player register code below doesn't run
+    }
+
+    // regular player registration, 
+    db.query("SELECT * FROM Player WHERE username = ?", [username], (err, result) => {
         if (err) return res.status(500).send("Server error");
-        if (result.length > 0) return res.status(400).send("User already exists"); //If User already exists message error
-        const insertQuery = ` 
-            INSERT INTO Player (name, username, password)
-            VALUES (?, ?, ?)
-        `; //Else do an Insert in the predetermined fields
-        db.query(insertQuery, [name, username, password], (err) => {
+        if (result.length > 0) return res.status(400).send("User already exists");
+        db.query("INSERT INTO Player (name, username, password) VALUES (?, ?, ?)", [name, username, password], (err) => {
             if (err) return res.status(500).send("Insert error");
             console.log("USER CREATED:", username);
-            res.json({ success: true });
+            res.json({ success: true, role: "player" });
         });
     });
 });
