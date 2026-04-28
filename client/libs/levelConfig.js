@@ -139,7 +139,7 @@ export function getLevelConfig(level) {
 /*export const level1Config = {  //   TODO agregar muerte del lado derecho
     background: "./assets/Coliseo1.png",
     targetTime: 10000,
-    conditionEnemies: 8,
+    conditionEnemies: 1,
 
 
     enemyConfig: {
@@ -162,7 +162,7 @@ export function getLevelConfig(level) {
 export const level2Config = {
     background: "./assets/Coliseo2.png",
     targetTime: 15000,
-    conditionEnemies: 9,
+    conditionEnemies: 2,
 
 
     enemyConfig: {
@@ -172,8 +172,8 @@ export const level2Config = {
         walkLeftSrc: "./assets/enemy2/walkLeft.png",
         attackRightSrc: "./assets/enemy2/attackRight.png",
         attackLeftSrc: "./assets/enemy2/attackLeft.png",
-        deathLeftSrc: "./assets/enemy2/death.png",
-        deathRightSrc: "./assets/enemy1/deathRight.png",
+        deathLeftSrc: "./assets/enemy2/deathLeft.png",
+        deathRightSrc: "./assets/enemy2/deathRight.png",
 
     },
 
@@ -185,7 +185,7 @@ export const level2Config = {
 export const level3Config = {
     background: "./assets/Coliseo3.png",
     targetTime: 20000,
-    conditionEnemies: 10,
+    conditionEnemies: 3,
 
     enemyConfig: {
         ...enemyConfigs[3],

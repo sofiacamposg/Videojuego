@@ -26,6 +26,7 @@ let cameraX = 0;
 let canvasRef = { width: 1000 }; 
 let mouseX = 0
 let mouseY = 0
+let spikesWarningPulse = 0;
 let backgroundImage = new Image();
 backgroundImage.src = currentLevelConfig.background;
 //? player/enemy variables
@@ -79,7 +80,7 @@ function initHazards(){
     for(let i = 0; i < count; i++){  //for spikes
         hazards.push(new Spikes(randomRange(worldWidth - safeZone, safeZone), 410));
     }
-    if(currentLevel === 3){  //TODO adds firepits on top of spikes
+    if(currentLevel === 3){  //TODO adds firepits on top of spikes?
         for(let i = 0; i < count; i++){
             hazards.push(new FirePit(randomRange(worldWidth - safeZone, safeZone), 410));
         }
@@ -91,6 +92,15 @@ let pauseBox = new MessageBox(  //paused scene
         "Game is paused",
         250, 150, 500, 300
     );
+
+let spikesWarningBox = new MessageBox(  // spikes warning
+        "ATTENTION GLADIATOR!!!",
+        "THERE ARE SPIKES IN THE SAND NOW!\n TRY NOT TO STEP ON THEM OR YOU'LL LOSE LIFE!",
+        250, 150, 500, 300
+    );
+    spikesWarningBox.addButton("OK", 420, 350, 160, 40, () => {
+        spikesWarningBox.hide();
+    });
 let confirmBox = new MessageBox(  //screen appears when user click on restart or home
         "ARE YOU SURE?",
         "",
@@ -125,7 +135,7 @@ let confirmBox = new MessageBox(  //screen appears when user click on restart or
     });
 let levelCompletedBox = new MessageBox(  //message shown between levels
         "You survived the arena.",
-        "Good luck, the emperor is watching!",  //text gets filled in when the level actually ends
+        "Good luck, the emperor is watching!",  
         250, 150, 500, 300
     );
     levelCompletedBox.addButton("Ready for more?", 420, 350, 160, 40, () => {
@@ -161,6 +171,9 @@ let gameOver = false;  //screen and config when hearts = 0
         gameOver = false;
         gameOverBox.hide();
     }); 
+    gameOverBox.addButton("Home", 440, 400, 120, 35, () => {
+        goToMenu = true;
+    });
 //? initial config for all the game
 const archetypeIds = { Warrior: 1, Lancer: 2, Heavy: 3 };  //match DB archetype IDs
 let selectedArchetypeId = 1;
@@ -231,7 +244,9 @@ async function giveLevelRewards(){  //? reward cards, depending on fame, after l
         if(!response.ok) throw new Error("API failed");  //edge case
         const data = await response.json();
        
-        const powerUps = data.filter(c => c.effect_type === "POWER_UP"); //rewards are only power ups
+        //cards offered in this levels mid-game event, excludes them from rewards so the same card can't appear twice in the same level
+        const eventIds = new Set(cardOptions.map(c => c.card_id));
+        const powerUps = data.filter(c => c.effect_type === "POWER_UP" && !eventIds.has(c.card_id)); //rewards are only power ups not shown in this level's event
         const shuffled = powerUps.sort(() => Math.random() - 0.5);  //mix the powerups to obtain different options everytime
 
         //take only the first rewardCount cards and add each one to the player's deck
@@ -260,7 +275,8 @@ function drawLevel(ctx, canvas, deltaTime){
     for(let i = 0; i < worldWidth; i += canvas.width){  //duplicate the background image to fill the whole world
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); }
 
-    if(!isPaused && !levelCompleted && (!cardSystem.isActive || showDeckPreview)){  //only run game logic when not paused, not between levels, and no card menu is open
+    if(!isPaused && !levelCompleted && (!cardSystem.isActive || showDeckPreview) 
+        && !spikesWarningBox.visible && !gameOver){  //only run game logic when not paused, not between levels, and no card menu is open
         updateLevel(deltaTime);
     }
     ctx.save();
@@ -275,11 +291,11 @@ function drawLevel(ctx, canvas, deltaTime){
     ctx.restore();  //undo the camera shift so next things draw at their normal position
 
     drawFog(ctx, canvas, game);  //amphitheatre fog effect
-
+    
     drawHealthBar(ctx, 30, 20, 100, 30, player.hp, player.maxHp);
     ctx.font = "50px VT323";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
-    drawFame(ctx, 30, 100, player.fame);
+    drawFame(ctx, 430, 40, player.fame);
     //Timer
     let timePassed = levelTimer / 1000;
     /*let timeLeft = Math.max(0, timeTarget - timePassed);*/
@@ -294,10 +310,33 @@ function drawLevel(ctx, canvas, deltaTime){
             timerDiv.style.color = "white";
         }
     }
-    
 
     pauseBox.draw(ctx);
     confirmBox.draw(ctx);
+
+    if(spikesWarningBox.visible){
+        spikesWarningPulse += deltaTime * 0.005;
+    let scale = 1 + Math.sin(spikesWarningPulse) * 0.05;
+
+    ctx.save();
+
+    // overlay red transparent
+    ctx.fillStyle = "rgba(255, 0, 0, 0.15)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // efecto de pulso (zoom leve)
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.scale(scale, scale);
+    ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+    spikesWarningBox.draw(ctx);
+
+    ctx.restore();
+    } else {
+        spikesWarningBox.draw(ctx);
+    }
+
+    spikesWarningBox.draw(ctx);
 
     if(gameOver){
         gameOverBox.draw(ctx);
@@ -344,8 +383,8 @@ function updateLevel(deltaTime){
 
     player.isMoving = false;  //reset movement flag before checking keys
 
-    const goLeft  = keysDown["ArrowLeft"];
-    const goRight = keysDown["ArrowRight"];
+    const goLeft  = keysDown["ArrowLeft"] || keysDown["a"] || keysDown["A"];
+    const goRight = keysDown["ArrowRight"] || keysDown["d"] || keysDown["D"];
     const groundY = 450;  //floor height, everything below this is out of bounds
 
     player.update(goLeft, goRight, jumpPressed, platforms, groundY, deltaTime);
@@ -370,7 +409,6 @@ function updateLevel(deltaTime){
     let totalLenEnemies = enemies.length;
     enemies = enemies.filter(alive => !alive.isDying);  //remove dead enemies
     killedEnemies += totalLenEnemies - enemies.length;  //count how many died this frame
-    updateFame(player, currentLevelConfig, levelTimer);  //give "coins" (fame) for the time spent in the level
 
     spawnTimer += deltaTime;
     if (spawnTimer >= spawnInterval) {  //time to spawn a new enemy
@@ -384,6 +422,7 @@ function updateLevel(deltaTime){
     if(killedEnemies >= currentLevelConfig.conditionEnemies && !levelCompleted){  //level done
         levelCompleted = true;
         currentLevel ++;
+        updateFame(player, currentLevelConfig, levelTimer);  //give "coins" (fame) for the time spent in the level
         giveLevelRewards();  //give the player their reward cards
         levelCompletedBox.show();
         saveMatch({  //save the match result to the db
@@ -429,6 +468,9 @@ function handleClickLevel(){
     if(confirmBox.visible){
         return confirmBox.handleClick(mouseX, mouseY);
     }
+    if(spikesWarningBox.visible){
+        return spikesWarningBox.handleClick(mouseX, mouseY);
+    }
     if(isPaused){
         return pauseBox.handleClick(mouseX, mouseY);
     }
@@ -445,6 +487,7 @@ function handleKeyDownLevel(event){
     if(event.repeat) return;
 
     if(event.key === "Escape"){
+        event.preventDefault()
         if(confirmBox.visible){
             confirmBox.hide();
             return;
@@ -462,13 +505,22 @@ function handleKeyDownLevel(event){
 
     keysDown[event.key] = true;
 
+    if(event.key === "ArrowLeft"){  //TODO no funciona :(
+        event.preventDefault();
+    }
+    if(event.key === "ArrowRight"){
+        event.preventDefault();
+    }
     if(event.key === "c" || event.key === "C"){
+        event.preventDefault()
         cardSystem.toggleDeck();
     }
     if(event.key === " "){
+        event.preventDefault()
         jumpPressed = true;
     }
     if(event.key === "j"){
+        event.preventDefault()
         if(!player.playeratack){
             player.playeratack = true;
             player.attackFrames = 0;
@@ -494,6 +546,21 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
     showDeckPreview = false;
     deckPreviewTimer = 0;
     levelCompletedBox.hide();
+    //show spikes warning on level 2
+
+    if(currentLevel === 2){
+    spikesWarningPulse = 0;
+    spikesWarningBox.title = "ATTENTION GLADIATOR!!!";
+    spikesWarningBox.message = "THERE ARE SPIKES IN THE SAND NOW!\n TRY NOT TO STEP ON THEM OR YOU'LL LOSE LIFE!.";
+    spikesWarningBox.show();
+}
+    //show spikes warning on level 2 and firepits on level 3
+    if(currentLevel === 3){
+    spikesWarningPulse = 0;
+    spikesWarningBox.title = "ATTENTION GLADIATOR!!!";
+    spikesWarningBox.message = "THERE ARE NOW SPIKES AND FIRE PITS IN THE ARENA!\n AVOID BOTH OR YOU'LL LOSE LIFE QUICKLY!.";
+    spikesWarningBox.show();
+}
 
     enemies = currentLevelConfig.spawnPositions.map(pos =>
         spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
@@ -508,6 +575,7 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
     levelTimer = 0;
     randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);  //when will the event trigger
     cardEventTriggered = false;
+    cardOptions = [];  //next levels rewards don't exclude this level's event cards
     cardSystem.close();
     cardSystem.isDeckOpen = false;
 }

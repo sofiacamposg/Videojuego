@@ -77,17 +77,18 @@ function main() {
         }
         //LOG IN SCENE
         else if (currentScene === 'login'){
-            clicked = handleClickLogIn(ctx); 
+            //? Se pasa un callback a handleClickLogIn para que cuando el fetch de login
+            //? termine exitosamente, cambie la escena directamente sin necesitar otro click
+            clicked = handleClickLogIn(ctx, () => {
+                resetSelect();
+                currentScene = 'start';
+            });
             if(clicked === 'back'){
                 resetLogIn();
                 currentScene = 'menu';
             }
             if (clicked === 'create'){
-                currentScene = 'createAccount'; 
-            }
-            if(clicked === 'confirm'){
-                resetSelect();
-                currentScene = 'start'; 
+                currentScene = 'createAccount';
             }
         }
         //CREATE ACCOUNT SCENE
