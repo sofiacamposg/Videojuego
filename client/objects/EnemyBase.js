@@ -60,6 +60,7 @@ class EnemyBase extends AnimatedObject {
   }
 
   update(player, deltaTime) {  //manage movement, hurtbox, attack
+    console.log("enemy speed:", this.speed);
     if (this.hp <= 0) {
       this.updateAnimation(deltaTime);
       this.deathTimer += deltaTime;
@@ -86,8 +87,8 @@ class EnemyBase extends AnimatedObject {
       this.speed = this.speedBase * direction;
     }
     this.spriteImage = (this.speed < 0) ? this.spriteRight : this.spriteLeft;
-    this.updateAnimation(20);
-    this.position.x -= this.speed * deltaTime;
+    this.updateAnimation(deltaTime);
+    this.position.x -= this.speed * (deltaTime/16);
   }
 
   takeDamage(hit, player) {  //damage made by player, look Playerbase to understand the whole logic
@@ -129,7 +130,7 @@ class EnemyBase extends AnimatedObject {
       }
     } else {
       this.spriteImage = (this.speed < 0) ? this.spriteRight : this.spriteLeft;
-      this.updateAnimation(20);
+      this.updateAnimation(deltaTime);
     }
   }
 
@@ -156,16 +157,15 @@ class EnemyBase extends AnimatedObject {
       this.scale = 0.6;
       let minSpeed = this.speedBase + 0.1;
       let maxSpeed = this.speedBase + 0.3;
-      this.speed = randomRange(maxSpeed - minSpeed +1, minSpeed);
+      this.speedBase = randomRange(maxSpeed - minSpeed + 1, minSpeed);
     } else {
       this.scale = 1.0;
       let minSpeed = this.speedBase - 0.3;
       let maxSpeed = this.speedBase - 0.1;
-      this.speed = randomRange(maxSpeed - minSpeed +1, minSpeed);
+      this.speedBase = randomRange(maxSpeed - minSpeed + 1, minSpeed);
     }
-    this.speed *= direction;
+    this.speed = this.speedBase * direction;
   }
-
   draw(ctx) {
     super.draw(ctx);
 
@@ -180,5 +180,4 @@ class EnemyBase extends AnimatedObject {
     }
   }
 }
-
 export { EnemyBase };

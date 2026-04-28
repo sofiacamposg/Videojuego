@@ -4,7 +4,7 @@ import { MessageBox } from "../objects/MessageBox.js";
 import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
 import { applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
 import { handleMouseMove, randomRange } from "../libs/game_functions.js";
-import { level1Config, level2Config, level3Config, playerConfigs } from "../libs/levelConfig.js";
+import { /*currentLevelConfig, level2Config, level3Config, */ getLevelConfig, playerConfigs } from "../libs/levelConfig.js";
 import { spawnEnemy, generatePlatform, updateCamera, updateFame, drawFame, saveMatch, drawFog, imperialDecree,
         loadPlayerStats, drawHealthBar, drawHearts } from "../libs/level_functions.js";
 import { FirePit } from "../hazards/FirePit.js";
@@ -15,7 +15,7 @@ import { Spikes } from "../hazards/Spikes.js";
 let levelCompleted = false;  
 let showDeckPreview = false;
 let currentLevel = 1;
-let currentLevelConfig = level1Config;  //always starts at level 1, transitionToNextLevel() updates this
+let currentLevelConfig = getLevelConfig(1);  //always starts at level 1, transitionToNextLevel() updates this
 let deckPreviewTimer = 0;
 let levelTimer = 0;  //how much does the player take in one level? (fame, cards gained)
 let randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);  //when will the event trigger?
@@ -272,7 +272,6 @@ function drawLevel(ctx, canvas, deltaTime){
     if(!isPaused && !levelCompleted && (!cardSystem.isActive || showDeckPreview) && !spikesWarningBox.visible){  //only run game logic when not paused, not between levels, and no card menu is open
         updateLevel(deltaTime);
     }
-
     ctx.save();
     ctx.translate(-cameraX, 0);  //shift drawing so the camera follows the player
 
@@ -290,6 +289,22 @@ function drawLevel(ctx, canvas, deltaTime){
     ctx.font = "50px VT323";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     drawFame(ctx, 30, 100, player.fame);
+    //Timer
+    let timePassed = levelTimer / 1000;
+    /*let timeLeft = Math.max(0, timeTarget - timePassed);*/
+    let timeTarget = currentLevelConfig.targetTime / 1000;
+    const timerDiv = document.getElementById("level-timer");
+    if (timerDiv) {
+        timerDiv.textContent =
+            `${timePassed.toFixed(1)}s / ${timeTarget.toFixed(1)}s`;
+        if (timeTarget - timePassed < 3) {
+            timerDiv.style.color = "red";
+        } else {
+            timerDiv.style.color = "white";
+        }
+    }
+    
+
     pauseBox.draw(ctx);
     confirmBox.draw(ctx);
 
@@ -516,7 +531,7 @@ function resetGoToScore(){
     goToScore = false;
 }
 function transitionToNextLevel(){  //? called after deck preview ends, sets up the next level
-    currentLevelConfig = currentLevel === 2 ? level2Config : level3Config;  //pick config based on new level
+    currentLevelConfig = getLevelConfig(currentLevel)  //pick config based on new level
     backgroundImage.src = currentLevelConfig.background;  //swap background
 
     levelCompleted = false;
@@ -558,8 +573,8 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
 //* goes back to level 1, resets everything
 function resetLevel(){
     currentLevel = 1; 
-    currentLevelConfig = level1Config;
-    backgroundImage.src = level1Config.background;  //swap back to level 1 background
+    currentLevelConfig = getLevelConfig(1);
+    backgroundImage.src = currentLevelConfig.background;  //swap back to level 1 background
 
     player.position.x = 200;
     player.position.y = 350;
@@ -572,8 +587,8 @@ function resetLevel(){
     deckPreviewTimer = 0;
     levelCompletedBox.hide();
 
-    enemies = level1Config.spawnPositions.map(pos =>
-        spawnEnemy(pos.x, pos.y, level1Config.enemyConfig)
+    enemies = currentLevelConfig.spawnPositions.map(pos =>
+        spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
     );
     killedEnemies = 0;
     hazards = [];  //no firepits in level 1
