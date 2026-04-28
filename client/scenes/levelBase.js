@@ -92,7 +92,6 @@ let pauseBox = new MessageBox(  //paused scene
         "Game is paused",
         250, 150, 500, 300
     );
-
 let spikesWarningBox = new MessageBox(  // spikes warning
         "ATTENTION GLADIATOR!!!",
         "THERE ARE SPIKES IN THE SAND NOW!\n TRY NOT TO STEP ON THEM OR YOU'LL LOSE LIFE!",

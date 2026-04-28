@@ -169,6 +169,22 @@ class cardsOnCanvas {
             const y = startY + row * spacingY;
             this.drawCard(ctx, this.playerDeck[i], x, y, cardW, cardH, this.selectedDeckIndex === i);
         }
+
+        if (this.selectedDeckIndex !== -1) {
+            const bW = 180;
+            const bH = 40;
+            const bX = W / 2 - bW / 2;
+            const bY = H - 80;
+            ctx.fillStyle = "#ffc739";
+            ctx.beginPath();
+            ctx.roundRect(bX, bY, bW, bH, 6);
+            ctx.fill();
+            ctx.fillStyle = "#1a0a00";
+            ctx.font = "bold 22px 'VT323'";
+            ctx.textAlign = "center";
+            ctx.fillText("USE CARD", W / 2, bY + 28);
+            ctx.textAlign = "left";
+        }
     }
 
     handleDeckClick(mx, my, canvas) {
