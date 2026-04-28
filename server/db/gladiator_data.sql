@@ -111,9 +111,9 @@ COMMIT;
 -- Insert Enemys catalog
 SET AUTOCOMMIT = 0;
 INSERT INTO Enemy (level_id, enemy_name, hp_start, speed_start, damage_start) VALUES
-(1, 'Lion', 50, 4, 8),
-(2, 'Tiger', 80, 5, 12),
-(3, 'Boar', 150, 6, 20);
+(1, 'Lion', 200, 4, 12),
+(2, 'Tiger', 350, 5, 20),
+(3, 'Boar', 520, 6, 28);
 COMMIT;
 
 -- Dummy data for Player
