@@ -180,6 +180,7 @@ function resetLogIn() {  //? reset to default values
 }
 
 //API CONNECTION
+
 async function loginUser(){
     try{
         const res = await fetch("http://localhost:3000/login", {
@@ -201,8 +202,8 @@ async function loginUser(){
 
         const data = await res.json();
         window.loggedPlayer = data;
+        localStorage.setItem("player", JSON.stringify(data));
         console.log("USER LOGGED:", data);
-
         loginSuccess = true; 
 
     } catch(error){

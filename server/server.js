@@ -324,9 +324,6 @@ app.get("/stats", (req, res) => {
     });
 });
 
-app.listen(3000, () => {
-    console.log("Servidor en http://localhost:3000 ");
-});
 //================== PLAYER CURRENT STATE ====================
 app.get("/player/live/:id", (req, res) => {
     db.query(
@@ -363,4 +360,66 @@ app.get("/levels", (req, res) => {
         }
         res.json(result);
     });
+});
+
+//GLOBAL STATS FOR STATS.HTML
+// As a single player
+app.get("/player/stats/:id", (req, res) => {
+    const playerId = req.params.id;
+
+    const query = `
+        SELECT 
+            COUNT(m.match_id) as total_runs,
+            SUM(m.result = 'WIN') as total_wins,
+            SUM(m.result = 'LOSE') as total_losses,
+            COALESCE(AVG(m.duration_seconds), 0) as avg_duration,
+            COALESCE(MAX(m.final_fame), 0) as best_score,
+
+            COALESCE(SUM(
+                (SELECT COUNT(*) 
+                FROM SpecificLevel sl 
+                WHERE sl.match_id = m.match_id AND sl.finished = TRUE)
+            ), 0) as total_kills
+
+        FROM MatchGame m
+        WHERE m.player_id = ?
+    `;
+
+    db.query(query, [playerId], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send(err);
+        }
+        res.json(result[0]);
+    });
+});
+//As multiple users
+app.get("/global/stats", (req, res) => {
+    const query = `
+        SELECT 
+            (SELECT COUNT(*) FROM Player) AS players,
+            COUNT(m.match_id) AS matches,
+            SUM(m.result = 'WIN') AS wins,
+            SUM(m.result = 'LOSE') AS losses,
+            COALESCE(AVG(m.duration_seconds), 0) AS avg_duration,
+            COALESCE(MAX(m.final_fame), 0) AS best_score,
+            COALESCE(AVG(
+                (SELECT COUNT(*) 
+                 FROM SpecificLevel sl 
+                 WHERE sl.match_id = m.match_id AND sl.finished = TRUE)
+            ), 0) AS avg_kills
+        FROM MatchGame m
+    `;
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send(err);
+        }
+        res.json(result[0]);
+    });
+});
+
+app.listen(3000, () => {
+    console.log("Servidor en http://localhost:3000 ");
 });
