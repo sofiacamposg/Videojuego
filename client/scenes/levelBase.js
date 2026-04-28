@@ -487,7 +487,7 @@ function handleKeyDownLevel(event){
     if(event.key === " "){
         jumpPressed = true;
     }
-    if(event.key === "j"){
+    if(event.key === "j" || event.key === "J"){
         if(!player.playeratack){
             player.playeratack = true;
             player.attackFrames = 0;
