@@ -3,7 +3,7 @@ import { hitboxOverlap, randomRange } from "../libs/game_functions.js";
 import { Rect } from "../libs/Rect.js";
 
 // Sonido de ataque del enemigo
-const enemyAttackSound = new Audio("./assets/music/ataque_leon.mp3");
+const enemyAttackSound = new Audio("./assets/music/ataque_leon.wav");
 enemyAttackSound.volume = 0.5;
 
 class EnemyBase extends AnimatedObject {
@@ -142,7 +142,7 @@ class EnemyBase extends AnimatedObject {
         this.hasHitPlayer = true;
         player.takeDamage(this.damage);
         enemyAttackSound.currentTime = 0;
-        enemyAttackSound.play();
+        //enemyAttackSound.play();
     }
   }
 
