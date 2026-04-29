@@ -196,7 +196,6 @@ function setSelectedCharacter(selectedCharacter){
     player.maxHearts = window.loggedPlayer.hearts;
     initPlatforms();
 }
-
 let enemies = currentLevelConfig.spawnPositions.map(pos =>
     spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
 );
@@ -209,7 +208,7 @@ async function generateCardOptions(){  //? take 3 cards from db and put it into 
 
         const data = await response.json();  //convert the server response into a js array we can work with
         //split the 15 cards into two groups
-        let powerUps = data.filter(c => c.effect_type === "POWER_UP");
+        let powerUps = data.filter(c => c.effect_type === "POWER_UP" && c.duration_type === "PERMANENT");  //only permanent power ups
         let punishments = data.filter(c => c.effect_type === "PUNISHMENT");
 
         if(powerUps.length < 2 || punishments.length < 1) throw new Error("Not enough cards");  //endge case
@@ -249,7 +248,6 @@ async function triggerCardEvent(){  //? uses array from generateCardOptions when
     cardSystem.show(convertedCards, player, enemies, game);  //show cards for the player to select
 }
 async function giveLevelRewards(){  //? reward cards, depending on fame, after level completition
-    //targetTime lives in levelConfig so it can also be used for fame calculations
     //if levelTimer is lower than targetTime, the user gets 2 power ups 
     const rewardCount = levelTimer < currentLevelConfig.targetTime ? 2 : 1;
     try {
@@ -259,7 +257,7 @@ async function giveLevelRewards(){  //? reward cards, depending on fame, after l
        
         //cards offered in this levels mid-game event, excludes them from rewards so the same card can't appear twice in the same level
         const eventIds = new Set(cardOptions.map(c => c.card_id));
-        const powerUps = data.filter(c => c.effect_type === "POWER_UP" && !eventIds.has(c.card_id)); //rewards are only power ups not shown in this level's event
+        const powerUps = data.filter(c => c.effect_type === "POWER_UP" && c.duration_type === "TEMPORARY" && !eventIds.has(c.card_id)); //rewards are only temporary power ups not shown in this level's event
         const shuffled = powerUps.sort(() => Math.random() - 0.5);  //mix the powerups to obtain different options everytime
 
         //take only the first rewardCount cards and add each one to the player's deck
