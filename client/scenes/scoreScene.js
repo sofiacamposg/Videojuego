@@ -7,7 +7,8 @@ let mouseX = 0;
 let mouseY = 0;
 
 let matchData = null;  //later, API data
-let loaded = false;
+let loading = false;
+let loadedMatchId = null;
 
 const buttonExit = {
     x: 200,
@@ -29,24 +30,37 @@ let cachedCtx;
 
 //fetch of the match
 export async function loadMatchSummary() {
-    if (!window.lastMatchId || loaded) return;
+    if (!window.lastMatchId) {
+        matchData = null;
+        loadedMatchId = null;
+        return;
+    }
 
-    loaded = true;
+    if (loading) return;
+    if (loadedMatchId === window.lastMatchId) return;
+
+    loading = true;
 
     try {
         const res = await fetch(`http://localhost:3000/match/summary/${window.lastMatchId}`);
         matchData = await res.json();
+        loadedMatchId = window.lastMatchId;
 
         console.log("MATCH SUMMARY:", matchData);
     } catch (err) {
         console.log("Error loading match summary:", err);
     }
+
+    loading = false;
 }
 
 // DRAW
 function drawScoreScene(ctx, canvas) {
     cachedCtx = ctx;
-
+    if (!matchData) {
+        loadMatchSummary(); 
+    }
+    console.log("LAST MATCH ID:", window.lastMatchId);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
@@ -143,4 +157,9 @@ function handleClickScoreScene() {
     return null;
 }
 
-export { drawScoreScene, handleClickScoreScene, handleMouseMoveScore };
+function resetScoreScene() {
+    matchData = null;
+    loading = false;
+    loadedMatchId = null;
+}
+export { drawScoreScene, handleClickScoreScene, handleMouseMoveScore, resetScoreScene };

@@ -140,6 +140,7 @@ function handleClickLogIn(ctx, onSuccess){  //? handle cliks over any element
         loginUser(onSuccess);
         return null;
     }
+    
 
     return null;
 }
@@ -197,7 +198,9 @@ async function loginUser(onSuccess){
         const data = await res.json();
         window.loggedPlayer = data;
         localStorage.setItem("player", JSON.stringify(data));
+        window.lastMatchId = null;   //for score scene to work and reload match stats, for differentes users debug
         console.log("USER LOGGED:", data);
+
 
         //login ok? call the callback to handle the scene change
         if(onSuccess) onSuccess();
