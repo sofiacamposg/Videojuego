@@ -47,7 +47,7 @@ export async function saveMatch(data) {
 
     const result = await res.json();
 
-    window.lastMatchId = result.match_id;  // ESTO ES CLAVE
+    window.lastMatchId = result.match_id;  
 
     return result;
 }
@@ -140,4 +140,12 @@ export function drawHearts(ctx, x, y, current, max) {
         ctx.fillStyle = i < current ? "red" : "gray";
         ctx.fillText("♥", x + i * 50, y);
     }
+}
+
+export function cardBanner(ctx, x, y, activeEffects) {
+    if (activeEffects.lenght === 0) return;
+    ctx.save();
+    ctx.fillStyle = "rgba(255, 174, 75, 0.62)";
+    ctx.fillRect(0, 0, canvas.width, 100);
+    ctx.restore();
 }

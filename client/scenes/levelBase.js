@@ -69,7 +69,7 @@ function drawPlatforms(ctx){  //draw all the platforms in the array
         ctx.drawImage(platformImage, p.x, p.y - 70, p.width, p.height);
     });
 }
-//? hazards — spikes on level 2, firepits on level 3
+//? hazards, spikes on level 2, firepits on level 3
 let hazards = [];  //array to store platforms displayed
 function initHazards(){
     hazards = [];
@@ -151,9 +151,9 @@ let gameOver = false;  //screen and config when hearts = 0
     gameOverBox.addButton("Go to Score", 440, 340, 120, 35, async () => {
         console.log("RESTART GAME OVER CLICKED");
         //Updates live stats, runs and defeats
-        await saveMatch({  
+        await saveMatch({
             player_id: window.loggedPlayer.player_id,
-            archetype_id: selectedArchetypeId, 
+            archetype_id: selectedArchetypeId,
             duration_seconds: Math.floor(levelTimer / 1000),
             level_reached: currentLevel,
             final_fame: player.fame,
@@ -162,6 +162,11 @@ let gameOver = false;  //screen and config when hearts = 0
             kills: killedEnemies,
             cards_in_deck: cardSystem.playerDeck.length
 
+        });
+        await fetch("http://localhost:3000/players", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ player_id: window.loggedPlayer.player_id, fame_gained: player.fame })
         });
         //DELETE DECK
         await fetch(`http://localhost:3000/player/deck/${window.loggedPlayer.player_id}`, {
@@ -410,11 +415,12 @@ function updateLevel(deltaTime){
 
     player.attackEnemy(enemies);  //check if player hit any enemy this frame
 
-    let totalLenEnemies = enemies.length;
+    let totalLenEnemies = enemies.length;  //enemies now
     enemies = enemies.filter(alive => !alive.isDying);  //remove dead enemies
-    let killsThisFrame = totalLenEnemies - enemies.length;
-    killedEnemies += killsThisFrame;
-    if (killsThisFrame >= 1 && !cardSystem.cardBox.visible && killedEnemies < currentLevelConfig.conditionEnemies) {
+    let killsThisFrame = totalLenEnemies - enemies.length;  //enemies killed
+    killedEnemies += killsThisFrame;  //update counter 
+    if (!cardEventTriggered && !cardSystem.cardBox.visible && levelTimer >= randomEventTime) {
+        cardEventTriggered = true;
         triggerCardEvent();
     }
 
@@ -438,13 +444,20 @@ function updateLevel(deltaTime){
             archetype_id: selectedArchetypeId,
             duration_seconds: Math.floor(levelTimer / 1000),
             level_reached: currentLevel,
-            final_fame: killedEnemies,
+            final_fame: player.fame,
             life: player.hearts,
             result: "WIN",
             kills: killedEnemies,
             cards_in_deck: cardSystem.playerDeck.length
         });
-        loadPlayerStats(window.loggedPlayer.player_id, `level${currentLevel - 1}`);  //refresh live stats
+        (async () => {
+            await fetch("http://localhost:3000/players", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ player_id: window.loggedPlayer.player_id, fame_gained: player.fame })
+            });
+            loadPlayerStats(window.loggedPlayer.player_id, `level${currentLevel - 1}`);
+        })();
     }
 
     cameraX = updateCamera(player.position.x, canvasRef.width, worldWidth);  //move camera to follow player
@@ -513,12 +526,6 @@ function handleKeyDownLevel(event){
 
     keysDown[event.key] = true;
 
-    if(event.key === "ArrowLeft"){  //TODO no funciona :(
-        event.preventDefault();
-    }
-    if(event.key === "ArrowRight"){
-        event.preventDefault();
-    }
     if(event.key === "c" || event.key === "C"){
         event.preventDefault()
         cardSystem.toggleDeck();
@@ -618,7 +625,7 @@ function resetLevel(){
     cameraX = 0;
     spawnTimer = 0;
     levelTimer = 0;
-    randomEventTime = Math.random() * (40000 - 20000) + 20000;
+    randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);  //when will the event trigger
     cardEventTriggered = false;
     cardSystem.clearPermanentEffects();  //undo any permanent card effect before restarting
     cardSystem.close();
