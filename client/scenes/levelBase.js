@@ -13,7 +13,7 @@ import { FirePit, Spikes } from "../objects/hazardsBase.js";
 //? level transition 
 let levelCompleted = false;  
 let showDeckPreview = false;
-let currentLevel = 2;
+let currentLevel = 1;
 let currentLevelConfig = getLevelConfig(1);  //always starts at level 1, transitionToNextLevel() updates this
 let deckPreviewTimer = 0;
 let levelTimer = 0;  //how much does the player take in one level? (fame, cards gained)
@@ -34,7 +34,7 @@ let keysDown = {};
 let jumpPressed = false;
 let killedEnemies = 0;
 let spawnTimer = 0;  //we check spawntimer and interval to know when to spawn a new enemy
-let spawnInterval = 4000;  
+let spawnInterval = 2800;  
 //? music
 const swordSound = new Audio("./assets/music/ataque_espada.mp3");  //attack
 swordSound.volume = 0.5;
@@ -55,9 +55,9 @@ let platformImage = new Image();
 platformImage.src = "./assets/Platform.png";
 function initPlatforms(){
     platforms = [];  //clean the array before starting
-    for(let i = 0; i < 8; i++){
+    for(let i = 0; i < 7; i++){
         if(platforms.length === 0){  
-            platforms.push({ x:300, y:300, width:100, height:70 });
+            platforms.push({ x:200, y:300, width:100, height:70 });
         } else {
             let last = platforms[platforms.length - 1];
             platforms.push(generatePlatform(last));
@@ -73,15 +73,15 @@ function drawPlatforms(ctx){  //draw all the platforms in the array
 let hazards = [];  //array to store platforms displayed
 function initHazards(){
     hazards = [];
-    const safeZone = 400;  //no hazards near spawn
+    const safeZone = 40;  //no hazards near spawn
     const count = Math.random() < 0.5 ? 3 : 4;  //3 or 4 hazards per level
 
     for(let i = 0; i < count; i++){  //for spikes
-        hazards.push(new Spikes(randomRange(worldWidth - safeZone, safeZone), 80));
+        hazards.push(new Spikes(randomRange(worldWidth), 115));
     }
-    if(currentLevel === 3){  //TODO adds firepits on top of spikes?
+    if(currentLevel === 3){  
         for(let i = 0; i < count; i++){
-            hazards.push(new FirePit(randomRange(worldWidth - safeZone, safeZone), 80));
+            hazards.push(new FirePit(randomRange(worldWidth), 115));
         }
     }
 }
@@ -175,8 +175,10 @@ let gameOver = false;  //screen and config when hearts = 0
 //? initial config for all the game
 const archetypeIds = { Warrior: 1, Lancer: 2, Heavy: 3 };  //match DB archetype IDs
 let selectedArchetypeId = 1;
-function setSelectedCharacter(selectedCharacter){
+function setSelectedCharacter(selectedCharacter){  
     selectedArchetypeId = archetypeIds[selectedCharacter] ?? 1;
+    currentLevelConfig = getLevelConfig(1);  //solve bug of db not uploading on time
+    randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);
     player = new PlayerBase(
         new Vector(200,450),
         playerConfigs[selectedCharacter]
@@ -229,7 +231,8 @@ async function triggerCardEvent(){  //? uses array from generateCardOptions when
         //apicard stays inside (closure) so it remembers which card's data to use
         // it only actually runs when the player confirms their pick
         applyEffect: (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
-        removeEffect: apiCard.duration > 0 ? (player, enemies, game) => reverseEffect(apiCard, player, enemies, game) : null,
+        //all cards have reverse effect, to the specific time when temporal, or reset when level ends
+        removeEffect: (player, enemies, game) => reverseEffect(apiCard, player, enemies, game),  
     }));
     cardSystem.show(convertedCards, player, enemies, game);  //show cards for the player to select
 }
@@ -256,8 +259,12 @@ async function giveLevelRewards(){  //? reward cards, depending on fame, after l
                 type: apiCard.effect_type,
                 duration: apiCard.duration,
                 image: cardImages[apiCard.card_name] || null,
+                //instead of calling applyEffect right now, we store it as a recipe to run later
+                //apicard stays inside (closure) so it remembers which card's data to use
+                // it only actually runs when the player confirms their pick
                 applyEffect: (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
-                removeEffect: apiCard.duration > 0 ? (player, enemies, game) => reverseEffect(apiCard, player, enemies, game) : null,
+                //all cards have reverse effect, to the specific time when temporal, or reset when level ends
+                removeEffect: (player, enemies, game) => reverseEffect(apiCard, player, enemies, game),
             };
             cardSystem.playerDeck.push(card);
             cardSystem.rewardCards.push(card);
@@ -568,13 +575,14 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
     levelTimer = 0;
     randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);  //when will the event trigger
     cardEventTriggered = false;
-    cardOptions = [];  //next levels rewards don't exclude this level's event cards
+    cardOptions = [];  //next levels rewards don't include this level's event cards
+    cardSystem.clearPermanentEffects();  //undo any permanent card effect from last level
     cardSystem.close();
     cardSystem.isDeckOpen = false;
 }
 //* goes back to level 1, resets everything
 function resetLevel(){
-    currentLevel = 2; 
+    currentLevel = 1; 
     currentLevelConfig = getLevelConfig(1);
     backgroundImage.src = currentLevelConfig.background;  //swap back to level 1 background
 
@@ -606,6 +614,7 @@ function resetLevel(){
     levelTimer = 0;
     randomEventTime = Math.random() * (40000 - 20000) + 20000;
     cardEventTriggered = false;
+    cardSystem.clearPermanentEffects();  //undo any permanent card effect before restarting
     cardSystem.close();
     cardSystem.isDeckOpen = false;
 }

@@ -68,7 +68,7 @@ export function generatePlatform(lastPlatform){
 
     return {
         x, y,
-        width: 100,
+        width: 80,
         height: 70
     };
 }
