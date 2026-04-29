@@ -274,6 +274,23 @@ app.post("/match", (req, res) => {
         });
     });
 });
+app.post("/players", (req, res) => {  //? save fame after every run
+    const { player_id, fame_gained } = req.body;
+
+    if (!player_id || fame_gained == null) {
+        return res.status(400).json({ error: "player_id and fame_gained are required" });
+    }
+
+    const query = `UPDATE Player SET fame = fame + ? WHERE player_id = ?`;
+
+    db.query(query, [fame_gained, player_id], (err, result) => {
+        if (err) return res.status(500).send(err.message);
+        if (result.affectedRows === 0) return res.status(404).json({ error: "Player not found" });
+
+        res.json({ success: true });
+    });
+});
+
 
 //POST, register card ussage (Deck)
 app.post("/deck", (req, res) => {
