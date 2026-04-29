@@ -81,7 +81,7 @@ class EnemyBase extends AnimatedObject {
     let direction = this.speed < 0 ? -1 : 1;  //change direction, the < is ro keep the direction of bounce
 
     if (this.isSlowed) {  //lions roar effect
-      this.speed = this.speedBase * 0.2 * direction; 
+      this.speed = this.speedBase * 0.1 * direction; 
     } else {
       this.speed = this.speedBase * direction;
     }
@@ -98,7 +98,7 @@ class EnemyBase extends AnimatedObject {
       this.spriteImage = (this.speed < 0) ? this.spriteDeathRight : this.spriteDeathLeft;
       this.setAnimation(0, 3, false, 100);  //faster and false to not repeat the animation
       if (player.lifeSteal){  //gladiators blood effect
-        player.hp = Math.min(player.hp + 20, player.maxHp);  
+        player.hp = Math.min(player.hp + 30, player.maxHp);  
       }
     }
 
@@ -134,7 +134,7 @@ class EnemyBase extends AnimatedObject {
   }
 
   attackPlayer(player) {
-    if (!this.attackHitbox)
+    if (!this.attackHitbox)  //there is not a hitbox
         return;
     if (this.hasHitPlayer)
         return;
@@ -167,16 +167,6 @@ class EnemyBase extends AnimatedObject {
   }
   draw(ctx) {
     super.draw(ctx);
-
-    if (this.attackHitbox) {
-      ctx.strokeStyle = "blue";
-      ctx.strokeRect(
-        this.attackHitbox.x,
-        this.attackHitbox.y,
-        this.attackHitbox.width,
-        this.attackHitbox.height
-      );
-    }
   }
 }
 export { EnemyBase };

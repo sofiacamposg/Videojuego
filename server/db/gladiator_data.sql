@@ -16,17 +16,17 @@ USE gladiator;
 -- Insert archetypes catalog
 SET AUTOCOMMIT = 0;
 INSERT INTO Archetype (name, hp_start, speed_start, damage_start) VALUES
-('Warrior', 120, 5, 20),
-('Lancer', 100, 6, 25),
-('Heavy', 150, 3, 15);
+('Warrior', 120, 5, 10),
+('Lancer', 100, 6, 15),
+('Heavy', 150, 3, 20);
 COMMIT;
 
 -- Insert the 3 levels
 SET AUTOCOMMIT = 0;
 INSERT INTO Level (level_number, target_time, condition_enemies, description) VALUES
-(1, 10000, 8, 'First level of the arena'),
-(2, 15000, 9, 'Intermediate arena battle'),
-(3, 20000, 10, 'Final battle of the colosseum');
+(1, 25000, 6, 'First level of the arena'),
+(2, 30000, 9, 'Intermediate arena battle'),
+(3, 40000, 12, 'Final battle of the colosseum');
 COMMIT;
 
 -- Insert Cards catalog TODO: AÑADIR LAS DEMÁS CARTAS
@@ -35,12 +35,12 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 ('Favor of the People', 
 'Movement speed increases by 20% for the level duration', 
 'POWER_UP', 'PERMANENT', 
-'player', 'speed', '*', '/', 1.2, 1.2, 0),
+'player', 'speed', '*', '/', 1.5, 1.5, 0),
 
 ('Blade of Mars', 
 'Attack damage increases by 30% for the level duration', 
 'POWER_UP', 'PERMANENT', 
-'player', 'damage', '*', '/', 1.3, 1.3, 0),
+'player', 'damage', '*', '/', 1.5, 1.5, 0),
 
 ('Blessing of Venus', 
 'Instantly recover 1 heart', 
@@ -65,7 +65,7 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 ('Colloseums fury', 
 'Basic attack gains area of effect for 8 seconds', 
 'POWER_UP', 'TEMPORARY', 
-'player', 'range', '*', '/', 1.3, 1.3, 8000),
+'player', 'range', '*', '/', 1.6, 1.6, 8000),
 
 ('Eye of the Emperor',
 'Reveals the type of the next 3 cards before selection',
@@ -100,10 +100,10 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 ('Lanistas Betrayal', 
 'Player damage reduced by 40% for 15 seconds', 
 'PUNISHMENT', 'TEMPORARY', 
-'player', 'damage', '*', '/', 0.6, 0.6, 15000),
+'player', 'damage', '*', '/', 0.5, 0.5, 15000),
 
 ('Senates Judgment', 
-'If the player dies during this level, 2 lives are lost instead of 1', 
+'If the players hp equals 0, 2 lives are lost instead of 1', 
 'PUNISHMENT', 'PERMANENT', 
 'player', 'doubleDeath', '=', '=', 1.0, 0.0, 0);
 COMMIT;
@@ -111,9 +111,9 @@ COMMIT;
 -- Insert Enemys catalog
 SET AUTOCOMMIT = 0;
 INSERT INTO Enemy (level_id, enemy_name, hp_start, speed_start, damage_start) VALUES
-(1, 'Lion', 50, 4, 8),
-(2, 'Tiger', 80, 5, 12),
-(3, 'Boar', 150, 6, 20);
+(1, 'Lion', 200, 4, 20),
+(2, 'Tiger', 350, 5, 28),
+(3, 'Boar', 520, 6, 34);
 COMMIT;
 
 -- Dummy data for Player

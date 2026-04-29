@@ -200,6 +200,10 @@ async function loginUser(onSuccess){
         localStorage.setItem("player", JSON.stringify(data));
         window.lastMatchId = null;   //for score scene to work and reload match stats, for differentes users debug
         console.log("USER LOGGED:", data);
+        if (data.role === "admin") {
+            const btn = document.getElementById("globalStatsBtn");
+            if (btn) btn.style.display = "inline-block";
+        }
 
 
         //login ok? call the callback to handle the scene change
