@@ -137,18 +137,105 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <h2>OBJECTIVE</h2>
-                    <p>Defeat the required number of enemies to complete each level. Survive long enough and prove your strength in the arena.</p>
-                    <h2>CONTROLS</h2>
-                    <p>← : Move Left</p>
-                    <p>→ : Move Right</p>
+
+                    <h2>Objective</h2>
+                    <p>Defeat the required number of enemies to complete each level. Survive all three levels to win the run. If you lose your life, the game is over and you restart from Level 1.</p>
+
+                    <h2>Controls</h2>
+                    <p>A / ← : Move left</p>
+                    <p>D / → : Move right</p>
                     <p>Space : Jump</p>
-                    <p>J : Attack</p>
-                    <h2>GAMEPLAY</h2>
-                    <p>Move across obstacles, avoid falling, and fight enemies. Each level becomes more dangerous as stronger enemies appear.</p>
-                    <p>During the match, you will be offered cards that can either help you or punish you. Choose wisely, every decision affects your survival.</p>
-                    <h2>IMPORTANT</h2>
-                    <p>If you die, you lose a life and restart the level. If you lose all your lives, the game is over and you restart from Level 1.</p>
+                    <p>J : Attack (in the direction you are facing)</p>
+                    <p>C : Open your card deck</p>
+                    <p>Esc : Pause</p>
+
+                    <h2>Archetypes</h2>
+                    <p>Choose one at the start of each run. Your choice affects HP, damage, and speed.</p>
+                    <p><strong>Warrior</strong> — Balanced · sword and shield. HP: 120, Attack: 20, Speed: 5.</p>
+                    <p><strong>Lancer</strong> — Agile · spear. HP: 100, Attack: 25, Speed: 6.</p>
+                    <p><strong>Heavy</strong> — Tank · full armor. HP: 150, Attack: 15, Speed: 3.</p>
+
+                    <h2>Lives</h2>
+                    <p>You start each run with 1 life. If you die, it's Game Over and you restart from Level 1.</p>
+                    <p>If you win the run, you keep 1 or 2 powerup cards depending on your final fame.</p>
+
+                    <h2>Fame</h2>
+                    <p>Fame increases based on how quickly you complete each level compared to the target time. Higher fame improves your score and affects the cards you receive.</p>
+
+                    <h2>Card System</h2>
+                    <p>Two card events occur during each level:</p>
+                    <p><strong>Event 1 — start of level (levels 2 and 3 only):</strong> the game pauses before enemies spawn. You are given a random card that is applied immediately.</p>
+                    <p><strong>Event 2 — mid-level (all levels):</strong> triggers automatically at the halfway point of the target time. Three cards appear face down — pick one without seeing its content. The card is revealed and applied on confirm. Level 1 guarantees 2 power-ups and 1 punishment.</p>
+
+                    <h2>Power-ups</h2>
+                    <p><strong>Favor of the People:</strong> +20% movement speed for the level duration.</p>
+                    <p><strong>Blade of Mars:</strong> +30% attack damage for the level duration.</p>
+                    <p><strong>Blessing of Venus:</strong> instantly recover 1 heart of health.</p>
+                    <p><strong>Lion's Roar:</strong> all current enemies are slowed for 5 seconds.</p>
+                    <p><strong>Divine Shield:</strong> absorbs the next hit with no damage taken.</p>
+                    <p><strong>Gladiator's Blood:</strong> each enemy kill restores a small amount of HP for the level duration.</p>
+                    <p><strong>Colosseum's Fury:</strong> basic attack gains area of effect for 8 seconds.</p>
+                    <p><strong>Eye of the Emperor:</strong> reveals the type of the next 3 cards before selection.</p>
+
+                    <h2>Punishments</h2>
+                    <p><strong>Imperial Decree:</strong> 2 additional enemies spawn immediately.</p>
+                    <p><strong>Chains of Caesar:</strong> jumping is disabled for 10 seconds.</p>
+                    <p><strong>Hunger of the Plebs:</strong> using any card costs half a heart of health.</p>
+                    <p><strong>Wrath of Jupiter:</strong> instantly lose 1 heart of health.</p>
+                    <p><strong>Amphitheatre Fog:</strong> the screen is partially darkened for 12 seconds.</p>
+                    <p><strong>Lanista's Betrayal:</strong> your attack damage is reduced by 40% for 15 seconds.</p>
+                    <p><strong>Senate's Judgment:</strong> if you die during this level, 2 lives are lost instead of 1.</p>
+
+                    <h2>Levels</h2>
+                    <p><strong>Level 1:</strong> enemies are lions. No floor hazards. Only Event 2 occurs (at mid-level).</p>
+                    <p><strong>Level 2:</strong> enemies are tigers, stronger than lions. Spikes appear in random floor positions. Both Event 1 and Event 2 occur.</p>
+                    <p><strong>Level 3:</strong> enemies are boars, the strongest. Spikes and fire zones appear in random floor positions. Both Event 1 and Event 2 occur.</p>
+
+                    <h2>Hazards</h2>
+                    <p><strong>Spikes (levels 2 and 3):</strong> deal fixed damage per second while you stand on them. Move away to stop taking damage.</p>
+                    <p><strong>Fire (level 3 only):</strong> deal 40% of your maximum HP per second. Get out of the zone immediately.</p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREDITS MODAL -->
+    <div class="modal fade" id="creditsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="pixelText">CREDITS</h1>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body credits-body">
+                    <p class="credits-subtitle">The team behind the arena</p>
+
+                    <div class="credits-card">
+                        <div class="credits-initials">SP</div>
+                        <div class="credits-info">
+                            <span class="credits-name">Sofía Campos</span>
+                            <span class="credits-role">Game & Database Developer</span>
+                        </div>
+                    </div>
+
+                    <div class="credits-card">
+                        <div class="credits-initials">DA</div>
+                        <div class="credits-info">
+                            <span class="credits-name">Daniela Angulo</span>
+                            <span class="credits-role">Game & Database Developer</span>
+                        </div>
+                    </div>
+
+                    <div class="credits-card">
+                        <div class="credits-initials">AP</div>
+                        <div class="credits-info">
+                            <span class="credits-name">Ariel Pulver</span>
+                            <span class="credits-role">Game & Database Developer</span>
+                        </div>
+                    </div>
+
+                    <p class="credits-footer">GLADIATOR — Built with blood, code, and glory</p>
                 </div>
             </div>
         </div>

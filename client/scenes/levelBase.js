@@ -163,6 +163,10 @@ let gameOver = false;  //screen and config when hearts = 0
             cards_in_deck: cardSystem.playerDeck.length
 
         });
+        //DELETE DECK
+        await fetch(`http://localhost:3000/player/deck/${window.loggedPlayer.player_id}`, {
+            method: "DELETE"
+        });
         console.log("Lose saved, match saved, going to score");
         goToScore = true;
         resetLevel();
@@ -183,8 +187,11 @@ function setSelectedCharacter(selectedCharacter){
         new Vector(200,450),
         playerConfigs[selectedCharacter]
     );
+    player.hearts = window.loggedPlayer.hearts;
+    player.maxHearts = window.loggedPlayer.hearts;
     initPlatforms();
 }
+
 let enemies = currentLevelConfig.spawnPositions.map(pos =>
     spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
 );
@@ -520,8 +527,7 @@ function handleKeyDownLevel(event){
         event.preventDefault()
         jumpPressed = true;
     }
-    if(event.key === "j"){
-        event.preventDefault()
+    if(event.key === "j" || event.key === "J"){
         if(!player.playeratack){
             player.playeratack = true;
             player.attackFrames = 0;

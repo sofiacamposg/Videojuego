@@ -173,44 +173,39 @@ app.get("/cards/random", (req, res) => {
 });
 
 //GET real time stats view
-app.post("/match", (req, res) => {
+app.get("/match/summary/:id", (req, res) => {
+    const matchId = req.params.id;
 
-    const {
-        player_id,
-        archetype_id,
-        duration_seconds,
-        level_reached,
-        final_fame,
-        life,
-        result
-    } = req.body;
+    console.log("GET SUMMARY FOR:", matchId);
 
     const query = `
-        INSERT INTO MatchGame 
-        (player_id, archetype_id, duration_seconds, level_reached, final_fame, life, result)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        SELECT 
+            m.match_id,
+            p.name AS player_name,
+            m.level_reached,
+            m.final_fame,
+            m.duration_seconds,
+            m.result
+        FROM MatchGame m
+        JOIN Player p ON m.player_id = p.player_id
+        WHERE m.match_id = ?
     `;
 
-    const values = [
-        player_id,
-        archetype_id,
-        duration_seconds,
-        level_reached,
-        final_fame,
-        life,
-        result
-    ];
-
-    db.query(query, values, (err, result) => {
+    db.query(query, [matchId], (err, result) => {
         if (err) {
             console.error(err);
-            return res.status(500).send(err);
+            return res.status(500).send(err.message);
         }
 
-        res.json({ match_id: result.insertId }); // 🔥 CLAVE
+        if (result.length === 0) {
+            return res.status(404).json({ error: "Match not found" });
+        }
+
+        console.log("SUMMARY DATA:", result[0]);
+
+        res.json(result[0]);
     });
 });
-
 //GET Game Progress view
 app.get("/match/progress/:id", (req, res) => {
     db.query(
@@ -243,7 +238,7 @@ app.get("/match/cards-live/:id", (req, res) => {
 });
 
 //POST match, with stored procedures
-app.post("/match", (req, res) => { //we INSERT into table match
+app.post("/match", (req, res) => {
     const {
         player_id,
         archetype_id,
@@ -254,37 +249,30 @@ app.post("/match", (req, res) => { //we INSERT into table match
         result
     } = req.body;
 
-    db.query( //Stored Procedure InsertMatch with current match values
-        "CALL InsertMatch(?, ?, ?, ?, ?, ?, ?)",
-        [
-            player_id,
-            archetype_id,
-            duration_seconds,
-            level_reached,
-            final_fame,
-            life,
-            result
-        ],
-        (err) => {
-            if (err) return res.status(500).send(err.message);
+    const query = `
+        INSERT INTO MatchGame 
+        (player_id, archetype_id, end_time, duration_seconds, level_reached, final_fame, life, result)
+        VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)
+    `;
 
-            res.json({ success: true });
-        }
-    );
-});
+    const values = [
+        player_id,
+        archetype_id,
+        duration_seconds,
+        level_reached,
+        final_fame,
+        life,
+        result
+    ];
 
-//================== STORED PROCEDURES====================0
-//GET summarizes an entire match, for scoreScene, you can get a full summary of the match after it ends
-app.get("/match/summary/:id", (req, res) => {
-    db.query(
-        "CALL GetMatchSummary(?)",
-        [req.params.id],
-        (err, result) => {
-            if (err) return res.status(500).send(err.message);
+    db.query(query, values, (err, resultInsert) => {
+        if (err) return res.status(500).send(err.message);
 
-            res.json(result[0][0]);
-        }
-    );
+        res.json({
+            success: true,
+            match_id: resultInsert.insertId
+        });
+    });
 });
 
 //POST, register card ussage (Deck)
@@ -470,4 +458,58 @@ app.get("/global/stats", (req, res) => {
 
 app.listen(3000, () => {
     console.log("Servidor en http://localhost:3000 ");
+});
+
+//ON GAME OVER RESET DECK ROGUELITE
+//Erase deck
+app.delete("/player/deck/:id", (req, res) => {
+    db.query(
+        "DELETE FROM LevelCard WHERE player_id = ?",
+        [req.params.id],
+        (err) => {
+            if (err) return res.status(500).send(err);
+            res.json({ success: true });
+        }
+    );
+});
+
+//SHOPPING HEARTS MECHANICS FOR ROGUELITE
+//Being able to buy hearts
+app.post("/shop/buy-heart", (req, res) => {
+    const { player_id } = req.body;
+
+    db.query(
+        "SELECT fame, hearts FROM Player WHERE player_id = ?",
+        [player_id],
+        (err, result) => {
+            if (err) return res.status(500).send(err.message);
+
+            if (result.length === 0) {
+                return res.status(404).json({ error: "Player not found" });
+            }
+
+            const player = result[0];
+
+            if (player.fame < 50) {
+                return res.status(400).json({ error: "Not enough fame" });
+            }
+
+            db.query(
+                `UPDATE Player
+                 SET fame = fame - 50,
+                     hearts = hearts + 1
+                 WHERE player_id = ?`,
+                [player_id],
+                (err2) => {
+                    if (err2) return res.status(500).send(err2.message);
+
+                    res.json({
+                        success: true,
+                        fame: player.fame - 50,
+                        hearts: player.hearts + 1
+                    });
+                }
+            );
+        }
+    );
 });
