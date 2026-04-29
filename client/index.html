@@ -4,22 +4,24 @@
     <title>Gladiator Game</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
-
+    <hr>
     <header id="headerContainer">
-        <h1 class="pixelText">G L A D I A T O R</h1>
+        <h1 class="pixelText">GLADIATOR</h1>
         <h2>Enter the Arena</h2>
-        <p>Fight, survive, and earn glory in the Roman Colosseum</p>
-
-        <div class="tutorial">
-            <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#storyModal">Story</button>
-            <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#instructionsModal">Tutorial</button>
-            <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#creditsModal">Credits</button>
-        </div>
+        <p>Fight, survive, and earn glory in the Roman Colosseum</p> 
     </header>
+    
+    <hr>
+
+    </header>
+    <div class="tutorial">
+        <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#storyModal">Story</button>
+        <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#instructionsModal">Tutorial</button>
+    </div>
+
 
     <audio id="bgMusic" loop>
         <source src="./assets/music/background.mp3" type="audio/mpeg">
@@ -28,8 +30,8 @@
 
     <main class="layout">
 
-        <!-- LEFT -->
-        <section class="descriptionBox">
+        <!-- LEFT 
+            <section class="descriptionBox">
             <button class="dropdownButton" onclick="toggleDescription()">
                 About the Game
             </button>
@@ -41,7 +43,7 @@
                     and balance glory, fame, and punishment from the Empire.
                 </p>
             </div>
-        </section>
+        </section>  -->
 
         <!-- CENTER -->
         <canvas id="canvas"></canvas>
@@ -51,7 +53,7 @@
             <button class="dropdownButton" onclick="toggleStats()">
                 Player Stats
             </button>
-            <button onclick="openStatsPage()" class="btn btn-dark">
+            <button onclick="openStatsPage()" class="dropdownButton" id="globalStatsBtn" style="display:none;">
                 View Global Stats
             </button>
             <div class="statsContent" id="statsContent">
@@ -78,6 +80,11 @@
 
                 <div class="statRow">
                     <span class="statLabel">Cards in Deck</span>
+                    <span class="statValue" id="cards">-</span>
+                </div>
+
+                <div class="statRow">
+                    <span class="statLabel" id = "level-timer">0.0s</span>
                     <span class="statValue" id="cards">-</span>
                 </div>
 
@@ -109,7 +116,7 @@
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="pixelText">STORY</h1>
+                    <h3>STORY</h3>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -129,6 +136,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="pixelText">TUTORIAL</h1>
+
+                    <h3>INSTRUCTIONS</h3>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">

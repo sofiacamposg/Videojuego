@@ -5,7 +5,6 @@ import { handleMouseMove, drawButton, handleClick, isMouseOverBox } from "../lib
 //? mouse track
 let mouseX = 0;
 let mouseY = 0;
-let loginSuccess = false;
 
 const buttonBack = { //? BACK TO MENU BUTTON
     x: 150,
@@ -107,11 +106,7 @@ function handleMouseMoveLogIn(event, canvas){
     mouseY = pos.y;
 }
 
-function handleClickLogIn(ctx){  //? handle cliks over any element
-    if(loginSuccess){
-        loginSuccess = false;
-        return "confirm";
-    }
+function handleClickLogIn(ctx, onSuccess){  //? handle cliks over any element
     if (errorMessage.visible) {
         return errorMessage.handleClick(mouseX, mouseY);
     }
@@ -140,14 +135,15 @@ function handleClickLogIn(ctx){  //? handle cliks over any element
             errorMessage.show();
             return null;
         }
-        loginUser();
+        //onSuccess is a callback from main.js. we give it to loginUser so when credentials are verified, it calls 
+        //inmediatly the functions to change scene
+        loginUser(onSuccess);
         return null;
     }
+    
 
     return null;
 }
-
-
 
 function handleKeyDownLogIn(event){  //? handles user's input
   if (activeField === null) return; //case 1: no active field
@@ -165,7 +161,7 @@ function handleKeyDownLogIn(event){  //? handles user's input
   if (event.key.length !== 1) return; //case 4: one key at a time
   const allowed = /^[a-zA-Z0-9 _\-\.@]$/.test(event.key); //case 5: checks input
   if (!allowed) return;
-  if (activeField === "username") username += event.key;  //adds letter to stricng
+  if (activeField === "username") username += event.key;  //adds letter to string
   if (activeField === "password") password += event.key;
 }
 function getUsernameLogIn(){  //? getter
@@ -180,7 +176,7 @@ function resetLogIn() {  //? reset to default values
 }
 
 //API CONNECTION
-async function loginUser(){
+async function loginUser(onSuccess){
     try{
         const res = await fetch("http://localhost:3000/login", {
             method: "POST",
@@ -201,9 +197,17 @@ async function loginUser(){
 
         const data = await res.json();
         window.loggedPlayer = data;
+        localStorage.setItem("player", JSON.stringify(data));
+        window.lastMatchId = null;   //for score scene to work and reload match stats, for differentes users debug
         console.log("USER LOGGED:", data);
+        if (data.role === "admin") {
+            const btn = document.getElementById("globalStatsBtn");
+            if (btn) btn.style.display = "inline-block";
+        }
 
-        loginSuccess = true; 
+
+        //login ok? call the callback to handle the scene change
+        if(onSuccess) onSuccess();
 
     } catch(error){
         console.log(error);

@@ -22,7 +22,7 @@ export async function saveCardUse(levelId, cardId, duration) {
 export function drawFog(ctx, canvas, game) {
     if (!game.fogActive) return;
     ctx.save();
-    ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+    ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
 }
@@ -37,16 +37,19 @@ export function imperialDecree(game, enemies){
 }
 
 //============== MATCH ====================
+//for scoreScene, full summary of the match
 export async function saveMatch(data) {
     const res = await fetch("http://localhost:3000/match", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify(data)
     });
 
-    return await res.json();
+    const result = await res.json();
+
+    window.lastMatchId = result.match_id;  // ESTO ES CLAVE
+
+    return result;
 }
 
 //============== ENEMIES =====================

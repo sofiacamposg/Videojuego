@@ -1,6 +1,34 @@
 //LEVEL CONFIGURATIONS
 //Player Configurations 
-export const playerConfigs = {
+
+//API
+export let playerConfigs = {};
+export async function loadPlayerConfigs() {
+    const res = await fetch("http://localhost:3000/archetypes");
+    const data = await res.json();
+
+    const configs = {};
+
+    data.forEach(a => {
+        configs[a.name] = {
+            hp: a.hp_start,
+            maxHp: a.hp_start,
+            speed: a.speed_start / 10,
+            damage: a.damage_start,
+
+            walkRightSrc: `./assets/player${a.archetype_id}/1.png`,
+            walkLeftSrc: `./assets/player${a.archetype_id}/2.png`,
+            jumpRightSrc: `./assets/player${a.archetype_id}/3.png`,
+            jumpLeftSrc: `./assets/player${a.archetype_id}/4.png`,
+            attackRightSrc: `./assets/player${a.archetype_id}/attackright.png`,
+            attackLeftSrc: `./assets/player${a.archetype_id}/attackleft.png`,
+        };
+    });
+
+    playerConfigs = configs;
+}
+
+/*export const playerConfigs = {
     Warrior: {
         hp: 120, maxHp: 120, speed: 0.5, damage: 20,
         walkRightSrc: "./assets/player1/1.png",
@@ -30,19 +58,92 @@ export const playerConfigs = {
         attackRightSrc: "./assets/player3/attackright.png",
         attackLeftSrc:  "./assets/player3/attackleft.png",
     },
-};
+};*/
+
+//Enemy configs from API
+export let enemyConfigs = {};
+export async function loadEnemyConfigs() {
+    const res = await fetch("http://localhost:3000/enemies");
+    const data = await res.json();
+
+    const configs = {};
+
+    data.forEach(e => {
+        configs[e.level_id] = {
+            hp: e.hp_start,
+            damage: e.damage_start,
+            speed: e.speed_start,
+        };
+    });
+
+    enemyConfigs = configs;
+}
+//LevelConfigs from API
+export let levelConfigsDB = {};
+export async function loadLevelConfigs() {
+    const res = await fetch("http://localhost:3000/levels");
+    const data = await res.json();
+
+    const configs = {};
+
+    data.forEach(l => {
+        configs[l.level_id] = {
+            targetTime: l.target_time,
+            conditionEnemies: l.condition_enemies
+        };
+    });
+
+    levelConfigsDB = configs;
+}
+export function getLevelConfig(level) {
+    const db = levelConfigsDB[level] || {};
+    const baseConfigs = {
+        1: {
+            background: "./assets/Coliseo1.png",
+            scale: 0.6,
+        },
+        2: {
+            background: "./assets/Coliseo2.png",
+            scale: 0.7,
+        },
+        3: {
+            background: "./assets/Coliseo3.png",
+            scale: 0.8,
+        }
+    };
+    const base = baseConfigs[level];
+    return {
+        ...base,
+        targetTime: db.targetTime || 10000,
+        conditionEnemies: db.conditionEnemies || 8,
+        enemyConfig: {
+            ...enemyConfigs[level], // ahora sí funciona
+            scale: base.scale,
+            walkRightSrc: `./assets/enemy${level}/walkRight.png`,
+            walkLeftSrc: `./assets/enemy${level}/walkLeft.png`,
+            attackRightSrc: `./assets/enemy${level}/attackRight.png`,
+            attackLeftSrc: `./assets/enemy${level}/attackLeft.png`,
+            deathSrc: `./assets/enemy${level}/death.png`,
+        },
+
+        spawnPositions: [
+            { x: 800, y: 450 },
+            { x: 1000, y: 450 }
+        ]
+    };
+}
+
+
 
 //Configurations for each level
-export const level1Config = {  //   TODO agregar muerte del lado derecho
+/*export const level1Config = {  //   TODO agregar muerte del lado derecho
     background: "./assets/Coliseo1.png",
     targetTime: 10000,
-    conditionEnemies: 8,
+    conditionEnemies: 1,
 
 
     enemyConfig: {
-        hp: 100,
-        damage: 8,
-        speed: 0.4,
+        ...enemyConfigs[1], //DB, spread operator
         scale: 0.6,
         walkRightSrc: "./assets/enemy1/walkRight.png",
         walkLeftSrc: "./assets/enemy1/walkLeft.png",
@@ -61,20 +162,18 @@ export const level1Config = {  //   TODO agregar muerte del lado derecho
 export const level2Config = {
     background: "./assets/Coliseo2.png",
     targetTime: 15000,
-    conditionEnemies: 9,
+    conditionEnemies: 2,
 
 
     enemyConfig: {
-        hp: 120,
-        damage: 9,
-        speed: 0.5,
+        ...enemyConfigs[2],
         scale: 0.7,
         walkRightSrc: "./assets/enemy2/walkRight.png",
         walkLeftSrc: "./assets/enemy2/walkLeft.png",
         attackRightSrc: "./assets/enemy2/attackRight.png",
         attackLeftSrc: "./assets/enemy2/attackLeft.png",
-        deathLeftSrc: "./assets/enemy2/death.png",
-        deathRightSrc: "./assets/enemy1/deathRight.png",
+        deathLeftSrc: "./assets/enemy2/deathLeft.png",
+        deathRightSrc: "./assets/enemy2/deathRight.png",
 
     },
 
@@ -86,12 +185,10 @@ export const level2Config = {
 export const level3Config = {
     background: "./assets/Coliseo3.png",
     targetTime: 20000,
-    conditionEnemies: 10,
+    conditionEnemies: 3,
 
     enemyConfig: {
-        hp: 120,
-        damage: 10,
-        speed: 0.5,
+        ...enemyConfigs[3],
         scale: 0.8,
         walkRightSrc: "./assets/enemy3/walkRight.png",
         walkLeftSrc: "./assets/enemy3/walkLeft.png",
@@ -106,4 +203,4 @@ export const level3Config = {
         {x: 700, y: 450},
         {x: 1000, y: 450}
     ]
-};
+};*/

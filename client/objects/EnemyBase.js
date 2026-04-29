@@ -81,13 +81,13 @@ class EnemyBase extends AnimatedObject {
     let direction = this.speed < 0 ? -1 : 1;  //change direction, the < is ro keep the direction of bounce
 
     if (this.isSlowed) {  //lions roar effect
-      this.speed = this.speedBase * 0.2 * direction; 
+      this.speed = this.speedBase * 0.1 * direction; 
     } else {
       this.speed = this.speedBase * direction;
     }
     this.spriteImage = (this.speed < 0) ? this.spriteRight : this.spriteLeft;
-    this.updateAnimation(20);
-    this.position.x -= this.speed * deltaTime;
+    this.updateAnimation(deltaTime);
+    this.position.x -= this.speed * (deltaTime/16);
   }
 
   takeDamage(hit, player) {  //damage made by player, look Playerbase to understand the whole logic
@@ -98,7 +98,7 @@ class EnemyBase extends AnimatedObject {
       this.spriteImage = (this.speed < 0) ? this.spriteDeathRight : this.spriteDeathLeft;
       this.setAnimation(0, 3, false, 100);  //faster and false to not repeat the animation
       if (player.lifeSteal){  //gladiators blood effect
-        player.hp = Math.min(player.hp + 20, player.maxHp);  
+        player.hp = Math.min(player.hp + 30, player.maxHp);  
       }
     }
 
@@ -129,12 +129,12 @@ class EnemyBase extends AnimatedObject {
       }
     } else {
       this.spriteImage = (this.speed < 0) ? this.spriteRight : this.spriteLeft;
-      this.updateAnimation(20);
+      this.updateAnimation(deltaTime);
     }
   }
 
   attackPlayer(player) {
-    if (!this.attackHitbox)
+    if (!this.attackHitbox)  //there is not a hitbox
         return;
     if (this.hasHitPlayer)
         return;
@@ -156,29 +156,17 @@ class EnemyBase extends AnimatedObject {
       this.scale = 0.6;
       let minSpeed = this.speedBase + 0.1;
       let maxSpeed = this.speedBase + 0.3;
-      this.speed = randomRange(maxSpeed - minSpeed +1, minSpeed);
+      this.speedBase = randomRange(maxSpeed - minSpeed + 1, minSpeed);
     } else {
       this.scale = 1.0;
       let minSpeed = this.speedBase - 0.3;
       let maxSpeed = this.speedBase - 0.1;
-      this.speed = randomRange(maxSpeed - minSpeed +1, minSpeed);
+      this.speedBase = randomRange(maxSpeed - minSpeed + 1, minSpeed);
     }
-    this.speed *= direction;
+    this.speed = this.speedBase * direction;
   }
-
   draw(ctx) {
     super.draw(ctx);
-
-    if (this.attackHitbox) {
-      ctx.strokeStyle = "blue";
-      ctx.strokeRect(
-        this.attackHitbox.x,
-        this.attackHitbox.y,
-        this.attackHitbox.width,
-        this.attackHitbox.height
-      );
-    }
   }
 }
-
 export { EnemyBase };
