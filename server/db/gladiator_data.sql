@@ -29,7 +29,7 @@ INSERT INTO Level (level_number, target_time, condition_enemies, description) VA
 (3, 40000, 12, 'Final battle of the colosseum');
 COMMIT;
 
--- Insert Cards catalog TODO: AÑADIR LAS DEMÁS CARTAS
+-- Insert Cards catalog 
 SET AUTOCOMMIT = 0;
 INSERT INTO Card (card_name, description, effect_type, duration_type, effect_from, effect_modifies, effect_operator, effect_reverse_operator, value_effect, reverse_value, duration) VALUES
 ('Favor of the People', 
