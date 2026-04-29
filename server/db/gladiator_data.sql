@@ -103,7 +103,7 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 'player', 'damage', '*', '/', 0.5, 0.5, 15000),
 
 ('Senates Judgment', 
-'If the player dies during this level, 2 lives are lost instead of 1', 
+'If the players hp equals 0, 2 lives are lost instead of 1', 
 'PUNISHMENT', 'PERMANENT', 
 'player', 'doubleDeath', '=', '=', 1.0, 0.0, 0);
 COMMIT;

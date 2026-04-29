@@ -97,7 +97,7 @@ let spikesWarningBox = new MessageBox(  // spikes warning
         "THERE ARE SPIKES IN THE SAND NOW!\n TRY NOT TO STEP ON THEM OR YOU'LL LOSE LIFE!",
         250, 150, 500, 300
     );
-    spikesWarningBox.addButton("OK", 420, 350, 160, 40, () => {
+    spikesWarningBox.addButton("I'm ready", 420, 350, 160, 40, () => {
         spikesWarningBox.hide();
     });
 let confirmBox = new MessageBox(  //screen appears when user click on restart or home
@@ -139,9 +139,9 @@ let levelCompletedBox = new MessageBox(  //message shown between levels
     );
     levelCompletedBox.addButton("Ready for more?", 420, 350, 160, 40, () => {
     levelCompletedBox.hide();
-    showDeckPreview = true;  
+    showDeckPreview = true;
     deckPreviewTimer = 0;
-    cardSystem.isDeckOpen = true;
+    cardSystem.rewardBox.show();
     });
 let gameOver = false;  //screen and config when hearts = 0
     let gameOverBox = new MessageBox(
@@ -249,17 +249,19 @@ async function giveLevelRewards(){  //? reward cards, depending on fame, after l
         const shuffled = powerUps.sort(() => Math.random() - 0.5);  //mix the powerups to obtain different options everytime
 
         //take only the first rewardCount cards and add each one to the player's deck
-        shuffled.slice(0, rewardCount).forEach(apiCard => {  
-            cardSystem.playerDeck.push({
+        cardSystem.rewardCards = [];
+        shuffled.slice(0, rewardCount).forEach(apiCard => {
+            const card = {
                 id: apiCard.card_id,
                 name: apiCard.card_name,
                 type: apiCard.effect_type,
-                duration: apiCard.duration,                
+                duration: apiCard.duration,
                 image: cardImages[apiCard.card_name] || null,
-                //stores the function for later
                 applyEffect: (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
                 removeEffect: apiCard.duration > 0 ? (player, enemies, game) => reverseEffect(apiCard, player, enemies, game) : null,
-            });
+            };
+            cardSystem.playerDeck.push(card);
+            cardSystem.rewardCards.push(card);
         });
     } catch(err) {
         console.log("Could not fetch reward cards:", err);
@@ -315,22 +317,17 @@ function drawLevel(ctx, canvas, deltaTime){
 
     if(spikesWarningBox.visible){
         spikesWarningPulse += deltaTime * 0.005;
-    let scale = 1 + Math.sin(spikesWarningPulse) * 0.05;
-
-    ctx.save();
-
-    // overlay red transparent
-    ctx.fillStyle = "rgba(255, 0, 0, 0.15)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // efecto de pulso (zoom leve)
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.scale(scale, scale);
-    ctx.translate(-canvas.width / 2, -canvas.height / 2);
-
-    spikesWarningBox.draw(ctx);
-
-    ctx.restore();
+        let scale = 1 + Math.sin(spikesWarningPulse) * 0.05;
+        ctx.save();
+        // overlay red transparent
+        ctx.fillStyle = "rgba(255, 0, 0, 0.15)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // efecto de pulso (zoom leve)
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.scale(scale, scale);
+        ctx.translate(-canvas.width / 2, -canvas.height / 2);
+        spikesWarningBox.draw(ctx);
+        ctx.restore();
     } else {
         spikesWarningBox.draw(ctx);
     }
@@ -350,13 +347,14 @@ function drawLevel(ctx, canvas, deltaTime){
     cardSystem.draw(ctx, canvas);
     cardSystem.drawDeck(ctx, canvas);
 
-    //Shows player's deck after each level completed to show reward cards
+    //Shows reward cards after each level completed
     if(showDeckPreview){
-        cardSystem.drawDeck(ctx, canvas);
+        cardSystem.drawReward(ctx, canvas);
         deckPreviewTimer += deltaTime;
         if(deckPreviewTimer >= 3000){  //after 3 seconds, move to the next level
             showDeckPreview = false;
-            cardSystem.isDeckOpen = false;
+            cardSystem.rewardBox.hide();
+            cardSystem.rewardCards = [];
             if (currentLevel <= 3)
                 transitionToNextLevel();
             else
@@ -372,12 +370,6 @@ function updateLevel(deltaTime){
         gameOver = true;
         gameOverBox.show();
         return;
-    }
-
-    if (!cardEventTriggered && levelTimer >= randomEventTime) {  //trigger the mid-level card event
-        console.log("EVENT TRIGGERED");
-        cardEventTriggered = true;
-        triggerCardEvent();
     }
 
     player.isMoving = false;  //reset movement flag before checking keys
@@ -407,7 +399,11 @@ function updateLevel(deltaTime){
 
     let totalLenEnemies = enemies.length;
     enemies = enemies.filter(alive => !alive.isDying);  //remove dead enemies
-    killedEnemies += totalLenEnemies - enemies.length;  //count how many died this frame
+    let killsThisFrame = totalLenEnemies - enemies.length;
+    killedEnemies += killsThisFrame;
+    if (killsThisFrame >= 1 && !cardSystem.cardBox.visible && killedEnemies < currentLevelConfig.conditionEnemies) {
+        triggerCardEvent();
+    }
 
     spawnTimer += deltaTime;
     if (spawnTimer >= spawnInterval) {  //time to spawn a new enemy
@@ -546,7 +542,6 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
     deckPreviewTimer = 0;
     levelCompletedBox.hide();
     //show spikes warning on level 2
-
     if(currentLevel === 2){
     spikesWarningPulse = 0;
     spikesWarningBox.title = "ATTENTION GLADIATOR!!!";
