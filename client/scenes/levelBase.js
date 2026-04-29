@@ -7,14 +7,13 @@ import { handleMouseMove, randomRange } from "../libs/game_functions.js";
 import { /*currentLevelConfig, level2Config, level3Config, */ getLevelConfig, playerConfigs } from "../libs/levelConfig.js";
 import { spawnEnemy, generatePlatform, updateCamera, updateFame, drawFame, saveMatch, drawFog, imperialDecree,
         loadPlayerStats, drawHealthBar, drawHearts } from "../libs/level_functions.js";
-import { FirePit } from "../hazards/FirePit.js";
-import { Spikes } from "../hazards/Spikes.js";
+import { FirePit, Spikes } from "../objects/hazardsBase.js";
 "use strict"
 //* game core variables
 //? level transition 
 let levelCompleted = false;  
 let showDeckPreview = false;
-let currentLevel = 1;
+let currentLevel = 2;
 let currentLevelConfig = getLevelConfig(1);  //always starts at level 1, transitionToNextLevel() updates this
 let deckPreviewTimer = 0;
 let levelTimer = 0;  //how much does the player take in one level? (fame, cards gained)
@@ -78,11 +77,11 @@ function initHazards(){
     const count = Math.random() < 0.5 ? 3 : 4;  //3 or 4 hazards per level
 
     for(let i = 0; i < count; i++){  //for spikes
-        hazards.push(new Spikes(randomRange(worldWidth - safeZone, safeZone), 410));
+        hazards.push(new Spikes(randomRange(worldWidth - safeZone, safeZone), 80));
     }
     if(currentLevel === 3){  //TODO adds firepits on top of spikes?
         for(let i = 0; i < count; i++){
-            hazards.push(new FirePit(randomRange(worldWidth - safeZone, safeZone), 410));
+            hazards.push(new FirePit(randomRange(worldWidth - safeZone, safeZone), 80));
         }
     }
 }
@@ -575,7 +574,7 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
 }
 //* goes back to level 1, resets everything
 function resetLevel(){
-    currentLevel = 1; 
+    currentLevel = 2; 
     currentLevelConfig = getLevelConfig(1);
     backgroundImage.src = currentLevelConfig.background;  //swap back to level 1 background
 

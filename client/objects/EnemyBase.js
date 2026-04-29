@@ -134,7 +134,7 @@ class EnemyBase extends AnimatedObject {
   }
 
   attackPlayer(player) {
-    if (!this.attackHitbox)
+    if (!this.attackHitbox)  //there is not a hitbox
         return;
     if (this.hasHitPlayer)
         return;
@@ -167,16 +167,6 @@ class EnemyBase extends AnimatedObject {
   }
   draw(ctx) {
     super.draw(ctx);
-
-    if (this.attackHitbox) {
-      ctx.strokeStyle = "blue";
-      ctx.strokeRect(
-        this.attackHitbox.x,
-        this.attackHitbox.y,
-        this.attackHitbox.width,
-        this.attackHitbox.height
-      );
-    }
   }
 }
 export { EnemyBase };

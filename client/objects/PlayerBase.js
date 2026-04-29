@@ -59,8 +59,8 @@ class PlayerBase extends AnimatedObject {
     this.attackDuration = 10;
      //hitbox platform colission
     this.hitbox = {
-        width: 40,   // AJUSTA esto
-        height: 80   // AJUSTA esto
+        width: 35,  
+        height: 80   
     };
     this.HITBOX_WIDTH = 50;
     this.HITBOX_HEIGHT = 100;
@@ -219,16 +219,6 @@ class PlayerBase extends AnimatedObject {
 
   draw(ctx){  //draw this, attack, jump and death on canvas
     super.draw(ctx)
-    //* only to test
-    if (this.attackHitbox) {
-      ctx.strokeStyle = "red";
-      ctx.strokeRect(
-        this.attackHitbox.x,
-        this.attackHitbox.y,
-        this.attackHitbox.width,
-        this.attackHitbox.height
-      );
-    }
   }
 };
 export { PlayerBase }; 
