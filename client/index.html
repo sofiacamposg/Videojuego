@@ -27,8 +27,8 @@
 
     <main class="layout">
 
-        <!-- LEFT -->
-        <section class="descriptionBox">
+        <!-- LEFT 
+            <section class="descriptionBox">
             <button class="dropdownButton" onclick="toggleDescription()">
                 About the Game
             </button>
@@ -40,7 +40,7 @@
                     and balance glory, fame, and punishment from the Empire.
                 </p>
             </div>
-        </section>
+        </section>  -->
 
         <!-- CENTER -->
         <canvas id="canvas"></canvas>
@@ -50,7 +50,7 @@
             <button class="dropdownButton" onclick="toggleStats()">
                 Player Stats
             </button>
-            <button onclick="openStatsPage()" class="btn btn-dark">
+            <button onclick="openStatsPage()" class="dropdownButton" id="globalStatsBtn" style="display:none;">
                 View Global Stats
             </button>
             <div class="statsContent" id="statsContent">

@@ -198,6 +198,10 @@ async function loginUser(onSuccess){
         window.loggedPlayer = data;
         localStorage.setItem("player", JSON.stringify(data));
         console.log("USER LOGGED:", data);
+        if (data.role === "admin") {
+            const btn = document.getElementById("globalStatsBtn");
+            if (btn) btn.style.display = "inline-block";
+        }
 
         //login ok? call the callback to handle the scene change
         if(onSuccess) onSuccess();
