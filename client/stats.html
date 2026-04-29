@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Global Statistics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'VT323', monospace;
+            background: url('./assets/portadaBase.png') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+        }
+
+         .panel {
+            background: rgba(0,0,0,0.35); /*  más transparente */
+            backdrop-filter: blur(1px);   /* efecto vidrio (muy pro) */
+            border: 2px solid #a5861e;
+            box-shadow: 
+                0 0 5px #a5861e,
+                0 0 10px #d4af3750;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .title {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(0,0,0,0.25); /*  casi transparente */
+            backdrop-filter: blur(4px);
+            text-align: center;
+            padding: 10px;
+            border: 2px solid #837549;
+            box-shadow: 0 0 10px #ffc10750;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .table-custom td {
+            border-bottom: 1px solid #ffc10750;
+            padding: 10px;
+        }
+
+        .table-custom td {
+            border-bottom: 1px solid white;
+            padding: 10px;
+        }
+
+        canvas {
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(4px);
+            border: 2px solid #a5861e;
+            box-shadow: 0 0 10px #ffc10750;
+            border-radius: 10px;
+        }
+
+        h1, h3, h4 {
+            color: #a5861e;
+            text-shadow: 0 0 10px #a5861e;
+        }
+
+    </style>
+</head>
+
+<body class="bg-dark text-white">
+
+    <div class="container mt-5 panel">
+
+    <div class="title"> ARENA STATS </div>
+
+    <!--  GLOBAL CARDS -->
+    <div class="row text-center mb-4">
+
+        <div class="col-md-3 stat-card">
+            <h4>Players</h4>
+            <h2 id="players">-</h2>
+        </div>
+
+        <div class="col-md-3 stat-card">
+            <h4>Matches</h4>
+            <h2 id="matches">-</h2>
+        </div>
+
+        <div class="col-md-3 stat-card">
+            <h4>Victories</h4>
+            <h2 id="wins">-</h2>
+        </div>
+
+        <div class="col-md-3 stat-card">
+            <h4>Defeats</h4>
+            <h2 id="losses">-</h2>
+        </div>
+
+    </div>
+
+    <!--  EXTRA GLOBAL -->
+    <div class="row text-center mb-5">
+        <div class="col-md-4">
+            <h4>🏆 Best Score</h4>
+            <h2 id="global-best">-</h2>
+        </div>
+        <div class="col-md-4">
+            <h4>⏱ Avg Time</h4>
+            <h2 id="global-avg-time">-</h2>
+        </div>
+        <div class="col-md-4">
+            <h4>💀 Avg Kills</h4>
+            <h2 id="global-kills">-</h2>
+        </div>
+    </div>
+
+    <!--  PLAYER + PIE -->
+    <div class="row">
+
+        <!-- PLAYER TABLE -->
+        <div class="col-md-6">
+            <h3>👤 PLAYER STATS</h3>
+            <table class="table-custom w-100">
+                <tr><td>Runs</td><td id="runs"></td></tr>
+                <tr><td>Wins</td><td id="wins-player"></td></tr>
+                <tr><td>Losses</td><td id="losses-player"></td></tr>
+                <tr><td>Avg Time</td><td id="avg-time"></td></tr>
+                <tr><td>Best Score</td><td id="best-score"></td></tr>
+                <tr><td>Total Kills</td><td id="total-kills"></td></tr>
+            </table>
+        </div>
+
+        <!-- PIE CHART -->
+        <div class="col-md-6 text-center">
+            <h3>📊 WIN RATIO</h3>
+            <canvas id="winLossChart"></canvas>
+        </div>
+
+    </div>
+
+    <!--  EXTRA CHARTS -->
+    <div class="row mt-5">
+
+        <div class="col-md-6 text-center">
+            <h3>⚔️ MATCH RESULTS</h3>
+            <canvas id="barChart"></canvas>
+        </div>
+
+        <div class="col-md-6 text-center">
+            <h3>💀 KILL PERFORMANCE</h3>
+            <canvas id="killsChart"></canvas>
+        </div>
+
+    </div>
+
+</div>
+
+    <script>
+        //From log in scene
+        const player = JSON.parse(localStorage.getItem("player"));
+        if (!player) {
+            alert("No user logged");
+            window.location.href = "login.html";
+        }
+
+        async function loadPlayerGlobalStats() {
+            const res = await fetch(`http://localhost:3000/player/stats/${player.player_id}`)
+            const data = await res.json();
+
+            document.getElementById("runs").textContent = data.total_runs;
+            document.getElementById("wins-player").textContent = data.total_wins;
+            document.getElementById("losses-player").textContent = data.total_losses;
+            document.getElementById("avg-time").textContent = Number(data.avg_duration || 0).toFixed(1);
+            document.getElementById("best-score").textContent = data.best_score;
+            document.getElementById("total-kills").textContent = data.total_kills;
+
+            createWinLossChart(data.total_wins, data.total_losses);
+        }
+
+        async function loadGlobalStats() {
+            const res = await fetch("http://localhost:3000/global/stats");
+            const data = await res.json();
+
+            document.getElementById("players").textContent = data.players || 0;
+            document.getElementById("matches").textContent = data.matches || 0;
+            document.getElementById("wins").textContent = data.wins || 0;
+            document.getElementById("losses").textContent = data.losses || 0;
+
+            document.getElementById("global-best").textContent = data.best_score || 0;
+            document.getElementById("global-avg-time").textContent = Number(data.avg_duration || 0).toFixed(1);
+            document.getElementById("global-kills").textContent = Number(data.avg_kills || 0).toFixed(1);
+
+            createBarChart(data.wins || 0, data.losses || 0);
+            createKillsChart(Number(data.avg_kills || 0));
+        }
+
+        //Charts for Player stats
+        function createWinLossChart(wins, losses) {
+            const ctx = document.getElementById("winLossChart").getContext("2d");
+
+            new Chart(ctx, {
+                type: "pie",
+                data: {
+                    labels: ["Wins", "Losses"],
+                    datasets: [{
+                        data: [wins, losses],
+                        backgroundColor: ["#28a745", "#dc3545"]
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: "white"
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        function createBarChart(wins, losses) {
+            const ctx = document.getElementById("barChart").getContext("2d");
+
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: ["Wins", "Losses"],
+                    datasets: [{
+                        label: "Matches",
+                        data: [wins, losses],
+                        backgroundColor: ["#28a745", "#dc3545"]
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function createKillsChart(avgKills) {
+            const ctx = document.getElementById("killsChart").getContext("2d");
+
+            new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                    labels: ["Avg Kills", "Remaining"],
+                    datasets: [{
+                        data: [avgKills, 10 - avgKills],
+                        backgroundColor: ["#ffc107", "#444"]
+                    }]
+                }
+            });
+        }
+
+        loadPlayerGlobalStats();
+        loadGlobalStats();
+        
+    </script>
+
+</body>
+</html>

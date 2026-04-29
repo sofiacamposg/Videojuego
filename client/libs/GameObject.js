@@ -49,8 +49,8 @@ class GameObject {
         // The top left corner of the collider is offset by half of its size
         // TODO: Provide the correct values for the collider rectangle
         // Use the scale as well
-        this.xOffset = 0;
-        this.yOffset = 0;
+        //this.xOffset = 0;
+        //this.yOffset = 0;
         //TAREA
         this.colliderWidth = width * this.scale;;
         this.colliderHeight = height * this.scale;;
@@ -64,7 +64,7 @@ class GameObject {
         // Use the scale as well
        this.collider = new Rect(
             this.position.x - this.colliderWidth / 2,
-            this.position.y - this.colliderHeight / 2,
+            this.position.y - this.colliderHeight,  //toes to head
             this.colliderWidth,
             this.colliderHeight
 );
@@ -79,23 +79,23 @@ class GameObject {
                               this.spriteRect.y,
                               this.spriteRect.width,
                               this.spriteRect.height,
-                              // The position to draw the image
+                              // The position to draw the image (toes to head)
                               (this.position.x - this.halfSize.x * this.scale),
-                              (this.position.y - this.halfSize.y * this.scale),
+                              (this.position.y - this.size.y * this.scale),
                               this.size.x * this.scale,
                               this.size.y * this.scale);
             } else {
                 ctx.drawImage(this.spriteImage,
-                              // The position to draw the image
+                              // The position to draw the image (toes to head)
                               (this.position.x - this.halfSize.x * this.scale),
-                              (this.position.y - this.halfSize.y * this.scale),
+                              (this.position.y - this.size.y * this.scale),
                               this.size.x * this.scale,
                               this.size.y * this.scale);
             }
         } else {
-            ctx.fillStyle = this.color;
+            ctx.fillStyle = this.color; // (toes to head)
             ctx.fillRect((this.position.x - this.halfSize.x * this.scale),
-                         (this.position.y - this.halfSize.y * this.scale),
+                         (this.position.y - this.size.y * this.scale),
                          this.size.x * this.scale,
                          this.size.y * this.scale);
         }
@@ -110,7 +110,7 @@ class GameObject {
         // A transparent layer on top
         ctx.fillStyle = "rgb(0.5, 0.5, 0.5, 0.3)";
         ctx.fillRect((this.position.x - this.halfSize.x * this.scale),
-                     (this.position.y - this.halfSize.y * this.scale),
+                     (this.position.y - this.size.y * this.scale),
                      this.size.x * this.scale,
                      this.size.y * this.scale);
         // Return to default composition type
@@ -120,7 +120,7 @@ class GameObject {
         ctx.strokeStyle = "red";
         ctx.beginPath();
         ctx.rect((this.position.x - this.halfSize.x * this.scale),
-                 (this.position.y - this.halfSize.y * this.scale),
+                 (this.position.y - this.size.y * this.scale),
                  this.size.x * this.scale,
                  this.size.y * this.scale);
         ctx.stroke();
