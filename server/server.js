@@ -513,3 +513,16 @@ app.post("/shop/buy-heart", (req, res) => {
         }
     );
 });
+
+app.post("/player/update-fame", (req, res) => {
+    const { player_id, fame } = req.body;
+
+    db.query(
+        "UPDATE Player SET fame = fame + ? WHERE player_id = ?",
+        [fame, player_id],
+        (err) => {
+            if (err) return res.status(500).send(err.message);
+            res.json({ success: true });
+        }
+    );
+});

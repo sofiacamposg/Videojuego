@@ -424,6 +424,19 @@ function updateLevel(deltaTime){
         levelCompleted = true;
         currentLevel ++;
         updateFame(player, currentLevelConfig, levelTimer);  //give "coins" (fame) for the time spent in the level
+        updateFame(player, currentLevelConfig, levelTimer);
+
+// ← NUEVO: guarda la fama ganada en la DB
+const fameGained = levelTimer <= currentLevelConfig.targetTime ? 10 : 5;
+fetch("http://localhost:3000/player/update-fame", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+        player_id: window.loggedPlayer.player_id,
+        fame: fameGained
+    })
+});
+window.loggedPlayer.fame = (window.loggedPlayer.fame || 0) + fameGained;
         giveLevelRewards();  //give the player their reward cards
         levelCompletedBox.show();
         saveMatch({  //save the match result to the db
@@ -431,7 +444,7 @@ function updateLevel(deltaTime){
             archetype_id: selectedArchetypeId,
             duration_seconds: Math.floor(levelTimer / 1000),
             level_reached: currentLevel,
-            final_fame: killedEnemies,
+            final_fame: player.fame,
             life: player.hearts,
             result: "WIN",
             kills: killedEnemies,

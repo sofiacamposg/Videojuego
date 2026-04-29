@@ -9,7 +9,8 @@ let cachedCtx;
 const buttonBuyHeart = {
     x: 400,
     y: 300,
-    text: "BUY HEART - 50 FAME"
+    text: "BUY HEART - 50 FAME",
+    disabled: false
 };
 
 const buttonBack = {
@@ -55,6 +56,7 @@ export function drawShop(ctx, canvas) {
     //  datos
     const fame = window.loggedPlayer?.fame ?? 0;
     const hearts = window.loggedPlayer?.hearts ?? 1;
+    const canAfford = fame >= 50;
 
     ctx.font = "28px VT323";
     ctx.fillStyle = "white";
@@ -81,6 +83,8 @@ export function drawShop(ctx, canvas) {
     // botón BUY centrado
     buttonBuyHeart.x = canvas.width / 2;
     buttonBuyHeart.y = panelY + 240;
+    buttonBuyHeart.text = canAfford ? "BUY HEART - 50 FAME" : "NEED 50 FAME";
+    buttonBuyHeart.disabled = !canAfford;
 
     // ⬅ botón BACK
     buttonBack.x = canvas.width / 2;
@@ -111,7 +115,8 @@ export async function handleClickShop() {
         return "back";
     }
 
-    
+    if (buttonBuyHeart.disabled) return null;
+
     if (handleClick(mouseX, mouseY, buttonBuyHeart, cachedCtx)) {
 
         const res = await fetch("http://localhost:3000/shop/buy-heart", {
@@ -127,13 +132,12 @@ export async function handleClickShop() {
         const data = await res.json();
 
         if (res.ok && data.success) {
-            // ✅ COMPRA EXITOSA
-            window.loggedPlayer.fame = data.fame;
-            window.loggedPlayer.hearts = data.hearts;
-
-            message = "❤️ Heart purchased!";
-        } else {
-            // ❌ ERROR (no fame suficiente u otro)
+    window.loggedPlayer.fame = data.fame;
+    window.loggedPlayer.hearts = data.hearts;
+    message = "❤️ Heart purchased!";
+    const fameEl = document.getElementById("fame");
+    if (fameEl) fameEl.textContent = data.fame;
+} else {
             message = data.error || "Not enough fame";
         }
     }
