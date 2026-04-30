@@ -100,19 +100,18 @@ app.post("/register", (req, res) => {
     // if username starts with @dm1n_, register as admin in Statistics instead of Player
     if (username.startsWith("@dm1n_")) {
         const cleanUsername = username.slice(6);  // strip the 6-char prefix
-        db.query("SELECT * FROM Player WHERE username = ?", [username], (err, result) => {
+        db.query("SELECT * FROM Statistics WHERE username = ?", [cleanUsername], (err, result) => {
             if (err) return res.status(500).send("Server error");
             if (result.length > 0) return res.status(400).send("User already exists");
-            db.query("INSERT INTO Player (name, username, password) VALUES (?, ?, ?)", [name, username, password], (err, insertResult) => {
-        if (err) return res.status(500).send("Insert error");
-        console.log("USER CREATED:", username);
-        // fetch the newly created player to return their full data
-        db.query("SELECT * FROM Player WHERE player_id = ?", [insertResult.insertId], (err2, playerResult) => {
-            if (err2) return res.status(500).send("Fetch error");
-            res.json({ ...playerResult[0], role: "player" });
+            db.query("INSERT INTO Statistics (name, username, password) VALUES (?, ?, ?)", [name, cleanUsername, password], (err, insertResult) => {
+                if (err) return res.status(500).send("Insert error");
+                console.log("ADMIN CREATED:", cleanUsername);
+                db.query("SELECT * FROM Statistics WHERE statistics_id = ?", [insertResult.insertId], (err2, adminResult) => {
+                    if (err2) return res.status(500).send("Fetch error");
+                    res.json({ ...adminResult[0], role: "admin" });
+                });
+            });
         });
-    });
-    });
         return;  // stop here so the player register code below doesn't run
     }
 
@@ -367,6 +366,17 @@ app.get("/stats", (req, res) => {
     });
 });
 
+//================== DEATHS PER LEVEL ====================
+app.get("/stats/deaths-per-level", (req, res) => {
+    db.query(
+        "SELECT level_reached, COUNT(*) AS deaths FROM MatchGame WHERE result = 'LOSE' GROUP BY level_reached ORDER BY level_reached",
+        (err, result) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(result);
+        }
+    );
+});
+
 //================== PLAYER CURRENT STATE ====================
 app.get("/player/live/:id", (req, res) => {
     const id = req.params.id;
@@ -383,6 +393,7 @@ app.get("/player/live/:id", (req, res) => {
             0 AS cards_in_deck,
             0 AS current_level,
             p.galen
+            
         FROM Player p
         WHERE p.player_id = ?
     `;
