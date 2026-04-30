@@ -1,7 +1,11 @@
-//LEVEL CONFIGURATIONS
-//Player Configurations 
+//& levelConfig.js
+//& Loads and stores all level, player and enemy configurations from the API
+//& Provides getLevelConfig() to build the full config object for each level at runtime
 
-//API
+//===== PLAYER =====
+
+//* fetches all archetypes from the API and builds the playerConfigs object
+//* each archetype gets its stats and sprite paths based on its ID
 export let playerConfigs = {};
 export async function loadPlayerConfigs() {
     const res = await fetch("http://localhost:3000/archetypes");
@@ -13,9 +17,10 @@ export async function loadPlayerConfigs() {
         configs[a.name] = {
             hp: a.hp_start,
             maxHp: a.hp_start,
-            speed: a.speed_start / 10,
+            speed: a.speed_start / 10,  // divide by 10 to keep movement speed reasonable
             damage: a.damage_start,
 
+            // sprite paths built dynamically from the archetype ID
             walkRightSrc: `./assets/player${a.archetype_id}/1.png`,
             walkLeftSrc: `./assets/player${a.archetype_id}/2.png`,
             jumpRightSrc: `./assets/player${a.archetype_id}/3.png`,
@@ -27,7 +32,11 @@ export async function loadPlayerConfigs() {
 
     playerConfigs = configs;
 }
-//Enemy configs from API
+
+//===== ENEMIES =====
+
+//* fetches all enemies from the API and builds the enemyConfigs object
+//* keyed by level_id so each level knows which enemy stats to use
 export let enemyConfigs = {};
 export async function loadEnemyConfigs() {
     const res = await fetch("http://localhost:3000/enemies");
@@ -45,7 +54,11 @@ export async function loadEnemyConfigs() {
 
     enemyConfigs = configs;
 }
-//LevelConfigs from API
+
+//===== LEVELS =====
+
+//* fetches all level configs from the API and stores them in levelConfigsDB
+//* stores target time and enemy kill condition for each level
 export let levelConfigsDB = {};
 export async function loadLevelConfigs() {
     const res = await fetch("http://localhost:3000/levels");
@@ -62,8 +75,13 @@ export async function loadLevelConfigs() {
 
     levelConfigsDB = configs;
 }
+
+//* builds and returns the full config object for a given level number
+//* merges DB data (stats, conditions) with hardcoded data (backgrounds, sprite paths)
 export function getLevelConfig(level) {
-    const db = levelConfigsDB[level] || {};
+    const db = levelConfigsDB[level] || {};  // DB data for this level
+
+    //? hardcoded visual config per level — backgrounds and enemy scale
     const baseConfigs = {
         1: {
             background: "./assets/Coliseo1.png",
@@ -78,13 +96,17 @@ export function getLevelConfig(level) {
             scale: 0.8,
         }
     };
+
     const base = baseConfigs[level];
+
     return {
         ...base,
-        targetTime: db.targetTime || 10000,
-        conditionEnemies: db.conditionEnemies || 8,
+        targetTime: db.targetTime || 10000,          // fallback if DB not loaded yet
+        conditionEnemies: db.conditionEnemies || 8,  // fallback kill condition
+
+        //? enemy config merges DB stats with sprite paths built from level number
         enemyConfig: {
-            ...enemyConfigs[level], // ahora sí funciona
+            ...enemyConfigs[level],
             scale: base.scale,
             walkRightSrc: `./assets/enemy${level}/walkRight.png`,
             walkLeftSrc: `./assets/enemy${level}/walkLeft.png`,
@@ -93,6 +115,7 @@ export function getLevelConfig(level) {
             deathSrc: `./assets/enemy${level}/death.png`,
         },
 
+        //? initial spawn positions for enemies at the start of each level
         spawnPositions: [
             { x: 800, y: 450 },
             { x: 1000, y: 450 }

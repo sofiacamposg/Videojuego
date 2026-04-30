@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+    index.html
+    Main game page — embeds the canvas, player stats HUD, background music,
+    and all modal dialogs (record, story, tutorial, credits)
+    Also handles the colorblind SVG filter and background music autoplay logic
+-->
 <html>
 <head>
     <title>Gladiator Game</title>
@@ -16,7 +22,7 @@
     
     <hr>
 
-    </header>
+    <!-- top navigation buttons for modals -->
     <div class="tutorial">
         <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#matchesHistorial">Your Record</button>
         <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#storyModal">Story</button>
@@ -24,21 +30,22 @@
         <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#creditsModal">Credits</button>
     </div>
 
-
+    <!-- background music — starts on first user interaction to comply with browser autoplay policy -->
     <audio id="bgMusic" loop>
         <source src="./assets/music/background.mp3" type="audio/mpeg">
         <source src="./assets/music/background.ogg" type="audio/ogg">
     </audio>
 
     <main class="layout">
-        <!-- CENTER/LEFT -->
+        <!-- game canvas — all scenes render here -->
         <canvas id="canvas"></canvas>
 
-        <!-- RIGHT -->
+        <!-- right side HUD panel showing live player stats -->
         <section class="statsBox">
             <button class="dropdownButton" onclick="toggleStats()">
                 Player Stats
             </button>
+            <!-- only visible when an admin is logged in -->
             <button onclick="openStatsPage()" class="dropdownButton" id="globalStatsBtn" style="display:none;">
                 View Global Stats
             </button>
@@ -69,8 +76,9 @@
                     <span class="statValue" id="cards">-</span>
                 </div>
 
+                <!-- level timer — updated every frame during gameplay -->
                 <div class="statRow">
-                    <span class="statLabel" id = "level-timer">0.0s</span>
+                    <span class="statLabel" id="level-timer">0.0s</span>
                     <span class="statValue" id="cards">-</span>
                 </div>
 
@@ -92,12 +100,11 @@
                 </div>
 
             </div>
-            
         </section>
 
     </main>
 
-    <!-- HISTORIAL MODAL -->
+    <!-- RECORD MODAL — shows player match history stats and win/loss pie chart -->
     <div class="modal fade" id="matchesHistorial" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -107,7 +114,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <!-- PLAYER TABLE -->
+                        <!-- player stats table -->
                         <div class="col-md-6">
                             <h5 style="color:#c9a44c;">👤 PLAYER STATS</h5>
                             <table class="table-custom w-100">
@@ -119,7 +126,7 @@
                                 <tr><td>Total Kills</td><td id="hist-total-kills">-</td></tr>
                             </table>
                         </div>
-                        <!-- PIE CHART -->
+                        <!-- win/loss pie chart -->
                         <div class="col-md-6 text-center">
                             <h5 style="color:#c9a44c;">📊 WIN RATIO</h5>
                             <canvas id="winLossChart"></canvas>
@@ -130,7 +137,7 @@
         </div>
     </div>
 
-
+    <!-- STORY MODAL -->
     <div class="modal fade" id="storyModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
@@ -149,7 +156,9 @@
         </div>
     </div>
 
-    <!-- TUTORIAL MODALS (1 per section), from bootstramp, Toggle between modals section -->
+    <!-- TUTORIAL MODALS — 10 pages using Bootstrap's toggle between modals feature -->
+
+    <!-- page 1: objective -->
     <div class="modal fade" id="tutorial-1" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -168,6 +177,7 @@
         </div>
     </div>
 
+    <!-- page 2: controls -->
     <div class="modal fade" id="tutorial-2" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -192,6 +202,7 @@
         </div>
     </div>
 
+    <!-- page 3: archetypes -->
     <div class="modal fade" id="tutorial-3" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -214,6 +225,7 @@
         </div>
     </div>
 
+    <!-- page 4: lives -->
     <div class="modal fade" id="tutorial-4" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -234,6 +246,7 @@
         </div>
     </div>
 
+    <!-- page 5: fame -->
     <div class="modal fade" id="tutorial-5" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -253,6 +266,7 @@
         </div>
     </div>
 
+    <!-- page 6: cards system -->
     <div class="modal fade" id="tutorial-6" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -264,8 +278,9 @@
                 <div class="modal-body">
                     <p>Two card events occur during each level:</p>
                     <p><strong>Event 1 — end of level:</strong> The emperor rewards your effort. If you are famous, he'll give you 2 power-ups, 
-                        but if not, he'll give you one. You better give your best! <br> You can use this cards any time in the level, only press 'C' to know which ones you have.</p>
-                    <p><strong>Event 2 — mid-level:</strong> The crowd wants to help you, but you aren't everyone's favorite. Three cards appear face down, there could be punishments or power-ups, let your fate choose. <br> Their effect will apply inmediatly.</p>
+                        but if not, he'll give you one. You better give your best! <br> You can use these cards any time in the level, only press 'C' to know which ones you have.</p>
+                    <p><strong>Event 2 — mid-level:</strong> The crowd wants to help you, but you aren't everyone's favorite. Three cards appear face down, there could be punishments or power-ups, let your fate choose. <br> Their effect will apply immediately.</p>
+                </div>
                 <div class="modal-footer justify-content-between">
                     <button class="btn btn-outline-light" data-bs-target="#tutorial-5" data-bs-toggle="modal">← Back</button>
                     <button class="btn btn-outline-light" data-bs-target="#tutorial-7" data-bs-toggle="modal">Next →</button>
@@ -274,6 +289,7 @@
         </div>
     </div>
 
+    <!-- page 7: power-ups list -->
     <div class="modal fade" id="tutorial-7" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -300,6 +316,7 @@
         </div>
     </div>
 
+    <!-- page 8: punishments list -->
     <div class="modal fade" id="tutorial-8" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -325,6 +342,7 @@
         </div>
     </div>
 
+    <!-- page 9: levels -->
     <div class="modal fade" id="tutorial-9" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -346,6 +364,7 @@
         </div>
     </div>
 
+    <!-- page 10: hazards -->
     <div class="modal fade" id="tutorial-10" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -407,84 +426,96 @@
         </div>
     </div>
 
-    <!-- Filtro SVG para deuteranopia -->
-<svg style="display:none">
-    <defs>
-        <filter id="deuteranopia">
-            <feColorMatrix type="matrix" values="
-                0.8  0.2  0    0 0
-                0.2  0.8  0    0 0
-                0    0.14 0.86 0 0
-                0    0    0    1 0"/>
-        </filter>
-    </defs>
-</svg>
+    <!-- SVG filter for deuteranopia colorblind mode — applied to canvas via CSS filter -->
+    <svg style="display:none">
+        <defs>
+            <filter id="deuteranopia">
+                <feColorMatrix type="matrix" values="
+                    0.8  0.2  0    0 0
+                    0.2  0.8  0    0 0
+                    0    0.14 0.86 0 0
+                    0    0    0    1 0"/>
+            </filter>
+        </defs>
+    </svg>
 
     <script type="module">
-    function toggleDescription() {
-        const content = document.querySelector('.descriptionContent');
-        content.style.display =
-            content.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function toggleStats() {
-        const content = document.getElementById("statsContent");
-        content.style.display =
-            content.style.display === "block" ? "none" : "block";
-    }
-
-    window.toggleStats = toggleStats;
-    window.toggleDescription = toggleDescription;
-
-    function openStatsPage() {
-        window.open("stats.html", "_blank");
-    }
-    window.openStatsPage = openStatsPage;
-
-    // Música de fondo
-    const bgMusic = document.getElementById("bgMusic");
-    bgMusic.volume = 0.4;
-
-    document.addEventListener("click", () => {
-        if (bgMusic.paused) {
-            bgMusic.play();
+        // toggle the description panel visibility
+        function toggleDescription() {
+            const content = document.querySelector('.descriptionContent');
+            content.style.display =
+                content.style.display === 'block' ? 'none' : 'block';
         }
-    });
 
-    let winLossChartInstance = null;
+        // toggle the stats panel visibility
+        function toggleStats() {
+            const content = document.getElementById("statsContent");
+            content.style.display =
+                content.style.display === "block" ? "none" : "block";
+        }
 
-    async function loadPlayerGlobalStats() {
-        if (!window.loggedPlayer) return;
-        const res = await fetch(`http://localhost:3000/player/stats/${window.loggedPlayer.player_id}`);
-        const data = await res.json();
+        // expose toggle functions globally so onclick attributes can reach them
+        window.toggleStats = toggleStats;
+        window.toggleDescription = toggleDescription;
 
-        document.getElementById("hist-runs").textContent = data.total_runs;
-        document.getElementById("hist-wins").textContent = data.total_wins;
-        document.getElementById("hist-losses").textContent = data.total_losses;
-        document.getElementById("hist-avg-time").textContent = Number(data.avg_duration || 0).toFixed(1) + "s";
-        document.getElementById("hist-best-score").textContent = data.best_score;
-        document.getElementById("hist-total-kills").textContent = data.total_kills;
+        // open the global stats page in a new tab — only visible to admins
+        function openStatsPage() {
+            window.open("stats.html", "_blank");
+        }
+        window.openStatsPage = openStatsPage;
 
-        if (winLossChartInstance) winLossChartInstance.destroy();
-        const chartCtx = document.getElementById("winLossChart").getContext("2d");
-        winLossChartInstance = new Chart(chartCtx, {
-            type: "pie",
-            data: {
-                labels: ["Wins", "Losses"],
-                datasets: [{
-                    data: [data.total_wins, data.total_losses],
-                    backgroundColor: ["#c9a44c", "#7a2020"]
-                }]
-            },
-            options: { plugins: { legend: { labels: { color: "white" } } } }
+        // start background music on first user interaction
+        // browsers block autoplay until the user interacts with the page
+        const bgMusic = document.getElementById("bgMusic");
+        bgMusic.volume = 0.4;
+        document.addEventListener("click", () => {
+            if (bgMusic.paused) {
+                bgMusic.play();
+            }
         });
-    }
 
-    document.getElementById("matchesHistorial").addEventListener("show.bs.modal", loadPlayerGlobalStats);
+        // track chart instance so it can be destroyed and recreated on reopen
+        let winLossChartInstance = null;
+
+        // fetches the logged player's stats and renders the win/loss pie chart
+        // called when the Record modal is opened
+        async function loadPlayerGlobalStats() {
+            if (!window.loggedPlayer) return;
+            const res = await fetch(`http://localhost:3000/player/stats/${window.loggedPlayer.player_id}`);
+            const data = await res.json();
+
+            // populate the stats table
+            document.getElementById("hist-runs").textContent = data.total_runs;
+            document.getElementById("hist-wins").textContent = data.total_wins;
+            document.getElementById("hist-losses").textContent = data.total_losses;
+            document.getElementById("hist-avg-time").textContent = Number(data.avg_duration || 0).toFixed(1) + "s";
+            document.getElementById("hist-best-score").textContent = data.best_score;
+            document.getElementById("hist-total-kills").textContent = data.total_kills;
+
+            // destroy previous chart instance before creating a new one to avoid canvas reuse errors
+            if (winLossChartInstance) winLossChartInstance.destroy();
+            const chartCtx = document.getElementById("winLossChart").getContext("2d");
+            winLossChartInstance = new Chart(chartCtx, {
+                type: "pie",
+                data: {
+                    labels: ["Wins", "Losses"],
+                    datasets: [{
+                        data: [data.total_wins, data.total_losses],
+                        backgroundColor: ["#c9a44c", "#7a2020"]
+                    }]
+                },
+                options: { plugins: { legend: { labels: { color: "white" } } } }
+            });
+        }
+
+        // load player stats every time the Record modal is opened
+        document.getElementById("matchesHistorial").addEventListener("show.bs.modal", loadPlayerGlobalStats);
 
     </script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- main game entry point — loads all scenes and starts the game loop -->
     <script type="module" src="main.js"></script>
 </body>
 </html>

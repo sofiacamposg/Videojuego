@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+    globalStats.html
+    Admin-only statistics page showing global game data across all players and matches
+    Fetches data from the API and renders it using Chart.js bar and doughnut charts
+    Redirects to login if no player session is found in localStorage
+-->
 <html>
 <head>
     <title>Global Statistics</title>
@@ -13,9 +19,10 @@
             color: white;
         }
 
-         .panel {
-            background: rgba(0,0,0,0.35); /*  más transparente */
-            backdrop-filter: blur(1px);   /* efecto vidrio (muy pro) */
+        /* main container panel with glass effect and golden border */
+        .panel {
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(1px);
             border: 2px solid #a5861e;
             box-shadow: 
                 0 0 5px #a5861e,
@@ -24,14 +31,16 @@
             padding: 20px;
         }
 
+        /* page title styling */
         .title {
             font-size: 60px;
             text-align: center;
             margin-bottom: 30px;
         }
 
+        /* individual stat cards for the top summary row */
         .stat-card {
-            background: rgba(0,0,0,0.25); /*  casi transparente */
+            background: rgba(0,0,0,0.25);
             backdrop-filter: blur(4px);
             text-align: center;
             padding: 10px;
@@ -41,16 +50,13 @@
             margin-bottom: 10px;
         }
 
-        .table-custom td {
-            border-bottom: 1px solid #ffc10750;
-            padding: 10px;
-        }
-
+        /* table row separator styling */
         .table-custom td {
             border-bottom: 1px solid white;
             padding: 10px;
         }
 
+        /* chart canvas styling with glass effect and golden border */
         canvas {
             background: rgba(0,0,0,0.2);
             backdrop-filter: blur(4px);
@@ -59,11 +65,11 @@
             border-radius: 10px;
         }
 
+        /* golden glow effect for all headings */
         h1, h3, h4 {
             color: #a5861e;
             text-shadow: 0 0 10px #a5861e;
         }
-
     </style>
 </head>
 
@@ -71,95 +77,100 @@
 
     <div class="container mt-5 panel">
 
-    <div class="title"> ARENA STATS </div>
+        <div class="title"> ARENA STATS </div>
 
-    <!--  GLOBAL CARDS -->
-    <div class="row text-center mb-4">
+        <!-- global summary cards: players, matches, wins, losses -->
+        <div class="row text-center mb-4">
 
-        <div class="col-md-3 stat-card">
-            <h4>Players</h4>
-            <h2 id="players">-</h2>
+            <div class="col-md-3 stat-card">
+                <h4>Players</h4>
+                <h2 id="players">-</h2>
+            </div>
+
+            <div class="col-md-3 stat-card">
+                <h4>Matches</h4>
+                <h2 id="matches">-</h2>
+            </div>
+
+            <div class="col-md-3 stat-card">
+                <h4>Victories</h4>
+                <h2 id="wins">-</h2>
+            </div>
+
+            <div class="col-md-3 stat-card">
+                <h4>Defeats</h4>
+                <h2 id="losses">-</h2>
+            </div>
+
         </div>
 
-        <div class="col-md-3 stat-card">
-            <h4>Matches</h4>
-            <h2 id="matches">-</h2>
+        <!-- extra global stats: best score, average time, average kills -->
+        <div class="row text-center mb-5">
+            <div class="col-md-4">
+                <h4>🏆 Best Score</h4>
+                <h2 id="global-best">-</h2>
+            </div>
+            <div class="col-md-4">
+                <h4>⏱ Avg Time</h4>
+                <h2 id="global-avg-time">-</h2>
+            </div>
+            <div class="col-md-4">
+                <h4>💀 Avg Kills</h4>
+                <h2 id="global-kills">-</h2>
+            </div>
         </div>
 
-        <div class="col-md-3 stat-card">
-            <h4>Victories</h4>
-            <h2 id="wins">-</h2>
-        </div>
+        <!-- chart section: match results bar chart and kill performance doughnut -->
+        <div class="row mt-5">
 
-        <div class="col-md-3 stat-card">
-            <h4>Defeats</h4>
-            <h2 id="losses">-</h2>
+            <div class="col-md-6 text-center">
+                <h3>⚔️ MATCH RESULTS</h3>
+                <canvas id="barChart"></canvas>
+            </div>
+
+            <div class="col-md-6 text-center">
+                <h3>💀 KILL PERFORMANCE</h3>
+                <canvas id="killsChart"></canvas>
+            </div>
+
         </div>
 
     </div>
-
-    <!--  EXTRA GLOBAL -->
-    <div class="row text-center mb-5">
-        <div class="col-md-4">
-            <h4>🏆 Best Score</h4>
-            <h2 id="global-best">-</h2>
-        </div>
-        <div class="col-md-4">
-            <h4>⏱ Avg Time</h4>
-            <h2 id="global-avg-time">-</h2>
-        </div>
-        <div class="col-md-4">
-            <h4>💀 Avg Kills</h4>
-            <h2 id="global-kills">-</h2>
-        </div>
-    </div>
-
-    <!--  EXTRA CHARTS -->
-    <div class="row mt-5">
-
-        <div class="col-md-6 text-center">
-            <h3>⚔️ MATCH RESULTS</h3>
-            <canvas id="barChart"></canvas>
-        </div>
-
-        <div class="col-md-6 text-center">
-            <h3>💀 KILL PERFORMANCE</h3>
-            <canvas id="killsChart"></canvas>
-        </div>
-
-    </div>
-
-</div>
 
     <script>
-        //From log in scene
+        // redirect to login if no player session exists in localStorage
         const player = JSON.parse(localStorage.getItem("player"));
         if (!player) {
             alert("No user logged");
             window.location.href = "login.html";
         }
 
+        // fetches global stats from the API and populates the page
+        // also triggers chart creation after data is received
         async function loadGlobalStats() {
             const res = await fetch("http://localhost:3000/global/stats");
             const data = await res.json();
 
+            // populate summary stat cards
             document.getElementById("players").textContent = data.players || 0;
             document.getElementById("matches").textContent = data.matches || 0;
             document.getElementById("wins").textContent = data.wins || 0;
             document.getElementById("losses").textContent = data.losses || 0;
 
+            // populate extra global stats
             document.getElementById("global-best").textContent = data.best_score || 0;
             document.getElementById("global-avg-time").textContent = Number(data.avg_duration || 0).toFixed(1);
             document.getElementById("global-kills").textContent = Number(data.avg_kills || 0).toFixed(1);
 
+            // render charts with the fetched data
             createBarChart(data.wins || 0, data.losses || 0);
             createKillsChart(Number(data.avg_kills || 0));
         }
 
-        //Charts for Player stats
+        // creates a pie chart showing win/loss ratio for a specific player
+        // kept for potential future use even if not currently displayed
         function createWinLossChart(wins, losses) {
             const ctx = document.getElementById("winLossChart").getContext("2d");
-
             new Chart(ctx, {
                 type: "pie",
                 data: {
@@ -172,18 +183,16 @@
                 options: {
                     plugins: {
                         legend: {
-                            labels: {
-                                color: "white"
-                            }
+                            labels: { color: "white" }
                         }
                     }
                 }
             });
         }
 
+        // creates a bar chart comparing total global wins vs losses
         function createBarChart(wins, losses) {
             const ctx = document.getElementById("barChart").getContext("2d");
-
             new Chart(ctx, {
                 type: "bar",
                 data: {
@@ -202,9 +211,10 @@
             });
         }
 
+        // creates a doughnut chart showing average kills per match vs remaining capacity
+        // assumes a max of 10 kills as the reference total
         function createKillsChart(avgKills) {
             const ctx = document.getElementById("killsChart").getContext("2d");
-
             new Chart(ctx, {
                 type: "doughnut",
                 data: {
@@ -217,6 +227,7 @@
             });
         }
         
+        // load and display all global stats on page load
         loadGlobalStats();
         
     </script>

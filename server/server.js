@@ -1,41 +1,51 @@
-//=====IMPORTS=====
+//& server.js
+//& REST API server for the Gladiator game — handles all communication between
+//& the game client and the MySQL database via Express routes
+//& Covers authentication, game logic, player stats, card system and shop mechanics
+
+//===== IMPORTS =====
 const express = require("express");
 const mysql = require("mysql2");
 const app = express();
-//=====CONFIG=====
+
+//===== CONFIG =====
 const cors = require("cors");
 app.use(cors());
 app.use(express.json());
 
-/* entra a mysql desde la terminal (sudo mysql) y pon los comandos:
+/*
+* HOW TO SET UP THE DATABASE (run these in the terminal):
+*
+* sudo mysql
 * CREATE USER 'gladiator'@'localhost' IDENTIFIED BY 'gladiator123';
-que hace? crea un usuario llamado gladiator que se conecta desde esta misma computadora, con contraseña gladiator123
+*   — creates a user named gladiator that connects from this machine with password gladiator123
 * GRANT ALL PRIVILEGES ON gladiator.* TO 'gladiator'@'localhost';
-que hace? dale todos los permisos sobre la base de datos gladiator 
-(el .* es "todas las tablas de esa base de datos") al usuario gladiator
+*   — gives the gladiator user full access to all tables in the gladiator database
 * FLUSH PRIVILEGES;
-que hace? aplica los cambios de permisos inmediatamente 
+*   — applies permission changes immediately
 * exit;
-que hace? sal de MySQL y regresa a la terminal normal
-* sudo mysql < ~/ruta/a/su/proyecto/server/db/gladiador_codigo2.sql
-que hace? carga el schema (cambian la ruta por la suya)
-y ya luego encienden la api
-* cd ~/ruta/a/su/proyecto/server
+*   — return to the normal terminal
+* sudo mysql < ~/path/to/project/server/db/gladiador_codigo2.sql
+*   — loads the schema (update the path to match your project location)
+*
+* Then start the API:
+* cd ~/path/to/project/server
 * node server.js
-si jala tiene que salir lo de Servidor en 'link' MySQL conectado
+* — should print: Servidor en http://localhost:3000 and MySQL conectado
 */
 
-//=====DB CONNECTION =======
+//===== DB CONNECTION =====
 const db = mysql.createConnection({
     host: "localhost",
-    user: "gladiator",  //general user
-    password: "gladiator123",  //general password
+    user: "gladiator",      // general user
+    password: "gladiator123", // general password
     database: "gladiator",
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 });
-//=======CONNECT========
+
+//===== CONNECT =====
 db.connect((err) => {
     if (err) {
         console.log("Error MySQL:", err);
@@ -43,9 +53,10 @@ db.connect((err) => {
     }
     console.log("MySQL conectado");
 });
-//======ROUTES (GET AND POST)========
 
-//GET all from 'Players' for log in and create account
+//===== ROUTES =====
+
+//* returns all players — used for debugging and admin purposes
 app.get("/players", (req, res) => {
     console.log("ENTRÓ A /players");
     db.query("SELECT * FROM Player", (err, result) => {
@@ -58,62 +69,65 @@ app.get("/players", (req, res) => {
     });
 });
 
-//POST Log In
+//* handles login for both admins and regular players
+//* checks Statistics table first — if found, returns admin role
+//* if not found there, checks Player table for regular login
 app.post("/login", (req, res) => {
-
     const { username, password } = req.body;
 
-    //check Statistics first, if they're in there, they're an admin
+    //? case 1: check if credentials match an admin in the Statistics table
     db.query("SELECT * FROM Statistics WHERE username = ? AND password = ?", [username, password], (err, adminResult) => {
-        if (err) {  //case1: server error
+        if (err) {
             console.log("MYSQL ERROR:", err);
             return res.status(500).send("Server error");
         }
 
-        if (adminResult.length > 0) {  //case2: found an admin, send back their data with role flag
+        //? case 2: admin found — return their data with role flag
+        if (adminResult.length > 0) {
             console.log("ADMIN LOGGED:", adminResult[0]);
             return res.json({ ...adminResult[0], role: "admin" });
         }
 
-        //not an admin, check the regular players table
+        //? case 3: not an admin — check the Player table
         db.query("SELECT * FROM Player WHERE username = ? AND password = ?", [username, password], (err, playerResult) => {
-            if (err) {  //case 3: server error
+            if (err) {
                 console.log("MYSQL ERROR:", err);
                 return res.status(500).send("Server error");
             }
 
-            if (playerResult.length === 0) {  //case 4: credentials not found
+            //? case 4: credentials not found in either table
+            if (playerResult.length === 0) {
                 return res.status(401).send("Invalid credentials");
             }
 
-            //case5: regular player found, send back their data with role flag
+            //? case 5: regular player found — return their data with role flag
             console.log("USER LOGGED:", playerResult[0]);
             return res.json({ ...playerResult[0], role: "player" });
         });
     });
 });
 
-//POST create account
+//* registers a new user — admins use the @dm1n_ prefix, regular players register normally
+//* admin prefix is stripped before storing the username in Statistics
 app.post("/register", (req, res) => {
     const { username, password, name } = req.body;
 
-    // if username starts with @dm1n_, register as admin in Statistics instead of Player
+    //? admin registration — username must start with @dm1n_
     if (username.startsWith("@dm1n_")) {
         const cleanUsername = username.slice(6);  // strip the 6-char prefix
         db.query("SELECT * FROM Statistics WHERE username = ?", [cleanUsername], (err, result) => {
-            if (err) return res.status(500).send("Server error");  //case1: check for errors
-            if (result.length > 0) return res.status(400).send("Admin already exists");  //case2: check if is an existing credential
-            //case3: insert in admin table
+            if (err) return res.status(500).send("Server error");
+            if (result.length > 0) return res.status(400).send("Admin already exists");
             db.query("INSERT INTO Statistics (name, username, password) VALUES (?, ?, ?)", [name, cleanUsername, password], (err) => {
-                if (err) return res.status(500).send("Insert error");  //case3.1: error w server
-                console.log("ADMIN CREATED:", cleanUsername);  //case3.2: insert successfull
+                if (err) return res.status(500).send("Insert error");
+                console.log("ADMIN CREATED:", cleanUsername);
                 return res.json({ success: true, role: "admin" });
             });
         });
-        return;  // stop here so the player register code below doesn't run
+        return;  // stop here so the player registration code below doesn't run
     }
 
-    // regular player registration, 
+    //? regular player registration — check for duplicate username first
     db.query("SELECT * FROM Player WHERE username = ?", [username], (err, result) => {
         if (err) return res.status(500).send("Server error");
         if (result.length > 0) return res.status(400).send("User already exists");
@@ -125,25 +139,24 @@ app.post("/register", (req, res) => {
     });
 });
 
-// GET Archetypes for select scene
+//* returns all archetypes from the DB — used by the character select scene
 app.get("/archetypes", (req, res) => {
     console.log("GET /archetypes");
-//Select all from table Archetypes
     db.query("SELECT * FROM Archetype", (err, result) => {
         if (err) {
             console.log("QUERY ERROR:", err);
             return res.status(500).json({ error: err.message });
         }
-
         console.log("Sending:", result);
         res.json(result);
     });
 });
 
-//=======================GAME LOGIC==============================
-//Get card for random card effect event
-app.get("/cards/random", (req, res) => {
+//===== GAME LOGIC =====
 
+//* returns 15 random cards from the Card table — used for mid-game card events and rewards
+//* Effect table was merged into Card so all effect data is available in one query
+app.get("/cards/random", (req, res) => {
     const query = `
         SELECT
             card_id,
@@ -161,21 +174,19 @@ app.get("/cards/random", (req, res) => {
         FROM Card
         ORDER BY RAND()
         LIMIT 15
-    `; //Retrieves 15 random cards directly from the Card table (Effect table was merged into Card)
+    `;
     db.query(query, (err, result) => {
         if (err) {
             console.log(err);
-            return res.status(500).json({ error: err.message }); //send proper error status so the frontend catch picks it up
+            return res.status(500).json({ error: err.message });
         }
-
         res.json(result);
     });
 });
 
-//GET real time stats view
+//* returns a full match summary for the score scene — player name, level, fame, time and result
 app.get("/match/summary/:id", (req, res) => {
     const matchId = req.params.id;
-
     console.log("GET SUMMARY FOR:", matchId);
 
     const query = `
@@ -196,21 +207,19 @@ app.get("/match/summary/:id", (req, res) => {
             console.error(err);
             return res.status(500).send(err.message);
         }
-
         if (result.length === 0) {
             return res.status(404).json({ error: "Match not found" });
         }
-
         console.log("SUMMARY DATA:", result[0]);
-
         res.json(result[0]);
     });
 });
-//GET Game Progress view
+
+//* returns level-by-level progress for a match via the vw_match_progress view
 app.get("/match/progress/:id", (req, res) => {
     db.query(
         "SELECT * FROM vw_match_progress WHERE match_id = ?",
-        [req.params.id], //Retrieves the progress of each LEVEL within the match, tracks progression
+        [req.params.id],
         (err, result) => { 
             if (err) return res.status(500).send(err.message);
             res.json(result);
@@ -218,7 +227,8 @@ app.get("/match/progress/:id", (req, res) => {
     );
 });
 
-//GET active cards view
+//* returns all cards used in a match via the vw_match_cards_live view
+//* subquery first finds all levels belonging to the match, then fetches their cards
 app.get("/match/cards-live/:id", (req, res) => {
     db.query(
         `SELECT * FROM vw_match_cards_live 
@@ -227,9 +237,7 @@ app.get("/match/cards-live/:id", (req, res) => {
              FROM SpecificLevel 
              WHERE match_id = ?
          )`,
-        [req.params.id], //Retrieves all cards currently in use or were used in a match, including their active effects
-                        //In the sub-query first gets all levels that belong to the match
-                        //Then gets all cards used in those levels
+        [req.params.id],
         (err, result) => {
             if (err) return res.status(500).send(err.message);
             res.json(result);
@@ -237,7 +245,8 @@ app.get("/match/cards-live/:id", (req, res) => {
     );
 });
 
-//POST match, with stored procedures
+//* saves a completed match to the MatchGame table
+//* the trg_after_insert_match trigger automatically updates Player stats after this insert
 app.post("/match", (req, res) => {
     const {
         player_id,
@@ -255,28 +264,19 @@ app.post("/match", (req, res) => {
         VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)
     `;
 
-    const values = [
-        player_id,
-        archetype_id,
-        duration_seconds,
-        level_reached,
-        final_fame,
-        life,
-        result
-    ];
+    const values = [player_id, archetype_id, duration_seconds, level_reached, final_fame, life, result];
 
     db.query(query, values, (err, resultInsert) => {
         if (err) return res.status(500).send(err.message);
-
         res.json({
             success: true,
-            match_id: resultInsert.insertId
+            match_id: resultInsert.insertId  // returned so the score scene can fetch summary data
         });
     });
 });
 
-
-//POST, register card ussage (Deck)
+//* records a card usage in the Deck table
+//* the trg_after_insert_deck trigger updates the user_movements_count in Statistics
 app.post("/deck", (req, res) => {
     const { specific_level_id, card_id, effect_duration } = req.body;
 
@@ -287,25 +287,23 @@ app.post("/deck", (req, res) => {
 
     db.query(query, [specific_level_id, card_id, effect_duration], (err) => {
         if (err) return res.status(500).send(err.message);
-
         res.json({ success: true });
     });
 });
 
-//GET player stats view (this goes on another tab)
+//* returns basic player profile data via the vw_player_profile view
 app.get("/player/profile/:id", (req, res) => {
     db.query(
         "SELECT * FROM vw_player_profile WHERE player_id = ?",
-        [req.params.id], // Retrieves basic profile information of a player,
-                        // including name, username, and overall stats (runs, wins, losses)
-                        // Used for account info and general stats overview
+        [req.params.id],
         (err, result) => {
             if (err) return res.status(500).send(err.message);
             res.json(result);
         }
     );
 });
-// Winrate view useful from current Player
+
+//* returns win rate data for a player via the vw_player_winrate view
 app.get("/player/winrate/:id", (req, res) => {
     db.query(
         "SELECT * FROM vw_player_winrate WHERE player_id = ?",
@@ -317,7 +315,7 @@ app.get("/player/winrate/:id", (req, res) => {
     );
 });
 
-//Match history  view from current Player
+//* returns full match history for a player via the vw_player_match_history view
 app.get("/player/history/:username", (req, res) => {
     db.query(
         "SELECT * FROM vw_player_match_history WHERE username = ?",
@@ -329,7 +327,7 @@ app.get("/player/history/:username", (req, res) => {
     );
 });
 
-//Total fame view from Current Player
+//* returns total fame for a player via the vw_player_total_fame view
 app.get("/player/fame/:id", (req, res) => {
     db.query(
         "SELECT * FROM vw_player_total_fame WHERE player_id = ?",
@@ -341,7 +339,7 @@ app.get("/player/fame/:id", (req, res) => {
     );
 });
 
-//General card usage from the Player along the game
+//* returns card usage history for a player via the vw_player_card_usage view
 app.get("/player/cards/:username", (req, res) => {
     db.query(
         "SELECT * FROM vw_player_card_usage WHERE username = ?",
@@ -353,7 +351,9 @@ app.get("/player/cards/:username", (req, res) => {
     );
 });
 
-//================== GLOBAL STATS FROM ADMIN (another tab) ====================
+//===== ADMIN =====
+
+//* returns global game statistics via the vw_general_statistics view — admin only
 app.get("/stats", (req, res) => {
     db.query("SELECT * FROM vw_general_statistics", (err, result) => {
         if (err) return res.status(500).send(err.message);
@@ -361,7 +361,8 @@ app.get("/stats", (req, res) => {
     });
 });
 
-//================== PLAYER CURRENT STATE ====================
+//* returns live player state — fame, total runs, wins, losses, kills and cards
+//* reads directly from Player table for fame instead of MatchGame to stay in sync with the shop
 app.get("/player/live/:id", (req, res) => {
     const id = req.params.id;
 
@@ -385,12 +386,13 @@ app.get("/player/live/:id", (req, res) => {
             console.error(err);
             return res.status(500).send(err.message);
         }
-
         res.json(result[0]);
     });
 });
 
-//LEVEL CONFIGS, ARCHETYPE, ENEMIES, LEVEL
+//===== LEVEL CONFIG =====
+
+//* returns all enemies from the DB — used by levelConfig.js to build enemy configs
 app.get("/enemies", (req, res) => {
     db.query("SELECT * FROM Enemy", (err, result) => {
         if (err) return res.status(500).send(err.message);
@@ -398,6 +400,7 @@ app.get("/enemies", (req, res) => {
     });
 });
 
+//* returns all levels from the DB — used by levelConfig.js to build level configs
 app.get("/levels", (req, res) => {
     db.query("SELECT * FROM Level", (err, result) => {
         if (err) {
@@ -408,8 +411,9 @@ app.get("/levels", (req, res) => {
     });
 });
 
-//GLOBAL STATS FOR STATS.HTML
-// As a single player
+//===== STATS PAGE =====
+
+//* returns aggregated stats for a single player — used by the stats page and record modal
 app.get("/player/stats/:id", (req, res) => {
     const playerId = req.params.id;
 
@@ -420,13 +424,11 @@ app.get("/player/stats/:id", (req, res) => {
             SUM(m.result = 'LOSE') as total_losses,
             COALESCE(AVG(m.duration_seconds), 0) as avg_duration,
             COALESCE(MAX(m.final_fame), 0) as best_score,
-
             COALESCE(SUM(
                 (SELECT COUNT(*) 
                 FROM SpecificLevel sl 
                 WHERE sl.match_id = m.match_id AND sl.finished = TRUE)
             ), 0) as total_kills
-
         FROM MatchGame m
         WHERE m.player_id = ?
     `;
@@ -439,7 +441,8 @@ app.get("/player/stats/:id", (req, res) => {
         res.json(result[0]);
     });
 });
-//As multiple users
+
+//* returns aggregated stats across all players and matches — used by the admin stats page
 app.get("/global/stats", (req, res) => {
     const query = `
         SELECT 
@@ -470,11 +473,14 @@ app.listen(3000, () => {
     console.log("Servidor en http://localhost:3000 ");
 });
 
-//SHOPPING HEARTS MECHANICS FOR ROGUELITE
-//Being able to buy hearts
+//===== SHOP =====
+
+//* handles heart purchases — validates fame server-side before updating the player
+//* deducts 50 fame and adds 1 heart — returns updated values to the client
 app.post("/shop/buy-heart", (req, res) => {
     const { player_id } = req.body;
 
+    //? fetch current fame and hearts to validate before updating
     db.query(
         "SELECT fame, hearts FROM Player WHERE player_id = ?",
         [player_id],
@@ -487,10 +493,12 @@ app.post("/shop/buy-heart", (req, res) => {
 
             const player = result[0];
 
+            //? not enough fame — reject the purchase
             if (player.fame < 50) {
                 return res.status(400).json({ error: "Not enough fame" });
             }
 
+            //? update fame and hearts in a single query
             db.query(
                 `UPDATE Player
                  SET fame = fame - 50,
@@ -500,6 +508,7 @@ app.post("/shop/buy-heart", (req, res) => {
                 (err2) => {
                     if (err2) return res.status(500).send(err2.message);
 
+                    //? return updated values so the client can update its state without a refetch
                     res.json({
                         success: true,
                         fame: player.fame - 50,
@@ -511,9 +520,12 @@ app.post("/shop/buy-heart", (req, res) => {
     );
 });
 
+//* adds fame to a player after completing a level
+//* called by the client after each level is won — amount depends on completion speed
 app.post("/player/update-fame", (req, res) => {
     const { player_id, fame } = req.body;
 
+    //? validate that both required fields are present
     if (!player_id || fame == null) {
         return res.status(400).json({ error: "Missing data" });
     }
@@ -523,6 +535,8 @@ app.post("/player/update-fame", (req, res) => {
         [fame, player_id],
         (err, result) => {
             if (err) return res.status(500).send(err.message);
+
+            //? player not found — no rows were affected
             if (result.affectedRows === 0) {
                 return res.status(404).json({ error: "Player not found" });
             }

@@ -1,62 +1,71 @@
+//& logInScene.js
+//& Handles the full login screen — draws the UI, manages input fields,
+//& validates credentials via the API, and triggers scene transition on success
+
 import { MessageBox } from "../objects/MessageBox.js";  
 "use strict"
 import { handleMouseMove, drawButton, handleClick, isMouseOverBox } from "../libs/game_functions.js";
 
-//? mouse track
+//? mouse position tracking
 let mouseX = 0;
 let mouseY = 0;
 
-const buttonBack = { //? BACK TO MENU BUTTON
+//? button definitions
+const buttonBack = {
     x: 150,
     y: 70,
     text: "BACK TO MENU"
 };
-const buttonConfirm = {  //? CONFIRM LOG IN BUTTON
+const buttonConfirm = {
     x: 500,
     y: 500,
     text: "CONFIRM"
 };
-const buttonCreate = {  //? CREATE ACCOUNT BUTTON
+const buttonCreate = {
     x: 850,
     y: 70,
     text: "CREATE ACCOUNT"
 };
-const errorMessage = new MessageBox(  //? error message creation
+
+//? error message box shown when validation fails or credentials are wrong
+const errorMessage = new MessageBox(
     "ERROR", "Please fill in both fields", 250, 150, 500, 250);
-    errorMessage.addButton("Try again", 440, 300, 120, 50, () =>{  //? hide when clicked
-        errorMessage.hide()
+    errorMessage.addButton("Try again", 440, 300, 120, 50, () => {
+        errorMessage.hide();  // dismiss and let user try again
     });
 
-//? inputs 
+//? input field values and active field tracker
 let username = "";  
 let password = "";
-let activeField = null; //username / password / null
+let activeField = null;  // tracks which input is focused: "username", "password", or null
 
+//? input box positions and sizes (centered at x, y)
 const inputUsername = { x: 500, y: 300, w: 500, h: 60 };
 const inputPassword = { x: 500, y: 410, w: 500, h: 60 };
 
-//? background
+//? background image
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
-function drawLogIn(ctx, canvas){  //? draw every element on the canvas
+//* draws the full login screen — background, title, input boxes and buttons
+function drawLogIn(ctx, canvas){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
-    //? title
+    //? title with golden outline
     ctx.font = "120px VT323";
     ctx.textAlign = "center";
-    ctx.fillStyle = "white"; //text
+    ctx.fillStyle = "white";
     ctx.fillText("L O G   I N", canvas.width / 2, canvas.height / 2 - 100);
     ctx.strokeStyle = "rgb(255, 187, 86)"; 
     ctx.lineWidth = 2;
     ctx.strokeText("L O G   I N", canvas.width / 2, canvas.height / 2 - 100);
     
-    //? inputs boxes
+    //? draw username and password input boxes
     drawInputBox(ctx, inputUsername.x, inputUsername.y, inputUsername.w, inputUsername.h, "USERNAME");
     drawInputBox(ctx, inputPassword.x, inputPassword.y, inputPassword.w, inputPassword.h, "PASSWORD");
 
-    //? buttons
+    //? draw navigation and confirm buttons
     drawButton(ctx, buttonConfirm, mouseX, mouseY);
     drawButton(ctx, buttonBack, mouseX, mouseY);
     drawButton(ctx, buttonCreate, mouseX, mouseY);
@@ -64,110 +73,127 @@ function drawLogIn(ctx, canvas){  //? draw every element on the canvas
     errorMessage.draw(ctx); 
 }
 
-function drawInputBox(ctx, centerX, centerY, w, h, label){  //? draw the labels and input boxes
+//* draws a single labeled input box with dynamic text display based on active state
+function drawInputBox(ctx, centerX, centerY, w, h, label){
     const x = centerX - w / 2;
     const y = centerY - h / 2;
 
-    //? box
+    //? golden border around the input box
     ctx.strokeStyle = "rgb(255, 187, 86)";
     ctx.lineWidth = 3;
     ctx.strokeRect(x, y, w, h);
 
-    //? label
+    //? label above the box
     ctx.fillStyle = "white";
     ctx.font = "22px 'VT323'";
     ctx.textAlign = "left";
     ctx.fillText(label + ":", x, y - 15);
 
-    //? text inside box
+    //? determine what text to show inside the box
     ctx.font = "25px 'VT323'";
     ctx.textAlign = "left";
 
     let valueToShow = "";
-    if (label === "USERNAME") valueToShow = username;  //shows what user writes
-    if (label === "PASSWORD") valueToShow = "*".repeat(password.length);  //secret password
+    if (label === "USERNAME") valueToShow = username;
+    if (label === "PASSWORD") valueToShow = "*".repeat(password.length);  // mask password chars
 
-    //? check if any box is active
-    if (activeField === label.toLowerCase() && valueToShow.length === 0){  //case 1: active but without text, shows | to let know the user they can type now
+    //? case 1: box is active but empty — show cursor indicator
+    if (activeField === label.toLowerCase() && valueToShow.length === 0){
         ctx.fillStyle = "white";
         ctx.fillText("|", x + 18, y + 38);
-    } else if (valueToShow.length === 0){  //case 2: its inactive and without text
+    //? case 2: box is inactive and empty — show placeholder text
+    } else if (valueToShow.length === 0){
         ctx.fillStyle = "rgba(255,255,255,0.6)";
         ctx.fillText("click to type...", x + 18, y + 38);
-    } else{  //case 3: has text and shows text
+    //? case 3: box has text — show value, append cursor if active
+    } else {
         ctx.fillStyle = "white";
-        ctx.fillText(valueToShow + (activeField === label.toLowerCase() ? "|" : ""), x + 18, y + 38);  //check if is inactive so the | doesn't appear 
+        ctx.fillText(valueToShow + (activeField === label.toLowerCase() ? "|" : ""), x + 18, y + 38);
     }
 }
 
+//* updates mouse position relative to the canvas each frame
 function handleMouseMoveLogIn(event, canvas){
     const pos = handleMouseMove(event, canvas);
     mouseX = pos.x;
     mouseY = pos.y;
 }
 
-function handleClickLogIn(ctx, onSuccess){  //? handle cliks over any element
+//* handles all click events on the login screen
+//* checks error box, input fields, and buttons in priority order
+//* onSuccess is a callback from main.js — called after successful login to trigger scene change
+function handleClickLogIn(ctx, onSuccess){
+    //? if error box is visible, let it handle the click first
     if (errorMessage.visible) {
         return errorMessage.handleClick(mouseX, mouseY);
     }
-    // inputs
+
+    //? check if any input box was clicked and set it as active
     if (isMouseOverBox(mouseX, mouseY, inputUsername)){
         activeField = "username"; 
         return "username";
     }
-
     if (isMouseOverBox(mouseX, mouseY, inputPassword)){
         activeField = "password"; 
         return "password";
     }
 
-    // buttons
-    if (handleClick(mouseX, mouseY, buttonBack, ctx)){
-        return "back";
-    }
+    //? check navigation buttons
+    if (handleClick(mouseX, mouseY, buttonBack, ctx)) return "back";
+    if (handleClick(mouseX, mouseY, buttonCreate, ctx)) return "create";
 
-    if (handleClick(mouseX, mouseY, buttonCreate, ctx)){
-        return "create";
-    }
-
+    //? confirm button — validate fields then attempt login
     if (handleClick(mouseX, mouseY, buttonConfirm, ctx)) {
         if (username === "" || password === "") {
-            errorMessage.show();
+            errorMessage.show();  // show error if any field is empty
             return null;
         }
-        //onSuccess is a callback from main.js. we give it to loginUser so when credentials are verified, it calls 
-        //inmediatly the functions to change scene
+        // pass the onSuccess callback so loginUser can trigger scene change immediately after API responds
         loginUser(onSuccess);
         return null;
     }
-    
 
     return null;
 }
 
-function handleKeyDownLogIn(event){  //? handles user's input
-    if (activeField === null) return; //case 1: no active field
+//* handles keyboard input for the currently active input field
+function handleKeyDownLogIn(event){
+    //? case 1: no field is active — ignore all key input
+    if (activeField === null) return;
 
-    if (event.key === "Backspace"){ //case 2: deletes lasts key wrote
+    //? case 2: backspace — delete the last character from the active field
+    if (event.key === "Backspace"){
         event.preventDefault();
         if (activeField === "username") username = username.slice(0, -1);
         if (activeField === "password") password = password.slice(0, -1);
         return;
     }
-    if (event.key === "Enter"){ //case 3: enter pressed
+
+    //? case 3: enter — deactivate the current field
+    if (event.key === "Enter"){
         activeField = null;
         return;
     }
-    if (event.key.length !== 1) return; //case 4: one key at a time
-    const allowed = /^[a-zA-Z0-9 _\-\.@]$/.test(event.key); //case 5: checks input
+
+    //? case 4: ignore special keys longer than one character
+    if (event.key.length !== 1) return;
+
+    //? case 5: only allow alphanumeric characters and common symbols
+    const allowed = /^[a-zA-Z0-9 _\-\.@]$/.test(event.key);
     if (!allowed) return;
-    if (activeField === "username") username += event.key;  //adds letter to string
+
+    //? append the key to the active field's string
+    if (activeField === "username") username += event.key;
     if (activeField === "password") password += event.key;
 }
-function getUsernameLogIn(){  //? getter
+
+//* returns the current username value
+function getUsernameLogIn(){
     return username;
 }
-function resetLogIn() {  //? reset to default values
+
+//* resets all input fields and state back to defaults
+function resetLogIn() {
     username = "";
     password = "";
     activeField = null;
@@ -175,7 +201,11 @@ function resetLogIn() {  //? reset to default values
     mouseY = 0;
 }
 
-//API CONNECTION
+//===== API =====
+
+//* sends login credentials to the server and handles the response
+//* on success: stores player data globally, saves to localStorage, and calls onSuccess callback
+//* on failure: shows error message to the user
 async function loginUser(onSuccess){
     try{
         const res = await fetch("http://localhost:3000/login", {
@@ -189,6 +219,7 @@ async function loginUser(onSuccess){
             })
         });
 
+        //? server returned an error — wrong credentials or server issue
         if(!res.ok){
             errorMessage.message = "Wrong username or password";
             errorMessage.show();
@@ -196,23 +227,26 @@ async function loginUser(onSuccess){
         }
 
         const data = await res.json();
-        window.loggedPlayer = data;
-        localStorage.setItem("player", JSON.stringify(data));
-        window.lastMatchId = null;   //for score scene to work and reload match stats, for differentes users debug
+        window.loggedPlayer = data;  // store player globally for access across all scenes
+        localStorage.setItem("player", JSON.stringify(data));  // persist for stats page
+        window.lastMatchId = null;  // reset match ID so score scene loads fresh data
         console.log("USER LOGGED:", data);
+
+        //? if admin — show the global stats button in the UI
         if (data.role === "admin") {
             const btn = document.getElementById("globalStatsBtn");
             if (btn) btn.style.display = "inline-block";
         }
 
-
-        //login ok? call the callback to handle the scene change
+        //? login successful — trigger the scene change callback from main.js
         if(onSuccess) onSuccess();
 
     } catch(error){
+        //? network or connection error
         console.log(error);
         errorMessage.message = "Connection error";
         errorMessage.show();
     }
 }
+
 export { drawLogIn, handleMouseMoveLogIn, handleClickLogIn, handleKeyDownLogIn, resetLogIn };

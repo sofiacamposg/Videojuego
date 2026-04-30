@@ -1,16 +1,23 @@
+//& shopScene.js
+//& Handles the shop screen where players can spend fame to buy extra hearts
+//& Validates fame client-side before sending the purchase request to the API
+//& Updates both the shop display and the HUD panel after a successful purchase
+
 "use strict";
 
 import { drawButton, handleClick, handleMouseMove } from "../libs/game_functions.js";
 
+//? mouse position tracking
 let mouseX = 0;
 let mouseY = 0;
-let cachedCtx;
+let cachedCtx;  // stored so handleClickShop can access ctx without it being passed in
 
+//? button definitions
 const buttonBuyHeart = {
     x: 400,
     y: 300,
     text: "BUY HEART - 50 FAME",
-    disabled: false
+    disabled: false  // set to true when player can't afford a heart
 };
 
 const buttonBack = {
@@ -19,51 +26,49 @@ const buttonBack = {
     text: "BACK"
 };
 
-let message = "";
+let message = "";  // feedback message shown after a purchase attempt
 
+//? background image
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/PortadaBase.png";
 
+//* draws the full shop screen — background, panel, player stats, buttons and feedback message
 export function drawShop(ctx, canvas) {
     cachedCtx = ctx;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
-    // panel centrado
+    //? centered dark panel with golden border
     const panelW = 500;
     const panelH = 350;
     const panelX = canvas.width / 2 - panelW / 2;
     const panelY = canvas.height / 2 - panelH / 2;
 
-    // fondo panel
     ctx.fillStyle = "rgba(0,0,0,0.7)";
     ctx.fillRect(panelX, panelY, panelW, panelH);
 
-    // borde
     ctx.strokeStyle = "#ffbb56";
     ctx.lineWidth = 3;
     ctx.strokeRect(panelX, panelY, panelW, panelH);
 
-    // título
+    //? shop title
     ctx.fillStyle = "#ffbb56";
     ctx.font = "48px VT323";
     ctx.textAlign = "center";
     ctx.fillText("SHOP", canvas.width / 2, panelY + 60);
 
-    //  datos
+    //? read player stats from global state
     const fame = window.loggedPlayer?.fame ?? 0;
     const hearts = window.loggedPlayer?.hearts ?? 1;
-    const canAfford = fame >= 50;
+    const canAfford = fame >= 50;  // check if player has enough fame to buy
 
     ctx.font = "28px VT323";
     ctx.fillStyle = "white";
 
     const centerX = canvas.width / 2;
 
-    // etiquetas + valores alineados
+    //? fame row — label on the left, value on the right of center line
     ctx.textAlign = "right";
     ctx.fillStyle = "#d4af37";
     ctx.fillText("FAME", centerX - 20, panelY + 140);
@@ -72,6 +77,7 @@ export function drawShop(ctx, canvas) {
     ctx.fillStyle = "white";
     ctx.fillText(fame, centerX + 20, panelY + 140);
 
+    //? hearts row
     ctx.textAlign = "right";
     ctx.fillStyle = "#d4af37";
     ctx.fillText("HEARTS", centerX - 20, panelY + 190);
@@ -80,43 +86,48 @@ export function drawShop(ctx, canvas) {
     ctx.fillStyle = "white";
     ctx.fillText("❤️ " + hearts, centerX + 20, panelY + 190);
 
-    // botón BUY centrado
+    //? buy button — text and disabled state update every frame based on current fame
     buttonBuyHeart.x = canvas.width / 2;
     buttonBuyHeart.y = panelY + 240;
     buttonBuyHeart.text = canAfford ? "BUY HEART - 50 FAME" : "NEED 50 FAME";
     buttonBuyHeart.disabled = !canAfford;
 
-    // ⬅ botón BACK
+    //? back button
     buttonBack.x = canvas.width / 2;
     buttonBack.y = panelY + 300;
 
     drawButton(ctx, buttonBuyHeart, mouseX, mouseY);
     drawButton(ctx, buttonBack, mouseX, mouseY);
 
-    // mensaje
+    //? feedback message — green for success, red for error
     if (message) {
         ctx.font = "24px VT323";
         ctx.textAlign = "center";
-
         ctx.fillStyle = message.includes("❤️") ? "lime" : "red";
-
         ctx.fillText(message, canvas.width / 2, panelY + panelH + 40);
     }
 }
 
+//* updates mouse position relative to the canvas each frame
 export function handleMouseMoveShop(event, canvas) {
     const pos = handleMouseMove(event, canvas);
     mouseX = pos.x;
     mouseY = pos.y;
 }
 
+//* handles click events in the shop
+//* back button returns to menu, buy button sends purchase request to the API
+//* disabled state prevents the fetch if player can't afford the heart
 export async function handleClickShop() {
+    //? back button — return to menu
     if (handleClick(mouseX, mouseY, buttonBack, cachedCtx)) {
         return "back";
     }
 
+    //? buy button is disabled — player doesn't have enough fame, ignore click
     if (buttonBuyHeart.disabled) return null;
 
+    //? buy heart — send purchase request to the API
     if (handleClick(mouseX, mouseY, buttonBuyHeart, cachedCtx)) {
 
         const res = await fetch("http://localhost:3000/shop/buy-heart", {
@@ -131,13 +142,16 @@ export async function handleClickShop() {
 
         const data = await res.json();
 
+        //? purchase successful — update global state and both UI elements
         if (res.ok && data.success) {
-    window.loggedPlayer.fame = data.fame;
-    window.loggedPlayer.hearts = data.hearts;
-    message = "❤️ Heart purchased!";
-    const fameEl = document.getElementById("fame");
-    if (fameEl) fameEl.textContent = data.fame;
-} else {
+            window.loggedPlayer.fame = data.fame;
+            window.loggedPlayer.hearts = data.hearts;
+            message = "❤️ Heart purchased!";
+            // also update the HUD fame display on the right panel
+            const fameEl = document.getElementById("fame");
+            if (fameEl) fameEl.textContent = data.fame;
+        } else {
+            //? purchase failed — show error from server or fallback message
             message = data.error || "Not enough fame";
         }
     }
