@@ -193,6 +193,19 @@ h3 {
     text-shadow: 3px 3px 0px #000, 0 0 18px rgba(150, 20, 20, 0.6);
 }
 
+/* TUTORIAL MODALS */
+.tutorial-page {
+    font-family: 'VT323', monospace;
+    font-size: 1rem;
+    color: #c9a44c;
+    position: absolute;
+    left: 1rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #c9a44c;
+}
+
 /* CREDITS MODAL */
 .credits-body {
     display: flex;
