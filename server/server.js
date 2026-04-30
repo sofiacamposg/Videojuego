@@ -388,6 +388,8 @@ app.get("/player/live/:id", (req, res) => {
     `;
 
     db.query(query, [id], (err, result) => {
+        console.log("RESULT:", result);
+        console.log("ERROR:", err);
         if (err) {
             console.error(err);
             return res.status(500).send(err.message);
