@@ -138,7 +138,7 @@ export async function loadPlayerStats(playerId, currentScene) {
 export function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
     // background (lost health)
     ctx.fillStyle = "green";
-    ctx.fillText("HP: " + current, 30, 70);
+    ctx.fillText("HP: " + current, 40, 70);
 
     ctx.fillStyle = "gray";
     ctx.fillRect(x, y, width, height);
@@ -174,7 +174,7 @@ export function cardBanner(ctx, canvas, activeEffects, permanentEffects) {
         ctx.fillText(`${effect.card.name} ${effect.card.des} (${secs}s)`, canvas.width - 10, 26 + i * 22);
     });
     permanentEffects.forEach((effect, i) => {
-        ctx.fillText(`${effect.card.name}`, canvas.width - 10, 26 + i * 22);
+        ctx.fillText(`${effect.card.name}`, canvas.width - 10, 42 + i * 32);
     });
 
     ctx.restore();

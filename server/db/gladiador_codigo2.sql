@@ -190,7 +190,8 @@ SELECT
     COUNT(DISTINCT p.player_id) AS total_players,
     COUNT(m.match_id) AS total_matches,
     SUM(CASE WHEN m.result = 'WIN' THEN 1 ELSE 0 END) AS total_wins,
-    SUM(CASE WHEN m.result = 'LOSE' THEN 1 ELSE 0 END) AS total_losses
+    SUM(CASE WHEN m.result = 'LOSE' THEN 1 ELSE 0 END) AS total_losses,
+    SUM(p.hearts) - COUNT(DISTINCT p.player_id) AS total_hearts_bought
 FROM Player p
 LEFT JOIN MatchGame m ON p.player_id = m.player_id;
 

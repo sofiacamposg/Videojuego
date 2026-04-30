@@ -108,6 +108,10 @@
             <h4>⏱ Avg Time</h4>
             <h2 id="global-avg-time">-</h2>
         </div>
+        <div class="col-md-4">
+            <h4>❤️ Hearts Bought</h4>
+            <h2 id="hearts_bought">-</h2>
+        </div>
     </div>
 
     <!--  EXTRA CHARTS -->
@@ -141,6 +145,7 @@
 
             document.getElementById("global-best").textContent = data.best_score || 0;
             document.getElementById("global-avg-time").textContent = Number(data.avg_duration || 0).toFixed(1);
+            document.getElementById("hearts_bought").textContent = data.total_hearts_bought;
 
             createBarChart(data.wins || 0, data.losses || 0);
             createKillsChart(Number(data.avg_kills || 0));

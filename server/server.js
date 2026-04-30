@@ -468,11 +468,12 @@ app.get("/global/stats", (req, res) => {
             COALESCE(MAX(m.final_fame), 0) AS best_score,
             COALESCE(
                 AVG(
-                    (SELECT COUNT(*) 
-                    FROM SpecificLevel sl 
+                    (SELECT COUNT(*)
+                    FROM SpecificLevel sl
                     WHERE sl.match_id = m.match_id AND sl.finished = TRUE)
                 ), 0
-            ) AS avg_kills
+            ) AS avg_kills,
+            (SELECT SUM(hearts) - COUNT(*) FROM Player) AS total_hearts_bought
         FROM MatchGame m
     `;
 
