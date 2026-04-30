@@ -295,7 +295,7 @@ function drawLevel(ctx, canvas, deltaTime){
     for(let i = 0; i < worldWidth; i += canvas.width){  //duplicate the background image to fill the whole world
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); }
 
-    if(!isPaused && (!cardSystem.isActive || showDeckPreview) 
+    if(!isPaused && (!cardSystem.isActive || !showDeckPreview) 
         && !spikesWarningBox.visible && !gameOver){  //only run game logic when not paused, not between levels, and no card menu is open
         updateLevel(deltaTime);
     }
@@ -437,6 +437,7 @@ function updateLevel(deltaTime){
 
     if(killedEnemies >= currentLevelConfig.conditionEnemies && !levelCompleted && !matchSaved){  //level done
         levelCompleted = true;
+        levelCompletedBox.show();
         matchSaved = true;
         currentLevel ++;
         updateFame(player, currentLevelConfig, levelTimer);  //give "coins" (fame) for the time spent in the level
@@ -477,6 +478,9 @@ function updateLevel(deltaTime){
 
             // 5. actualizar score panel
             await loadPlayerStats(window.loggedPlayer.player_id, "score");
+
+            // 6. cargar cartas de recompensa para el deck preview
+            await giveLevelRewards();
         })();
     }
 
