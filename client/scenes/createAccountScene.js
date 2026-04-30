@@ -14,7 +14,6 @@ import {
 //? mouse position tracking
 let mouseX = 0;
 let mouseY = 0;
-let registerSuccess = false;  // flag set to true after a successful registration
 
 //? button definitions
 const buttonBack = {
@@ -129,16 +128,7 @@ function handleMouseMoveCreateAccount(event, canvas){
     mouseY = pos.y;
 }
 
-//* handles all click events on the create account screen
-//* checks for error box, input fields, and buttons in order
-function handleClickCreateAccount(ctx){
-    //? if registration just succeeded, confirm and move to login
-    if(registerSuccess){
-        registerSuccess = false;
-        return "confirm";
-    }
-
-    //? if error box is visible, let it handle the click first
+function handleClickCreateAccount(ctx, onSuccess){  //? handle cliks over any element
     if (errorMessage.visible) {
         return errorMessage.handleClick(mouseX, mouseY);
     }
@@ -167,7 +157,7 @@ function handleClickCreateAccount(ctx){
             errorMessage.show();  // show error if any field is empty
             return null;
         }
-        registerUser();
+        registerUser(onSuccess);
         return null;
     }
 
@@ -222,10 +212,8 @@ function resetCreateAccount(){
   mouseY = 0;
 }
 
-//===== API =====
-
-//* sends registration data to the server and handles success or error responses
-async function registerUser(){
+//API CONNECTION
+async function registerUser(onSuccess){
     try{
         const res = await fetch("http://localhost:3000/register", {
             method: "POST",
@@ -248,7 +236,10 @@ async function registerUser(){
         }
 
         console.log("USER CREATED");
-        registerSuccess = true;  // triggers scene transition on next click
+        
+        //register ok? call the callback to handle the scene change
+        if(onSuccess) onSuccess();
+
 
     } catch(error){
         //? network or connection error

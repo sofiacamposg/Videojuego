@@ -20,6 +20,13 @@ const buttonBuyHeart = {
     disabled: false  // set to true when player can't afford a heart
 };
 
+const buttonBuyGalen = {
+    x: 400,
+    y: 350,
+    text: "BUY GALEN'S REMEDY - 25 FAME",
+    disabled: false
+};
+
 const buttonBack = {
     x: 400,
     y: 400,
@@ -41,7 +48,7 @@ export function drawShop(ctx, canvas) {
 
     //? centered dark panel with golden border
     const panelW = 500;
-    const panelH = 350;
+    const panelH = 450;
     const panelX = canvas.width / 2 - panelW / 2;
     const panelY = canvas.height / 2 - panelH / 2;
 
@@ -61,7 +68,10 @@ export function drawShop(ctx, canvas) {
     //? read player stats from global state
     const fame = window.loggedPlayer?.fame ?? 0;
     const hearts = window.loggedPlayer?.hearts ?? 1;
-    const canAfford = fame >= 50;  // check if player has enough fame to buy
+    const galen = window.loggedPlayer?.galen ?? 0;
+    const canAffordHearts = fame >= 50;
+    const canAffordGalen = fame >= 25;
+    
 
     ctx.font = "28px VT323";
     ctx.fillStyle = "white";
@@ -86,18 +96,33 @@ export function drawShop(ctx, canvas) {
     ctx.fillStyle = "white";
     ctx.fillText("❤️ " + hearts, centerX + 20, panelY + 190);
 
-    //? buy button — text and disabled state update every frame based on current fame
-    buttonBuyHeart.x = canvas.width / 2;
-    buttonBuyHeart.y = panelY + 240;
-    buttonBuyHeart.text = canAfford ? "BUY HEART - 50 FAME" : "NEED 50 FAME";
-    buttonBuyHeart.disabled = !canAfford;
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#d4af37";
+    ctx.fillText("Galen's Remedy", centerX - 20, panelY + 240);
 
-    //? back button
+    ctx.textAlign = "left";
+    ctx.fillStyle = "white";
+    ctx.fillText("🛡️ " + galen, centerX + 20, panelY + 240);
+
+    // botón BUY hearts centrado
+    buttonBuyHeart.x = canvas.width / 2;
+    buttonBuyHeart.y = panelY + 290;
+    buttonBuyHeart.text = canAffordHearts ? "BUY HEART - 50 FAME" : "NEED 50 FAME";
+    buttonBuyHeart.disabled = !canAffordHearts;
+
+    // botón BUY galen centrado
+    buttonBuyGalen.x = canvas.width / 2;
+    buttonBuyGalen.y = panelY + 345;
+    buttonBuyGalen.text = canAffordGalen ? "BUY GALEN'S REMEDY - 25 FAME" : "NEED 25 FAME";
+    buttonBuyGalen.disabled = !canAffordGalen;
+
+    // botón BACK
     buttonBack.x = canvas.width / 2;
-    buttonBack.y = panelY + 300;
+    buttonBack.y = panelY + 400;
 
     drawButton(ctx, buttonBuyHeart, mouseX, mouseY);
     drawButton(ctx, buttonBack, mouseX, mouseY);
+    drawButton(ctx, buttonBuyGalen, mouseX, mouseY);
 
     //? feedback message — green for success, red for error
     if (message) {
@@ -124,36 +149,44 @@ export async function handleClickShop() {
         return "back";
     }
 
-    //? buy button is disabled — player doesn't have enough fame, ignore click
-    if (buttonBuyHeart.disabled) return null;
-
-    //? buy heart — send purchase request to the API
-    if (handleClick(mouseX, mouseY, buttonBuyHeart, cachedCtx)) {
-
+    if (!buttonBuyHeart.disabled && handleClick(mouseX, mouseY, buttonBuyHeart, cachedCtx)) {
         const res = await fetch("http://localhost:3000/shop/buy-heart", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                player_id: window.loggedPlayer.player_id
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ player_id: window.loggedPlayer.player_id })
         });
 
-        const data = await res.json();
-
-        //? purchase successful — update global state and both UI elements
-        if (res.ok && data.success) {
-            window.loggedPlayer.fame = data.fame;
-            window.loggedPlayer.hearts = data.hearts;
-            message = "❤️ Heart purchased!";
-            // also update the HUD fame display on the right panel
-            const fameEl = document.getElementById("fame");
-            if (fameEl) fameEl.textContent = data.fame;
-        } else {
-            //? purchase failed — show error from server or fallback message
-            message = data.error || "Not enough fame";
+        if (!res.ok) {
+            message = await res.text() || "Purchase failed";
+            return null;
         }
+        const data = await res.json();
+        window.loggedPlayer.fame = data.fame;
+        window.loggedPlayer.hearts = data.hearts;
+        message = "❤️ Heart purchased!";
+        const fameEl = document.getElementById("fame");
+        if (fameEl) fameEl.textContent = data.fame;
+        return null;
+    }
+
+    if (!buttonBuyGalen.disabled && handleClick(mouseX, mouseY, buttonBuyGalen, cachedCtx)) {
+        const res = await fetch("http://localhost:3000/shop/buy-galen", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ player_id: window.loggedPlayer.player_id })
+        });
+
+        if (!res.ok) {
+            message = await res.text() || "Purchase failed";
+            return null;
+        }
+        const data = await res.json();
+        window.loggedPlayer.fame = data.fame;
+        window.loggedPlayer.galen = data.galen;
+        message = "🛡️ Galen's Remedy purchased!";
+        const fameEl2 = document.getElementById("fame");
+        if (fameEl2) fameEl2.textContent = data.fame;
+        return null;
     }
 
     return null;

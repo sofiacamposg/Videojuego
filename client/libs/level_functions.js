@@ -62,7 +62,20 @@ export async function saveMatch(data) {
     }
 
     const result = await res.json();
-    window.lastMatchId = result.match_id;  // store globally for the score scene to use
+    window.lastMatchId = result.match_id;
+
+    if (data.galenUsed) {
+        await fetch("http://localhost:3000/player/use-galen", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ player_id: data.player_id })
+        });
+    }
+
+    setTimeout(() => {
+        loadPlayerStats(window.loggedPlayer.player_id);
+    }, 200);
+
     return result;
 }
 
@@ -76,19 +89,19 @@ export function spawnEnemy(x, y, config){
 //* generates the next platform position based on the last platform
 //* keeps platforms within a vertical range so they stay reachable
 export function generatePlatform(lastPlatform){
-    let minGap = 200;
-    let maxGap = 300;
+    let minGap = 300;
+    let maxGap = 400;
 
     let x = lastPlatform.x + Math.random() * (maxGap - minGap) + minGap;  // random horizontal gap
     let y = lastPlatform.y + (Math.random() - 0.5) * 120;  // random vertical offset
 
     //? clamp Y so platforms don't go off screen
-    if(y > 420) y = 420;
+    if(y > 400) y = 400;
     if(y < 380) y = 380;
 
     return {
         x, y,
-        width: 80,
+        width: 100,
         height: 70
     };
 }
@@ -148,6 +161,7 @@ export async function loadPlayerStats(playerId, currentScene) {
         document.getElementById("runs").textContent = data.total_runs;
         document.getElementById("wins").textContent = data.total_wins;
         document.getElementById("losses").textContent = data.total_losses;
+        document.getElementById("galen").textContent = data.galen;
     } catch (err) {
         console.error("Error loading player stats:", err);
     }
@@ -158,7 +172,7 @@ export async function loadPlayerStats(playerId, currentScene) {
 export function drawHealthBar(ctx, x, y, width, height, current, max) {
     //? HP label
     ctx.fillStyle = "green";
-    ctx.fillText("HP: " + current, 30, 70);
+    ctx.fillText("HP: " + current, 40, 70);
 
     //? gray background represents lost HP
     ctx.fillStyle = "gray";
@@ -206,7 +220,7 @@ export function cardBanner(ctx, canvas, activeEffects, permanentEffects) {
 
     //? draw permanent effects without a timer
     permanentEffects.forEach((effect, i) => {
-        ctx.fillText(`${effect.card.name}`, canvas.width - 10, 26 + i * 22);
+        ctx.fillText(`${effect.card.name}`, canvas.width - 10, 42 + i * 32);
     });
 
     ctx.restore();

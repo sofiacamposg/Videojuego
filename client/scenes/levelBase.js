@@ -36,6 +36,8 @@ let jumpPressed = false;
 let killedEnemies = 0;
 let spawnTimer = 0;  //we check spawntimer and interval to know when to spawn a new enemy
 let spawnInterval = 2800;  
+let galenActive = false;  //'shield' from shop, player has shields?
+let galenUsed = false; //did the player use their shield?
 //? music
 const swordSound = new Audio("./assets/music/ataque_espada.mp3");  //attack
 swordSound.volume = 0.5;
@@ -65,9 +67,9 @@ let platformImage = new Image();
 platformImage.src = "./assets/Platform.png";
 function initPlatforms(){
     platforms = [];  //clean the array before starting
-    for(let i = 0; i < 7; i++){
+    for(let i = 0; i < 5; i++){
         if(platforms.length === 0){  
-            platforms.push({ x:200, y:300, width:100, height:70 });
+            platforms.push({ x:200, y:400, width:100, height:70 });
         } else {
             let last = platforms[platforms.length - 1];
             platforms.push(generatePlatform(last));
@@ -83,15 +85,15 @@ function drawPlatforms(ctx){  //draw all the platforms in the array
 let hazards = [];  //array to store platforms displayed
 function initHazards(){
     hazards = [];
-    const safeZone = 40;  //no hazards near spawn
-    const count = Math.random() < 0.5 ? 3 : 4;  //3 or 4 hazards per level
+    const safeZone = 80;  //no hazards near spawn 
+    const count = Math.random() < 0.5 ? 2 : 3;  //2 or 3 hazards per level
 
     for(let i = 0; i < count; i++){  //for spikes
-        hazards.push(new Spikes(randomRange(worldWidth), 115));
+        hazards.push(new Spikes(randomRange(worldWidth - safeZone, safeZone), 115));
     }
-    if(currentLevel === 3){  
+    if(currentLevel === 3){
         for(let i = 0; i < count; i++){
-            hazards.push(new FirePit(randomRange(worldWidth), 115));
+            hazards.push(new FirePit(randomRange(worldWidth - safeZone, safeZone), 115));
         }
     }
 }
@@ -170,9 +172,8 @@ let gameOver = false;  //screen and config when hearts = 0
             final_fame: window.loggedPlayer.fame,
             life: Math.max(0, player.hearts),
             result: "LOSE",
-            kills: killedEnemies,
-            cards_in_deck: cardSystem.playerDeck.length
-
+            cards_in_deck: cardSystem.playerDeck.length,
+            galenUsed: galenUsed
         });
         await loadPlayerStats(window.loggedPlayer.player_id, "score");
     }   
@@ -204,9 +205,11 @@ function setSelectedCharacter(selectedCharacter){
         new Vector(200,450),
         playerConfigs[selectedCharacter]
     );
-    player.fame = window.loggedPlayer.fame || 0; 
-    player.hearts = window.loggedPlayer.hearts;
-    player.maxHearts = window.loggedPlayer.hearts;
+    player.fame = window.loggedPlayer.fame || 0;
+    player.hearts = window.loggedPlayer.hearts || 1;
+    player.maxHearts = window.loggedPlayer.hearts || 1;
+    galenActive = (window.loggedPlayer.galen || 0) > 0;
+    galenUsed = false;
     initPlatforms();
 }
 let enemies = currentLevelConfig.spawnPositions.map(pos =>
@@ -294,8 +297,8 @@ function drawLevel(ctx, canvas, deltaTime){
     for(let i = 0; i < worldWidth; i += canvas.width){  //duplicate the background image to fill the whole world
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); }
 
-    if(!isPaused && (!cardSystem.isActive || showDeckPreview) 
-        && !spikesWarningBox.visible && !gameOver){  //only run game logic when not paused, not between levels, and no card menu is open
+    if(!isPaused && !cardSystem.isActive && !spikesWarningBox.visible 
+        && !gameOver && !levelCompleted){  //only run game logic when not paused, not between levels, and no card menu is open
         updateLevel(deltaTime);
     }
     ctx.save();
@@ -386,7 +389,15 @@ function updateLevel(deltaTime){
     if (!player) return;  //skip if no player is loaded yet
     levelTimer += deltaTime;  //keep track of how long the player has been in this level
 
+    if(player.hearts <= 0 && galenActive){  //galen intercepts before game over to save player
+        player.hp = player.maxHp;
+        player.hearts = 1;
+        galenUsed = true;
+        galenActive = false;
+    }
+
     if(player.hearts <= 0){  //player ran out of hearts, game over
+        player.hp = 0;
         gameOver = true;
         gameOverBox.show();
         gameOverSound.play();
@@ -438,6 +449,7 @@ function updateLevel(deltaTime){
 
     if(killedEnemies >= currentLevelConfig.conditionEnemies && !levelCompleted && !matchSaved){  //level done
         levelCompleted = true;
+        levelCompletedBox.show();
         matchSaved = true;
         currentLevel ++;
         updateFame(player, currentLevelConfig, levelTimer);  //give "coins" (fame) for the time spent in the level
@@ -466,20 +478,18 @@ function updateLevel(deltaTime){
                 final_fame: window.loggedPlayer.fame,
                 life: player.hearts,
                 result: "WIN",
-                kills: killedEnemies,
-                cards_in_deck: cardSystem.playerDeck.length
+                cards_in_deck: cardSystem.playerDeck.length,
+                galenUsed: galenUsed
             });
 
             await loadPlayerStats(window.loggedPlayer.player_id, "score");
+
+            // 6. cargar cartas de recompensa para el deck preview
+            await giveLevelRewards();
         })();
     }
 
     cameraX = updateCamera(player.position.x, canvasRef.width, worldWidth);  //move camera to follow player
-
-    let last = platforms[platforms.length - 1];
-    if(player.position.x > last.x - 500){  //player is getting close to the end, add more platforms
-        platforms.push(generatePlatform(last));
-    }
 
     if (currentLevel >= 2) 
         hazards.forEach(h => h.update(player, deltaTime));  //firepits active from level 2
@@ -608,6 +618,7 @@ if(currentLevel === 3){
     spawnTimer = 0;
     levelTimer = 0;
     randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);  //when will the event trigger
+    matchSaved = false;
     cardEventTriggered = false;
     cardOptions = [];  //next levels rewards don't include this level's event cards
     cardSystem.clearPermanentEffects();  //undo any permanent card effect from last level

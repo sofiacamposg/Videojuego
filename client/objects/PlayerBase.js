@@ -10,7 +10,6 @@ class PlayerBase extends AnimatedObject {
 
   //* initializes the player with stats and sprites from the selected archetype config
   constructor(position, config = {}) {
-    // destructure config with defaults — these get overridden by the archetype values from the API
     const {
         hp = 100,
         maxHp = 100,
@@ -38,8 +37,8 @@ class PlayerBase extends AnimatedObject {
     //? physics setup
     this.setAnimation(0, 3, true, 200); 
     this.velocityY = 0;
-    this.gravity = 0.0028;     // px/ms² — compatible with deltaTime in ms
-    this.jumpStrength = -0.84; // px/ms — negative because Y increases downward
+    this.gravity = 0.0028;
+    this.jumpStrength = -0.84;
     this.isOnGround = true;
     this.isMoving = false;
 
@@ -57,13 +56,13 @@ class PlayerBase extends AnimatedObject {
     this.attackLeft = new Image(); 
     this.attackLeft.src = attackLeftSrc;
 
-    this.spriteImage = this.spriteRight;  // default facing right
+    this.spriteImage = this.spriteRight;
     this.spriteRect = new Rect(0, 0, 434, 470);
 
     //? attack state tracking
     this.playeratack = false;
     this.attackFrames = 0;
-    this.attackDuration = 10;  // frames the attack lasts
+    this.attackDuration = 10;
 
     //? platform collision hitbox — separate from the hurtbox
     this.hitbox = {
@@ -75,16 +74,16 @@ class PlayerBase extends AnimatedObject {
     this.HITBOX_WIDTH = 50;
     this.HITBOX_HEIGHT = 100;
     this.HITBOX_OFFSET = -15;
-    this.hitEnemies = new Set();  // tracks which enemies were hit in the current swing
+    this.hitEnemies = new Set();
 
     //? card effect properties — modified by card effects during the run
-    this.canJump = true;       // chains of caesar disables this
-    this.invincible = false;   // divine shield sets this to true
-    this.hearts = 5;           // current lives
-    this.maxHearts = 5;        // max lives
-    this.range = 1;            // attack range multiplier — colosseum's fury increases this
-    this.doubleDeath = false;  // senate's judgment — lose 2 hearts on death
-    this.cardCostHP = false;   // hunger of the plebs — using a card costs half a heart
+    this.canJump = true;
+    this.invincible = false;
+    this.hearts = 5;
+    this.maxHearts = 5;
+    this.range = 1;
+    this.doubleDeath = false;
+    this.cardCostHP = false;
   }
 
   //* main update loop — handles movement, sprite selection and attack state each frame
@@ -96,7 +95,6 @@ class PlayerBase extends AnimatedObject {
     this.checkPlatforms(platforms, groundY, deltaTime);
     this.updateCollider();
 
-    //? select the correct sprite based on current player state
     if (!this.isOnGround) {
       //? case 1: in the air — show jump sprite, no attacking allowed
       this.spriteImage = (this.direction === "right") ? this.spriteJumpRight : this.spriteJumpLeft;
@@ -109,11 +107,11 @@ class PlayerBase extends AnimatedObject {
       this.updateAnimation(20);
       this.createHitbox();
       this.attackFrames++;
-      if (this.attackFrames >= this.attackDuration) {  // attack animation finished
+      if (this.attackFrames >= this.attackDuration) {
         this.playeratack = false;
         this.attackFrames = 0;
-        this.attackHitbox = null;   // disable hitbox
-        this.hitEnemies.clear();    // reset hit tracking for next swing
+        this.attackHitbox = null;
+        this.hitEnemies.clear();
       }
 
     } else if (this.isMoving) {
@@ -125,8 +123,8 @@ class PlayerBase extends AnimatedObject {
     } else {
       //? case 4: idle — show first frame of walk sprite
       this.spriteImage = (this.direction === "right") ? this.spriteRight : this.spriteLeft;
-      this.frame = 0;  // reset to first frame
-      if (this.spriteRect) this.spriteRect.x = 0;  // reset spritesheet position
+      this.frame = 0;
+      if (this.spriteRect) this.spriteRect.x = 0;
       this.attackHitbox = null;
     }
   };
@@ -149,7 +147,7 @@ class PlayerBase extends AnimatedObject {
   //* triggers a jump if the player is on the ground and jumping is allowed
   jump(jumpPressed){
     if (jumpPressed && this.isOnGround && this.canJump){
-        this.velocityY = this.jumpStrength;  // launch upward
+        this.velocityY = this.jumpStrength;
         this.isOnGround = false;
     }
   }
@@ -169,7 +167,7 @@ class PlayerBase extends AnimatedObject {
         let prevBottom = (this.position.y - this.velocityY * deltaTime) + this.hitbox.height / 2;
         let isFalling = this.velocityY >= 0;
 
-        let footOffset = 20;  // narrows the foot area to avoid catching edges
+        let footOffset = 20;
 
         //? check if player feet are horizontally within the platform
         let withinX =
@@ -223,10 +221,10 @@ class PlayerBase extends AnimatedObject {
   //* checks if the player's attack hitbox overlaps any enemy and deals damage
   //* hitEnemies set prevents hitting the same enemy twice in one swing
   attackEnemy(enemies){
-    if (!this.playeratack || !this.attackHitbox) return;  // not attacking
+    if (!this.playeratack || !this.attackHitbox) return;
 
     enemies.forEach(enemy => {
-        if (this.hitEnemies.has(enemy)) return;  // already hit this enemy this swing
+        if (this.hitEnemies.has(enemy)) return;
         if (hitboxOverlap(this.attackHitbox, enemy)) {
             this.hitEnemies.add(enemy);
             enemy.takeDamage(this.damage, this);

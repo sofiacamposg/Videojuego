@@ -140,9 +140,9 @@
     <script>
         // redirect to login if no player session exists in localStorage
         const player = JSON.parse(localStorage.getItem("player"));
+
         if (!player) {
-            alert("No user logged");
-            window.location.href = "login.html";
+            console.warn("Viewing stats without login");
         }
 
         // fetches global stats from the API and populates the page
@@ -160,7 +160,7 @@
             // populate extra global stats
             document.getElementById("global-best").textContent = data.best_score || 0;
             document.getElementById("global-avg-time").textContent = Number(data.avg_duration || 0).toFixed(1);
-            document.getElementById("global-kills").textContent = Number(data.avg_kills || 0).toFixed(1);
+            document.getElementById("hearts_bought").textContent = data.total_hearts_bought;
 
             // render charts with the fetched data
             createBarChart(data.wins || 0, data.losses || 0);

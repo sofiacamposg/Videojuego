@@ -131,10 +131,13 @@ app.post("/register", (req, res) => {
     db.query("SELECT * FROM Player WHERE username = ?", [username], (err, result) => {
         if (err) return res.status(500).send("Server error");
         if (result.length > 0) return res.status(400).send("User already exists");
-        db.query("INSERT INTO Player (name, username, password) VALUES (?, ?, ?)", [name, username, password], (err) => {
+        db.query("INSERT INTO Player (name, username, password) VALUES (?, ?, ?)", [name, username, password], (err, insertResult) => {
             if (err) return res.status(500).send("Insert error");
             console.log("USER CREATED:", username);
-            res.json({ success: true, role: "player" });
+            db.query("SELECT * FROM Player WHERE player_id = ?", [insertResult.insertId], (err2, playerResult) => {
+                if (err2) return res.status(500).send("Fetch error");
+                return res.json({ ...playerResult[0], role: "player" });
+            });
         });
     });
 });
@@ -376,16 +379,34 @@ app.get("/player/live/:id", (req, res) => {
             (SELECT COUNT(*) FROM MatchGame WHERE player_id = p.player_id AND result = 'LOSE') AS total_losses,
             0 AS enemy_kills,
             0 AS cards_in_deck,
-            0 AS current_level
+            0 AS current_level,
+            p.galen
         FROM Player p
         WHERE p.player_id = ?
     `;
 
     db.query(query, [id], (err, result) => {
+        console.log("RESULT:", result);
+        console.log("ERROR:", err);
         if (err) {
             console.error(err);
             return res.status(500).send(err.message);
         }
+        //for new users
+        if (result.length === 0) {
+            return res.json({
+                player_id: id,
+                username: "",
+                current_fame: 0,
+                total_runs: 0,
+                total_wins: 0,
+                total_losses: 0,
+                enemy_kills: 0,
+                cards_in_deck: 0,
+                current_level: 0
+            });
+        }
+
         res.json(result[0]);
     });
 });
@@ -452,11 +473,14 @@ app.get("/global/stats", (req, res) => {
             SUM(m.result = 'LOSE') AS losses,
             COALESCE(AVG(m.duration_seconds), 0) AS avg_duration,
             COALESCE(MAX(m.final_fame), 0) AS best_score,
-            COALESCE(AVG(
-                (SELECT COUNT(*) 
-                 FROM SpecificLevel sl 
-                 WHERE sl.match_id = m.match_id AND sl.finished = TRUE)
-            ), 0) AS avg_kills
+            COALESCE(
+                AVG(
+                    (SELECT COUNT(*)
+                    FROM SpecificLevel sl
+                    WHERE sl.match_id = m.match_id AND sl.finished = TRUE)
+                ), 0
+            ) AS avg_kills,
+            (SELECT SUM(hearts) - COUNT(*) FROM Player) AS total_hearts_bought
         FROM MatchGame m
     `;
 
@@ -520,8 +544,43 @@ app.post("/shop/buy-heart", (req, res) => {
     );
 });
 
-//* adds fame to a player after completing a level
-//* called by the client after each level is won — amount depends on completion speed
+//* buy galen's remedy, like a shield that can 'save' the player
+app.post("/shop/buy-galen", (req, res) => {
+    const { player_id } = req.body;
+
+    db.query("SELECT fame, galen FROM Player WHERE player_id = ?", [player_id], (err, result) => {
+        if (err) return res.status(500).send(err.message);  //? case1: edge case
+        if (result.length === 0) return res.status(404).json({ error: "Player not found" });  //?case2: edge case
+
+        const player = result[0];  //first result that match
+        if (player.fame < 30) //? case3: not enough fame
+            return res.status(400).json({ error: "Not enough fame" });  
+
+        db.query(  //? case4: player bought galen's remedy
+            "UPDATE Player SET fame = fame - 30, galen = galen + 1 WHERE player_id = ?",
+            [player_id],
+            (err2) => {
+                if (err2) return res.status(500).send(err2.message);
+                res.json({ success: true, fame: player.fame - 30, galen: player.galen + 1 });
+            }
+        );
+    });
+});
+
+//* the player used the galen's remedy in the match
+app.post("/player/use-galen", (req, res) => {
+    const { player_id } = req.body;  //which player used the remedy?
+
+    db.query(  //? case1: update quantity of remedies
+        "UPDATE Player SET galen = galen - 1 WHERE player_id = ?",
+        [player_id],
+        (err) => {
+            if (err) return res.status(500).send(err.message);  //? case2: edge case
+            res.json({ success: true });
+        }
+    );
+});
+
 app.post("/player/update-fame", (req, res) => {
     const { player_id, fame } = req.body;
 
