@@ -16,12 +16,6 @@ import {
     cardSystem
 } from "./scenes/levelBase.js";  //live stats come from levelBase now
 
-const savedPlayer = localStorage.getItem("player");
-
-if (savedPlayer) {
-    window.loggedPlayer = JSON.parse(savedPlayer);
-    console.log("PLAYER RESTORED:", window.loggedPlayer);
-}
 const canvasWidth = 1000;
 const canvasHeight = 600;
 
@@ -60,6 +54,30 @@ function updateLiveStats() {
     document.getElementById("cards").textContent = cards;
 }
 
+function resetPanel() {
+    document.getElementById("username").textContent = "-";
+    document.getElementById("level").textContent = "-";
+    document.getElementById("kills").textContent = "-";
+    document.getElementById("fame").textContent = "-";
+    document.getElementById("cards").textContent = "-";
+    document.getElementById("runs").textContent = "-";
+    document.getElementById("wins").textContent = "-";
+    document.getElementById("losses").textContent = "-";
+}
+
+function logout() {
+    window.loggedPlayer = null;
+    localStorage.removeItem("player");
+
+    resetLogIn();
+    resetSelect();
+    resetLevel();
+    resetPanel();
+
+    currentPlayer = null;
+    selectedCharacter = null;
+}
+
 //FUNCTION MAIN
 function main() {
     canvas = document.getElementById("canvas");
@@ -73,11 +91,18 @@ function main() {
         //MENU SCENE
         if(currentScene === 'menu'){
             clicked = handleClickMenu(ctx);
-            if (clicked === 'start') currentScene = 'login';
+            if (clicked === 'start') {
+                    loginFromShop = false;
+                    resetLogIn();
+                    resetPanel();
+                    currentScene = 'login';
+            }
             if (clicked === 'settings') currentScene = 'settings'; 
             if (clicked === 'shop') {
                 if (!window.loggedPlayer) {
-                    loginFromShop = true;   
+                    loginFromShop = true;
+                    resetLogIn();   
+                    resetPanel();
                     currentScene = "login";
                 } else {
                     currentScene = "shop";
@@ -137,6 +162,10 @@ function main() {
         }
         //SELECT CHARACTER
         else if (currentScene === 'start'){
+            if (!window.loggedPlayer) {
+                currentScene = "login";
+                return;
+            }
             clicked = handleClickSelect(ctx); 
             if(clicked === 'back'){
                 resetSelect(); 
@@ -157,9 +186,7 @@ function main() {
             clicked = handleClickLevel(ctx); 
             if(goToMenu){  //player clicked Home from the pause menu
                 resetGoToMenu();
-                resetLogIn();
-                resetSelect();
-                resetLevel();
+                logout();
                 currentScene = "menu";
             }
         }

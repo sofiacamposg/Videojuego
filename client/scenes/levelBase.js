@@ -33,7 +33,7 @@ backgroundImage.src = currentLevelConfig.background;
 let player
 let keysDown = {};
 let jumpPressed = false;
-let killedEnemies = 5;
+let killedEnemies = 0;
 let spawnTimer = 0;  //we check spawntimer and interval to know when to spawn a new enemy
 let spawnInterval = 2800;  
 //? music
