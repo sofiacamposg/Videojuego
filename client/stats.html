@@ -122,6 +122,11 @@
             <canvas id="barChart"></canvas>
         </div>
 
+        <div class="col-md-6 text-center">
+            <h3>💀 DEATHS PER LEVEL</h3>
+            <canvas id="deathsChart">-</canvas>
+        </div>
+
     </div>
 
 </div>
@@ -148,7 +153,6 @@
             document.getElementById("hearts_bought").textContent = data.total_hearts_bought;
 
             createBarChart(data.wins || 0, data.losses || 0);
-            createKillsChart(Number(data.avg_kills || 0));
         }
 
         function createBarChart(wins, losses) {
@@ -172,8 +176,36 @@
             });
         }
         
+        async function loadDeathsPerLevel() {
+            const res = await fetch("http://localhost:3000/stats/deaths-per-level");
+            const data = await res.json();
+
+            const deathsByLevel = { 1: 0, 2: 0, 3: 0 };
+            data.forEach(d => deathsByLevel[d.level_reached] = d.deaths);
+            const labels = ["Level 1", "Level 2", "Level 3"];
+            const values = [deathsByLevel[1], deathsByLevel[2], deathsByLevel[3]];
+
+            const ctx = document.getElementById("deathsChart").getContext("2d");
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels,
+                    datasets: [{
+                        label: "Deaths",
+                        data: values,
+                        backgroundColor: ["#dc3545", "#fd7e14", "#ffc107"]
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
+        }
+
         loadGlobalStats();
-        
+        loadDeathsPerLevel();
+
     </script>
 
 </body>

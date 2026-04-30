@@ -173,7 +173,7 @@ INSERT INTO MatchGame (player_id, archetype_id, end_time, duration_seconds, leve
 (13, 3, NOW(), 255, 3, 210, 5, 'WIN'),
 (3, 1, NOW(), 100, 1, 25, 0, 'LOSE'),
 (14, 2, NOW(), 185, 3, 135, 2, 'WIN'),
-(15, 3, NOW(), 145, 2, 90, 1, 'LOSE'),
+(15, 3, NOW(), 145, 3, 90, 1, 'LOSE'),
 (16, 1, NOW(), 230, 3, 190, 4, 'WIN'),
 (17, 2, NOW(), 75, 1, 5, 0, 'LOSE'),
 (5, 3, NOW(), 205, 3, 155, 3, 'WIN'),
@@ -181,15 +181,15 @@ INSERT INTO MatchGame (player_id, archetype_id, end_time, duration_seconds, leve
 (19, 2, NOW(), 265, 3, 220, 5, 'WIN'),
 (20, 3, NOW(), 90, 1, 30, 0, 'LOSE'),
 (9, 1, NOW(), 170, 3, 125, 2, 'WIN'),
-(21, 2, NOW(), 135, 2, 75, 1, 'LOSE'),
+(21, 2, NOW(), 135, 3, 75, 1, 'LOSE'),
 (22, 3, NOW(), 245, 3, 195, 4, 'WIN'),
 (7, 1, NOW(), 80, 1, 10, 0, 'LOSE'),
 (23, 2, NOW(), 215, 3, 170, 3, 'WIN'),
-(24, 3, NOW(), 125, 2, 65, 1, 'LOSE'),
+(24, 3, NOW(), 125, 3, 65, 1, 'LOSE'),
 (25, 1, NOW(), 275, 3, 230, 5, 'WIN'),
 (13, 2, NOW(), 70, 1, 8, 0, 'LOSE'),
 (26, 3, NOW(), 190, 3, 145, 2, 'WIN'),
-(27, 1, NOW(), 150, 2, 85, 1, 'LOSE'),
+(27, 1, NOW(), 150, 3, 85, 1, 'LOSE'),
 (28, 2, NOW(), 260, 3, 215, 4, 'WIN');
 COMMIT;
 
