@@ -146,33 +146,33 @@ function handleClickLogIn(ctx, onSuccess){  //? handle cliks over any element
 }
 
 function handleKeyDownLogIn(event){  //? handles user's input
-  if (activeField === null) return; //case 1: no active field
+    if (activeField === null) return; //case 1: no active field
 
-  if (event.key === "Backspace"){ //case 2: deletes lasts key wrote
-    event.preventDefault();
-    if (activeField === "username") username = username.slice(0, -1);
-    if (activeField === "password") password = password.slice(0, -1);
-    return;
-  }
-  if (event.key === "Enter"){ //case 3: enter pressed
-    activeField = null;
-    return;
-  }
-  if (event.key.length !== 1) return; //case 4: one key at a time
-  const allowed = /^[a-zA-Z0-9 _\-\.@]$/.test(event.key); //case 5: checks input
-  if (!allowed) return;
-  if (activeField === "username") username += event.key;  //adds letter to string
-  if (activeField === "password") password += event.key;
+    if (event.key === "Backspace"){ //case 2: deletes lasts key wrote
+        event.preventDefault();
+        if (activeField === "username") username = username.slice(0, -1);
+        if (activeField === "password") password = password.slice(0, -1);
+        return;
+    }
+    if (event.key === "Enter"){ //case 3: enter pressed
+        activeField = null;
+        return;
+    }
+    if (event.key.length !== 1) return; //case 4: one key at a time
+    const allowed = /^[a-zA-Z0-9 _\-\.@]$/.test(event.key); //case 5: checks input
+    if (!allowed) return;
+    if (activeField === "username") username += event.key;  //adds letter to string
+    if (activeField === "password") password += event.key;
 }
 function getUsernameLogIn(){  //? getter
-  return username;
+    return username;
 }
 function resetLogIn() {  //? reset to default values
-  username = "";
-  password = "";
-  activeField = null;
-  mouseX = 0;
-  mouseY = 0;
+    username = "";
+    password = "";
+    activeField = null;
+    mouseX = 0;
+    mouseY = 0;
 }
 
 //API CONNECTION

@@ -128,14 +128,14 @@ function main() {
                     await loadPlayerStats(window.loggedPlayer.player_id, currentScene);
                 })();
                 loginFromShop = false;
-                currentScene = "shop";   //  regresa a shop
+                currentScene = "shop";   //regresa a shop
             } else {
                 //API
                 setTimeout(() => {
                     loadPlayerStats(window.loggedPlayer.player_id, currentScene);
                 }, 500);
                 resetSelect();
-                currentScene = 'start';  // flujo normal del juego
+                currentScene = 'start';  //flujo normal del juego
             }
         });
 
