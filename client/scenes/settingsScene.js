@@ -11,12 +11,13 @@ let mouseY = 0;
 let draggingVolume = false;
 
 // Buttons
-const buttonBack = { x: 150, y: 50, text: "BACK" };
-const buttonConfirm = { x: 850, y: 50, text: "CONFIRM" };
+const buttonBack = { x: 150, y: 100, text: "BACK" };
+const buttonConfirm = { x: 850, y: 100, text: "CONFIRM" };
 
 // Valores guardados (los reales del juego)
 let savedVolumeOn = false;
 let savedVolumeLevel = 50;
+let handleBox = { x: 500, y: 355, w: 28, h: 28 };  
 
 // Valores temporales (los que el usuario está cambiando)
 let volumeOn = savedVolumeOn;
@@ -121,9 +122,19 @@ function drawVolumeBar(ctx){
     ctx.fillStyle = "red";
     ctx.fillRect(left,volumeBar.y,filled,volumeBar.h);
 
+    // circle handle so the user knows where to drag
+    const handleX = left + filled;
+    const handleY = volumeBar.y + volumeBar.h / 2;
+    ctx.beginPath();
+    ctx.arc(handleX, handleY, 14, 0, Math.PI * 2);
+    ctx.fillStyle = "white";
+    ctx.fill();
+    ctx.strokeStyle = "gray";
+    ctx.stroke();
+
     ctx.fillStyle = "white";
     ctx.font = "20px 'VT323'";
-    ctx.fillText("LEVEL: "+volumeLevel, volumeBar.x, volumeBar.y+60);
+    ctx.fillText("LEVEL: "+ volumeLevel, volumeBar.x, volumeBar.y+60);
 }
 
 // Detecta movimiento del mouse
@@ -180,7 +191,10 @@ function handleClickSettings(ctx){
 
 // Empieza a arrastrar la barra
 function startDragging(){
-    if(volumeOn && isMouseOverBox(mouseX, mouseY, volumeBar)){
+    const left = volumeBar.x - volumeBar.w / 2;
+    handleBox.x = left + (volumeLevel / 100) * volumeBar.w;  //update handle position to match current volume
+    handleBox.y = volumeBar.y + volumeBar.h / 2;
+    if(volumeOn && isMouseOverBox(mouseX, mouseY, handleBox)){
         draggingVolume = true;
     }
 }

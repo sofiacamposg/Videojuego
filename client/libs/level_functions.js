@@ -68,7 +68,7 @@ export function generatePlatform(lastPlatform){
 
     return {
         x, y,
-        width: 100,
+        width: 80,
         height: 70
     };
 }
@@ -106,7 +106,8 @@ export async function loadPlayerStats(playerId, currentScene) {
         else if (currentScene === "level2") levelText = 2;
         else if (currentScene === "level3") levelText = 3;
         document.getElementById("level").textContent = levelText;
-        document.getElementById("fame").textContent = window.loggedPlayer.fame || 0;
+        document.getElementById("fame").textContent = data.fame || 0;
+        window.loggedPlayer.fame = data.fame || 0; //sincroniza frontend con backend
         document.getElementById("kills").textContent = data.enemy_kills || 0;
         document.getElementById("cards").textContent = data.cards_in_deck || 0;
         document.getElementById("runs").textContent = data.total_runs;

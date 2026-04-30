@@ -20,6 +20,7 @@ class cardsOnCanvas {
         this._game = null;
 
         this.activeEffects = [];
+        this.permanentEffects = [];  //save permanent cards to reset them at the end of the level
 
         this.cardBackImage = new Image();
         this.cardBackImage.src = "./assets/cards/BaseCard.png";
@@ -102,13 +103,20 @@ class cardsOnCanvas {
         saveCardUse(1, card.id, card.duration || 0); 
 
         //track the time so we can undo the effect later
-        if (card.duration && card.removeEffect) {
+        if (card.duration && card.removeEffect) {  //case1: timed card, track it so we can undo it when the timer runs out
             this.activeEffects.push({
                 card,
                 player: this._player,
                 enemies: this._enemies,
                 game: this._game,
                 endTime: card.duration
+            });
+        } else if (!card.duration && card.removeEffect) {  //case2: permanent card: track it so we can undo it when the level ends
+            this.permanentEffects.push({
+                card,
+                player: this._player,
+                enemies: this._enemies,
+                game: this._game,
             });
         }
 
@@ -123,6 +131,10 @@ class cardsOnCanvas {
             }
             return true;
         });
+    }
+    clearPermanentEffects() {  //undo all permanent cards effects when level ends or game resets
+        this.permanentEffects.forEach(e => e.card.removeEffect(e.player, e.enemies, e.game));
+        this.permanentEffects = [];
     }
 // ========================= deck cards =========================
     toggleDeck() {  //? call this to open the card pick screen

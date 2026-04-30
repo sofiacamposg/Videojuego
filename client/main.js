@@ -165,8 +165,11 @@ function main() {
                 resetScoreScene();
             }
             if(clicked === "again"){
+                await loadPlayerStats(window.loggedPlayer.player_id, "level1");
+
                 resetLevel();
                 resetScoreScene();
+
                 //Creates player again
                 setSelectedCharacter(selectedCharacter);
                 currentPlayer = getPlayer();
@@ -246,6 +249,11 @@ function gameLoop(newTime) {
         if(goToScore){  //levelBase signals game complete after level 3 deck preview
             currentScene = 'score';
             resetGoToScore();
+        }
+        else if(goToMenu){
+            currentScene = 'menu';
+            resetGoToMenu();
+            resetLevel();
         }
     }
     else if(currentScene === 'score')  drawScoreScene(ctx,canvas,deltaTime);

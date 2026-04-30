@@ -142,7 +142,7 @@ class PlayerBase extends AnimatedObject {
     this.position.y += this.velocityY *deltaTime;
   }
   
-  checkPlatforms(platforms, groundY, deltaTime){  //check colision between this and platform
+  checkPlatforms(platforms, groundY, deltaTime){  //check colision between player and platform
     //Platform collision
     this.isOnGround = false;
     platforms.forEach(p => {
