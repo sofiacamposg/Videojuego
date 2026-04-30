@@ -144,6 +144,7 @@ function main() {
                 currentScene = 'menu';
             }
             if (clicked === 'create'){
+                resetLogIn();
                 currentScene = 'createAccount';
             }
         }
@@ -156,8 +157,8 @@ function main() {
             }
             if(clicked === 'login') currentScene = 'login'; 
             if(clicked === 'confirm') {
-                currentScene = 'login';
                 resetLogIn();
+                currentScene = 'login';
             }
         }
         //SELECT CHARACTER
