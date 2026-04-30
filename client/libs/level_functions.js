@@ -48,11 +48,20 @@ export async function saveMatch(data) {
     if (!res.ok) {
         const text = await res.text();
         console.error("MATCH ERROR:", text);
-        return; //  evita que truene el juego
+        return;
     }
 
     const result = await res.json();
     window.lastMatchId = result.match_id;
+
+    if (data.galenUsed) {
+        await fetch("http://localhost:3000/player/use-galen", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ player_id: data.player_id })
+        });
+    }
+
     setTimeout(() => {
         loadPlayerStats(window.loggedPlayer.player_id);
     }, 200);

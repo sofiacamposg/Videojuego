@@ -69,7 +69,7 @@ class PlayerBase extends AnimatedObject {
 
     // card system
     this.canJump = true;
-    this.invincible = true;
+    this.invincible = false;
     this.hearts = 5;
     this.maxHearts = 5;
     this.range = 1;
@@ -172,16 +172,22 @@ class PlayerBase extends AnimatedObject {
     }
   }
   
-  takeDamage(hit){  //damage made by enemy, look EnemyBase to understand the whole logic
-    if (this.invincible) { /*this.invincible = false; */return; }  //divine shield effect
+  takeDamage(hit){  //* damage made by enemy, look EnemyBase to understand the whole logic
+    if (this.invincible) {   //? case1: divine shield effect
+      this.invincible = false; 
+      return; 
+    }  
     this.hp -= hit;
     if (this.hp <= 0) {
-      if (this.doubleDeath) { this.hearts -= 1; this.doubleDeath = false; }  //senates judgment effect
-      this.hearts--;  //lose a heart
+      if (this.doubleDeath) { //? cas2: senates judgment effect
+        this.hearts -= 1; 
+        this.doubleDeath = false; 
+      }  
+      this.hearts--;  //case3: lose a heart
       if (this.hearts > 0) {
         this.hp = this.maxHp;  //reset hp for next heart
       } else {
-        this.hp = 0;  //dead
+        this.hp = 0;  //case4: dead
       }
     }
   }

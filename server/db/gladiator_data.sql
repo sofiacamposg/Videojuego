@@ -112,8 +112,8 @@ COMMIT;
 SET AUTOCOMMIT = 0;
 INSERT INTO Enemy (level_id, enemy_name, hp_start, speed_start, damage_start) VALUES
 (1, 'Lion', 500, 4, 20),
-(2, 'Tiger', 600, 5, 28),
-(3, 'Boar', 650, 6, 34);
+(2, 'Tiger', 600, 5, 18),
+(3, 'Boar', 650, 6, 15);
 COMMIT;
 
 -- Dummy data for Player

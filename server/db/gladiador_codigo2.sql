@@ -21,10 +21,13 @@ CREATE TABLE Player (
     total_runs SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     total_losses SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     total_wins SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-    hearts SMALLINT UNSIGNED NOT NULL DEFAULT 1,    
+    hearts SMALLINT UNSIGNED NOT NULL DEFAULT 1,  -- players can buy more
+    galen SMALLINT UNSIGNED NOT NULL DEFAULT 0,  -- like a shield players can buy
     fame SMALLINT NOT NULL DEFAULT 0,  -- used to buy upgrades
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (player_id),
+    CONSTRAINT chk_hearts CHECK (hearts <= 5),
+    CONSTRAINT chk_galen CHECK (galen >= 0),
     CONSTRAINT chk_coins CHECK (fame >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

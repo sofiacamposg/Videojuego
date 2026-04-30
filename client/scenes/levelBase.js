@@ -36,6 +36,8 @@ let jumpPressed = false;
 let killedEnemies = 0;
 let spawnTimer = 0;  //we check spawntimer and interval to know when to spawn a new enemy
 let spawnInterval = 2800;  
+let galenActive = false;  //'shield' from shop, player has shields?
+let galenUsed = false; //did the player use their shield?
 //? music
 const swordSound = new Audio("./assets/music/ataque_espada.mp3");  //attack
 swordSound.volume = 0.5;
@@ -194,9 +196,11 @@ function setSelectedCharacter(selectedCharacter){
         new Vector(200,450),
         playerConfigs[selectedCharacter]
     );
-    player.fame = window.loggedPlayer.fame || 0; 
+    player.fame = window.loggedPlayer.fame || 0;
     player.hearts = window.loggedPlayer.hearts || 1;
     player.maxHearts = window.loggedPlayer.hearts || 1;
+    galenActive = (window.loggedPlayer.galen || 0) > 0;
+    galenUsed = false;
     initPlatforms();
 }
 let enemies = currentLevelConfig.spawnPositions.map(pos =>
@@ -386,6 +390,13 @@ function updateLevel(deltaTime){
     if (!player) return;  //skip if no player is loaded yet
     levelTimer += deltaTime;  //keep track of how long the player has been in this level
 
+    if(player.hearts <= 0 && galenActive){  //galen intercepts before game over to save player
+        player.hp = player.maxHp;
+        player.hearts = 1;
+        galenUsed = true;
+        galenActive = false;
+    }
+
     if(player.hearts <= 0){  //player ran out of hearts, game over
         player.hp = 0;
         gameOver = true;
@@ -471,7 +482,7 @@ function updateLevel(deltaTime){
                 archetype_id: selectedArchetypeId,
                 duration_seconds: Math.floor(levelTimer / 1000),
                 level_reached: currentLevel,
-                final_fame: window.loggedPlayer.fame, //  YA SIN SUMAS
+                final_fame: window.loggedPlayer.fame, 
                 life: player.hearts,
                 result: "WIN",
                 cards_in_deck: cardSystem.playerDeck.length
@@ -486,8 +497,6 @@ function updateLevel(deltaTime){
     }
 
     cameraX = updateCamera(player.position.x, canvasRef.width, worldWidth);  //move camera to follow player
-
-    let last = platforms[platforms.length - 1];
 
     if (currentLevel >= 2) 
         hazards.forEach(h => h.update(player, deltaTime));  //firepits active from level 2

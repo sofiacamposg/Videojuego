@@ -529,6 +529,43 @@ app.post("/shop/buy-heart", (req, res) => {
     );
 });
 
+//* buy galen's remedy, like a shield that can 'save' the player
+app.post("/shop/buy-galen", (req, res) => {
+    const { player_id } = req.body;
+
+    db.query("SELECT fame, galen FROM Player WHERE player_id = ?", [player_id], (err, result) => {
+        if (err) return res.status(500).send(err.message);  //? case1: edge case
+        if (result.length === 0) return res.status(404).json({ error: "Player not found" });  //?case2: edge case
+
+        const player = result[0];  //first result that match
+        if (player.fame < 30) //? case3: not enough fame
+            return res.status(400).json({ error: "Not enough fame" });  
+
+        db.query(  //? case4: player bought galen's remedy
+            "UPDATE Player SET fame = fame - 30, galen = galen + 1 WHERE player_id = ?",
+            [player_id],
+            (err2) => {
+                if (err2) return res.status(500).send(err2.message);
+                res.json({ success: true, fame: player.fame - 30, galen: player.galen + 1 });
+            }
+        );
+    });
+});
+
+//* the player used the galen's remedy in the match
+app.post("/player/use-galen", (req, res) => {
+    const { player_id } = req.body;  //which player used the remedy?
+
+    db.query(  //? case1: update quantity of remedies
+        "UPDATE Player SET galen = galen - 1 WHERE player_id = ?",
+        [player_id],
+        (err) => {
+            if (err) return res.status(500).send(err.message);  //? case2: edge case
+            res.json({ success: true });
+        }
+    );
+});
+
 app.post("/player/update-fame", (req, res) => {
     const { player_id, fame } = req.body;
 
