@@ -45,10 +45,26 @@ export async function saveMatch(data) {
         body: JSON.stringify(data)
     });
 
+    if (!res.ok) {
+        const text = await res.text();
+        console.error("MATCH ERROR:", text);
+        return;
+    }
+
     const result = await res.json();
+    window.lastMatchId = result.match_id;
 
-    window.lastMatchId = result.match_id;  // ESTO ES CLAVE
+    if (data.galenUsed) {
+        await fetch("http://localhost:3000/player/use-galen", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ player_id: data.player_id })
+        });
+    }
 
+    setTimeout(() => {
+        loadPlayerStats(window.loggedPlayer.player_id);
+    }, 200);
     return result;
 }
 
@@ -57,13 +73,13 @@ export function spawnEnemy(x, y, config){
     return new EnemyBase(new Vector(x,y), config);
 }
 export function generatePlatform(lastPlatform){
-    let minGap = 200;
-    let maxGap = 300;
+    let minGap = 300;
+    let maxGap = 400;
 
     let x = lastPlatform.x + Math.random() * (maxGap - minGap) + minGap;
     let y = lastPlatform.y + (Math.random() - 0.5) * 120;
 
-    if(y > 420) y = 420;
+    if(y > 400) y = 400;
     if(y < 380) y = 380;
 
     return {
@@ -107,22 +123,19 @@ export async function loadPlayerStats(playerId, currentScene) {
         else if (currentScene === "level3") levelText = 3;
         document.getElementById("level").textContent = levelText;
         document.getElementById("fame").textContent = data.current_fame || 0;
+        window.loggedPlayer.fame = data.current_fame; //sincroniza frontend con backend
         document.getElementById("kills").textContent = data.enemy_kills || 0;
         document.getElementById("cards").textContent = data.cards_in_deck || 0;
         document.getElementById("runs").textContent = data.total_runs;
         document.getElementById("wins").textContent = data.total_wins;
         document.getElementById("losses").textContent = data.total_losses;
+        document.getElementById("galen").textContent = data.galen;
     } catch (err) {
         console.error("Error loading player stats:", err);
     }
 }
 
 export function drawHealthBar(ctx, x, y, width, height, current, max) { //current from db and max is const
-    // background (lost health)
-    ctx.fillStyle = "green";
-    ctx.fillText("HP: " + current, 30, 70);
-
-
     ctx.fillStyle = "gray";
     ctx.fillRect(x, y, width, height);
 
@@ -133,6 +146,9 @@ export function drawHealthBar(ctx, x, y, width, height, current, max) { //curren
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
+
+    ctx.fillStyle = "white";
+    ctx.fillText("HP: " + current, x + 50, y + 20);
 };
 
 export function drawHearts(ctx, x, y, current, max) {
@@ -140,4 +156,22 @@ export function drawHearts(ctx, x, y, current, max) {
         ctx.fillStyle = i < current ? "red" : "gray";
         ctx.fillText("♥", x + i * 50, y);
     }
+}
+
+export function cardBanner(ctx, canvas, activeEffects, permanentEffects) {
+    if (activeEffects.length === 0 && permanentEffects.length === 0) return;
+    ctx.save();
+
+    ctx.fillStyle = "white";
+    ctx.font = "18px VT323";
+    ctx.textAlign = "right";
+    activeEffects.forEach((effect, i) => {
+        const secs = Math.ceil(effect.endTime / 1000);
+        ctx.fillText(`${effect.card.name} - ${effect.card.description || ""} (${secs}s)`, canvas.width - 10, 26 + i * 22);
+    });
+    permanentEffects.forEach((effect, i) => {
+        ctx.fillText(`${effect.card.name} - ${effect.card.description || ""}`, canvas.width - 10, 42 + i * 32);
+    });
+
+    ctx.restore();
 }

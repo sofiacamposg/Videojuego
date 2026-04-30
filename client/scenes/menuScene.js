@@ -17,6 +17,12 @@ const buttonSettings = {
     text: "SETTINGS"
 };
 
+const buttonShop = {
+    x: 500,
+    y: 550,
+    text: "SHOP"
+};
+
 let backgroundImage = new Image();
 backgroundImage.src = "./assets/Portada.png";
 
@@ -26,11 +32,13 @@ function drawMenu(ctx, canvas) {
 
     drawButton(ctx, buttonStart, mouseX, mouseY);
     drawButton(ctx, buttonSettings, mouseX, mouseY);
+    drawButton(ctx, buttonShop, mouseX, mouseY);
 }
 
 function handleClickMenu(ctx) {
     if (handleClick(mouseX, mouseY, buttonStart, ctx)) return "start";
     if (handleClick(mouseX, mouseY, buttonSettings, ctx)) return "settings";
+    if (handleClick(mouseX, mouseY, buttonShop, ctx)) return "shop";
     return null;
 }
 

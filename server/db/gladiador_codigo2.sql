@@ -21,10 +21,13 @@ CREATE TABLE Player (
     total_runs SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     total_losses SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     total_wins SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-    hearts SMALLINT UNSIGNED NOT NULL DEFAULT 1,    
+    hearts SMALLINT UNSIGNED NOT NULL DEFAULT 1,  -- players can buy more
+    galen SMALLINT UNSIGNED NOT NULL DEFAULT 0,  -- like a shield players can buy
     fame SMALLINT NOT NULL DEFAULT 0,  -- used to buy upgrades
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (player_id),
+    CONSTRAINT chk_hearts CHECK (hearts <= 5),
+    CONSTRAINT chk_galen CHECK (galen >= 0),
     CONSTRAINT chk_coins CHECK (fame >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -43,7 +46,7 @@ CREATE TABLE Archetype (
 CREATE TABLE Level (
     level_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
     level_number TINYINT UNSIGNED NOT NULL UNIQUE,
-    target_time SMALLINT UNSIGNED NOT NULL,
+    target_time INT UNSIGNED NOT NULL,
     description VARCHAR(120) NOT NULL,
     condition_enemies TINYINT UNSIGNED NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -187,7 +190,8 @@ SELECT
     COUNT(DISTINCT p.player_id) AS total_players,
     COUNT(m.match_id) AS total_matches,
     SUM(CASE WHEN m.result = 'WIN' THEN 1 ELSE 0 END) AS total_wins,
-    SUM(CASE WHEN m.result = 'LOSE' THEN 1 ELSE 0 END) AS total_losses
+    SUM(CASE WHEN m.result = 'LOSE' THEN 1 ELSE 0 END) AS total_losses,
+    SUM(p.hearts) - COUNT(DISTINCT p.player_id) AS total_hearts_bought
 FROM Player p
 LEFT JOIN MatchGame m ON p.player_id = m.player_id;
 
