@@ -24,8 +24,8 @@ let volumeOn = savedVolumeOn;
 let volumeLevel = savedVolumeLevel;
 
 // Cajas del toggle y barra de volumen
-const toggleBox = { x: 500, y: 280, w: 200, h: 60 };
-const volumeBar = { x: 500, y: 340, w: 300, h: 30 };
+const toggleBox = { x: 500, y: 300, w: 200, h: 60 };
+const volumeBar = { x: 500, y: 350, w: 300, h: 30 };
 
 // Caja del toggle de daltonismo
 const colorblindBox = { x: 500, y: 500, w: 200, h: 60 };

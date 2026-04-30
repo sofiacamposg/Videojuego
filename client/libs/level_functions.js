@@ -45,10 +45,14 @@ export async function saveMatch(data) {
         body: JSON.stringify(data)
     });
 
+    if (!res.ok) {
+        const text = await res.text();
+        console.error("MATCH ERROR:", text);
+        return; //  evita que truene el juego
+    }
+
     const result = await res.json();
-
-    window.lastMatchId = result.match_id;  
-
+    window.lastMatchId = result.match_id;
     return result;
 }
 
@@ -107,6 +111,7 @@ export async function loadPlayerStats(playerId, currentScene) {
         else if (currentScene === "level3") levelText = 3;
         document.getElementById("level").textContent = levelText;
         document.getElementById("fame").textContent = data.current_fame || 0;
+        window.loggedPlayer.fame = data.current_fame; //sincroniza frontend con backend
         document.getElementById("kills").textContent = data.enemy_kills || 0;
         document.getElementById("cards").textContent = data.cards_in_deck || 0;
         document.getElementById("runs").textContent = data.total_runs;

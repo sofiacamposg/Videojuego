@@ -275,23 +275,6 @@ app.post("/match", (req, res) => {
     });
 });
 
-app.post("/players", (req, res) => {  //? save fame after every run
-    const { player_id, fame_gained } = req.body;
-
-    if (!player_id || fame_gained == null) {
-        return res.status(400).json({ error: "player_id and fame_gained are required" });
-    }
-
-    const query = `UPDATE Player SET fame = fame + ? WHERE player_id = ?`;
-
-    db.query(query, [fame_gained, player_id], (err, result) => {
-        if (err) return res.status(500).send(err.message);
-        if (result.affectedRows === 0) return res.status(404).json({ error: "Player not found" });
-
-        res.json({ success: true });
-    });
-});
-
 
 //POST, register card ussage (Deck)
 app.post("/deck", (req, res) => {
@@ -380,22 +363,31 @@ app.get("/stats", (req, res) => {
 
 //================== PLAYER CURRENT STATE ====================
 app.get("/player/live/:id", (req, res) => {
-    db.query(
-        "SELECT * FROM vw_player_current_state WHERE player_id = ?",
-        [req.params.id],
-        (err, result) => {
-            if (err) {
-                console.log("ERROR:", err);
-                return res.status(500).send(err.message);
-            }
+    const id = req.params.id;
 
-            if (result.length === 0) {
-                return res.status(404).json({ error: "Player not found" });
-            }
+    const query = `
+        SELECT 
+            p.player_id,
+            p.username,
+            p.fame AS current_fame,
+            (SELECT COUNT(*) FROM MatchGame WHERE player_id = p.player_id) AS total_runs,
+            (SELECT COUNT(*) FROM MatchGame WHERE player_id = p.player_id AND result = 'WIN') AS total_wins,
+            (SELECT COUNT(*) FROM MatchGame WHERE player_id = p.player_id AND result = 'LOSE') AS total_losses,
+            0 AS enemy_kills,
+            0 AS cards_in_deck,
+            0 AS current_level
+        FROM Player p
+        WHERE p.player_id = ?
+    `;
 
-            res.json(result[0]);
+    db.query(query, [id], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send(err.message);
         }
-    );
+
+        res.json(result[0]);
+    });
 });
 
 //LEVEL CONFIGS, ARCHETYPE, ENEMIES, LEVEL
@@ -478,19 +470,6 @@ app.listen(3000, () => {
     console.log("Servidor en http://localhost:3000 ");
 });
 
-//ON GAME OVER RESET DECK ROGUELITE
-//Erase deck
-app.delete("/player/deck/:id", (req, res) => {
-    db.query(
-        "DELETE FROM LevelCard WHERE player_id = ?",
-        [req.params.id],
-        (err) => {
-            if (err) return res.status(500).send(err);
-            res.json({ success: true });
-        }
-    );
-});
-
 //SHOPPING HEARTS MECHANICS FOR ROGUELITE
 //Being able to buy hearts
 app.post("/shop/buy-heart", (req, res) => {
@@ -528,6 +507,27 @@ app.post("/shop/buy-heart", (req, res) => {
                     });
                 }
             );
+        }
+    );
+});
+
+app.post("/player/update-fame", (req, res) => {
+    const { player_id, fame } = req.body;
+
+    if (!player_id || fame == null) {
+        return res.status(400).json({ error: "Missing data" });
+    }
+
+    db.query(
+        "UPDATE Player SET fame = fame + ? WHERE player_id = ?",
+        [fame, player_id],
+        (err, result) => {
+            if (err) return res.status(500).send(err.message);
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: "Player not found" });
+            }
+
+            res.json({ success: true });
         }
     );
 });

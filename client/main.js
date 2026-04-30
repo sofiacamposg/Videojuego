@@ -54,6 +54,30 @@ function updateLiveStats() {
     document.getElementById("cards").textContent = cards;
 }
 
+function resetPanel() {
+    document.getElementById("username").textContent = "-";
+    document.getElementById("level").textContent = "-";
+    document.getElementById("kills").textContent = "-";
+    document.getElementById("fame").textContent = "-";
+    document.getElementById("cards").textContent = "-";
+    document.getElementById("runs").textContent = "-";
+    document.getElementById("wins").textContent = "-";
+    document.getElementById("losses").textContent = "-";
+}
+
+function logout() {
+    window.loggedPlayer = null;
+    localStorage.removeItem("player");
+
+    resetLogIn();
+    resetSelect();
+    resetLevel();
+    resetPanel();
+
+    currentPlayer = null;
+    selectedCharacter = null;
+}
+
 //FUNCTION MAIN
 function main() {
     canvas = document.getElementById("canvas");
@@ -67,11 +91,18 @@ function main() {
         //MENU SCENE
         if(currentScene === 'menu'){
             clicked = handleClickMenu(ctx);
-            if (clicked === 'start') currentScene = 'login';
+            if (clicked === 'start') {
+                    loginFromShop = false;
+                    resetLogIn();
+                    resetPanel();
+                    currentScene = 'login';
+            }
             if (clicked === 'settings') currentScene = 'settings'; 
             if (clicked === 'shop') {
                 if (!window.loggedPlayer) {
-                    loginFromShop = true;   
+                    loginFromShop = true;
+                    resetLogIn();   
+                    resetPanel();
                     currentScene = "login";
                 } else {
                     currentScene = "shop";
@@ -93,9 +124,9 @@ function main() {
             clicked = handleClickLogIn(ctx, () => {
             if (loginFromShop) {
                 //API
-                setTimeout(() => {
-                    loadPlayerStats(window.loggedPlayer.player_id, currentScene);
-                }, 500);
+                (async () => {
+                    await loadPlayerStats(window.loggedPlayer.player_id, currentScene);
+                })();
                 loginFromShop = false;
                 currentScene = "shop";   //  regresa a shop
             } else {
@@ -113,6 +144,7 @@ function main() {
                 currentScene = 'menu';
             }
             if (clicked === 'create'){
+                resetLogIn();
                 currentScene = 'createAccount';
             }
         }
@@ -125,12 +157,16 @@ function main() {
             }
             if(clicked === 'login') currentScene = 'login'; 
             if(clicked === 'confirm') {
-                currentScene = 'login';
                 resetLogIn();
+                currentScene = 'login';
             }
         }
         //SELECT CHARACTER
         else if (currentScene === 'start'){
+            if (!window.loggedPlayer) {
+                currentScene = "login";
+                return;
+            }
             clicked = handleClickSelect(ctx); 
             if(clicked === 'back'){
                 resetSelect(); 
@@ -151,9 +187,7 @@ function main() {
             clicked = handleClickLevel(ctx); 
             if(goToMenu){  //player clicked Home from the pause menu
                 resetGoToMenu();
-                resetLogIn();
-                resetSelect();
-                resetLevel();
+                logout();
                 currentScene = "menu";
             }
         }
@@ -161,16 +195,25 @@ function main() {
         else if(currentScene === "score"){
             clicked = handleClickScoreScene();
             if(clicked === "exit"){
-                currentScene = "menu";
-                resetScoreScene();
+                (async () => {
+                    await loadPlayerStats(window.loggedPlayer.player_id, "menu");
+                    currentScene = "menu";
+                    resetScoreScene();
+                })();
             }
             if(clicked === "again"){
+                console.log("ANTES DE CREAR PLAYER:", window.loggedPlayer.fame);
                 resetLevel();
-                resetScoreScene();
-                //Creates player again
-                setSelectedCharacter(selectedCharacter);
-                currentPlayer = getPlayer();
-                currentScene = "level1";
+                (async () => {
+                    await loadPlayerStats(window.loggedPlayer.player_id, "level1");
+
+                    resetScoreScene();
+
+                    // Creates player again
+                    setSelectedCharacter(selectedCharacter);
+                    currentPlayer = getPlayer();
+                    currentScene = "level1";
+                })();
             }
         }
         //SHOP SCENE
@@ -246,6 +289,11 @@ function gameLoop(newTime) {
         if(goToScore){  //levelBase signals game complete after level 3 deck preview
             currentScene = 'score';
             resetGoToScore();
+        }
+        else if(goToMenu){
+            currentScene = 'menu';
+            resetGoToMenu();
+            resetLevel();
         }
     }
     else if(currentScene === 'score')  drawScoreScene(ctx,canvas,deltaTime);
