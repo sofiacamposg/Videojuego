@@ -45,10 +45,14 @@ export async function saveMatch(data) {
         body: JSON.stringify(data)
     });
 
+    if (!res.ok) {
+        const text = await res.text();
+        console.error("MATCH ERROR:", text);
+        return; //  evita que truene el juego
+    }
+
     const result = await res.json();
-
-    window.lastMatchId = result.match_id;  // ESTO ES CLAVE
-
+    window.lastMatchId = result.match_id;
     return result;
 }
 
@@ -106,8 +110,8 @@ export async function loadPlayerStats(playerId, currentScene) {
         else if (currentScene === "level2") levelText = 2;
         else if (currentScene === "level3") levelText = 3;
         document.getElementById("level").textContent = levelText;
-        document.getElementById("fame").textContent = data.fame || 0;
-        window.loggedPlayer.fame = data.fame || 0; //sincroniza frontend con backend
+        document.getElementById("fame").textContent = data.current_fame || 0;
+        window.loggedPlayer.fame = data.current_fame; //sincroniza frontend con backend
         document.getElementById("kills").textContent = data.enemy_kills || 0;
         document.getElementById("cards").textContent = data.cards_in_deck || 0;
         document.getElementById("runs").textContent = data.total_runs;
@@ -141,4 +145,13 @@ export function drawHearts(ctx, x, y, current, max) {
         ctx.fillStyle = i < current ? "red" : "gray";
         ctx.fillText("♥", x + i * 50, y);
     }
+}
+
+export function cardBanner(ctx, canvas, x, y, activeEffects) {
+    if (activeEffects.length === 0) return;
+
+    ctx.save();
+    ctx.fillStyle = "rgba(255, 174, 75, 0.62)";
+    ctx.fillRect(0, 0, canvas.width, 100);
+    ctx.restore();
 }

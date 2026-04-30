@@ -16,6 +16,12 @@ import {
     cardSystem
 } from "./scenes/levelBase.js";  //live stats come from levelBase now
 
+const savedPlayer = localStorage.getItem("player");
+
+if (savedPlayer) {
+    window.loggedPlayer = JSON.parse(savedPlayer);
+    console.log("PLAYER RESTORED:", window.loggedPlayer);
+}
 const canvasWidth = 1000;
 const canvasHeight = 600;
 
@@ -93,9 +99,9 @@ function main() {
             clicked = handleClickLogIn(ctx, () => {
             if (loginFromShop) {
                 //API
-                setTimeout(() => {
-                    loadPlayerStats(window.loggedPlayer.player_id, currentScene);
-                }, 500);
+                (async () => {
+                    await loadPlayerStats(window.loggedPlayer.player_id, currentScene);
+                })();
                 loginFromShop = false;
                 currentScene = "shop";   //  regresa a shop
             } else {
@@ -161,19 +167,25 @@ function main() {
         else if(currentScene === "score"){
             clicked = handleClickScoreScene();
             if(clicked === "exit"){
-                currentScene = "menu";
-                resetScoreScene();
+                (async () => {
+                    await loadPlayerStats(window.loggedPlayer.player_id, "menu");
+                    currentScene = "menu";
+                    resetScoreScene();
+                })();
             }
             if(clicked === "again"){
-                await loadPlayerStats(window.loggedPlayer.player_id, "level1");
-
+                console.log("ANTES DE CREAR PLAYER:", window.loggedPlayer.fame);
                 resetLevel();
-                resetScoreScene();
+                (async () => {
+                    await loadPlayerStats(window.loggedPlayer.player_id, "level1");
 
-                //Creates player again
-                setSelectedCharacter(selectedCharacter);
-                currentPlayer = getPlayer();
-                currentScene = "level1";
+                    resetScoreScene();
+
+                    // Creates player again
+                    setSelectedCharacter(selectedCharacter);
+                    currentPlayer = getPlayer();
+                    currentScene = "level1";
+                })();
             }
         }
         //SHOP SCENE

@@ -33,7 +33,7 @@ backgroundImage.src = currentLevelConfig.background;
 let player
 let keysDown = {};
 let jumpPressed = false;
-let killedEnemies = 0;
+let killedEnemies = 5;
 let spawnTimer = 0;  //we check spawntimer and interval to know when to spawn a new enemy
 let spawnInterval = 2800;  
 //? music
@@ -70,7 +70,7 @@ function drawPlatforms(ctx){  //draw all the platforms in the array
         ctx.drawImage(platformImage, p.x, p.y - 70, p.width, p.height);
     });
 }
-//? hazards — spikes on level 2, firepits on level 3
+//? hazards, spikes on level 2, firepits on level 3
 let hazards = [];  //array to store platforms displayed
 function initHazards(){
     hazards = [];
@@ -155,20 +155,18 @@ let gameOver = false;  //screen and config when hearts = 0
         matchSaved = true;
         await saveMatch({
             player_id: window.loggedPlayer.player_id,
-            archetype_id: selectedArchetypeId, 
+            archetype_id: selectedArchetypeId,
             duration_seconds: Math.floor(levelTimer / 1000),
             level_reached: currentLevel,
-            final_fame: player.fame,
+            final_fame: window.loggedPlayer.fame,
             life: Math.max(0, player.hearts),
             result: "LOSE",
             kills: killedEnemies,
             cards_in_deck: cardSystem.playerDeck.length
-        });
 
-        await fetch(`http://localhost:3000/player/deck/${window.loggedPlayer.player_id}`, {
-            method: "DELETE"
         });
-    }
+        await loadPlayerStats(window.loggedPlayer.player_id, "score");
+    }   
 
     gameOverBox.addButton("Home", 440, 400, 120, 35, async () => {
         await handleLose();
@@ -300,7 +298,7 @@ function drawLevel(ctx, canvas, deltaTime){
     for(let i = 0; i < worldWidth; i += canvas.width){  //duplicate the background image to fill the whole world
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); }
 
-    if(!isPaused && !levelCompleted && (!cardSystem.isActive || showDeckPreview) 
+    if(!isPaused && (!cardSystem.isActive || showDeckPreview) 
         && !spikesWarningBox.visible && !gameOver){  //only run game logic when not paused, not between levels, and no card menu is open
         updateLevel(deltaTime);
     }
@@ -387,6 +385,7 @@ function drawLevel(ctx, canvas, deltaTime){
     }
 }
 function updateLevel(deltaTime){
+
     if (!player) return;  //skip if no player is loaded yet
     levelTimer += deltaTime;  //keep track of how long the player has been in this level
 
@@ -421,11 +420,12 @@ function updateLevel(deltaTime){
 
     player.attackEnemy(enemies);  //check if player hit any enemy this frame
 
-    let totalLenEnemies = enemies.length;
+    let totalLenEnemies = enemies.length;  //enemies now
     enemies = enemies.filter(alive => !alive.isDying);  //remove dead enemies
-    let killsThisFrame = totalLenEnemies - enemies.length;
-    killedEnemies += killsThisFrame;
-    if (killsThisFrame >= 1 && !cardSystem.cardBox.visible && killedEnemies < currentLevelConfig.conditionEnemies) {
+    let killsThisFrame = totalLenEnemies - enemies.length;  //enemies killed
+    killedEnemies += killsThisFrame;  //update counter 
+    if (!cardEventTriggered && !cardSystem.cardBox.visible && levelTimer >= randomEventTime) {
+        cardEventTriggered = true;
         triggerCardEvent();
     }
 
@@ -438,36 +438,50 @@ function updateLevel(deltaTime){
         spawnTimer = 0;
     }
 
-    if(killedEnemies >= currentLevelConfig.conditionEnemies && !levelCompleted){  //level done
+    if(killedEnemies >= currentLevelConfig.conditionEnemies && !levelCompleted && !matchSaved){  //level done
         levelCompleted = true;
+        matchSaved = true;
         currentLevel ++;
         updateFame(player, currentLevelConfig, levelTimer);  //give "coins" (fame) for the time spent in the level
 
-// ← NUEVO: guarda la fama ganada en la DB
-const fameGained = levelTimer <= currentLevelConfig.targetTime ? 10 : 5;
-fetch("http://localhost:3000/player/update-fame", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-        player_id: window.loggedPlayer.player_id,
-        fame: fameGained
-    })
-});
-window.loggedPlayer.fame = (window.loggedPlayer.fame || 0) + fameGained;
-        giveLevelRewards();  //give the player their reward cards
-        levelCompletedBox.show();
-        saveMatch({  //save the match result to the db
-            player_id: window.loggedPlayer.player_id,
-            archetype_id: selectedArchetypeId,
-            duration_seconds: Math.floor(levelTimer / 1000),
-            level_reached: currentLevel,
-            final_fame: player.fame,
-            life: player.hearts,
-            result: "WIN",
-            kills: killedEnemies,
-            cards_in_deck: cardSystem.playerDeck.length
-        });
-        loadPlayerStats(window.loggedPlayer.player_id, `level${currentLevel - 1}`);  //refresh live stats
+        // ← NUEVO: guarda la fama ganada en la DB
+       const fameGained = levelTimer <= currentLevelConfig.targetTime ? 10 : 5;
+
+        (async () => {
+            
+            // 1. actualizar DB
+
+            await fetch("http://localhost:3000/player/update-fame", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    player_id: window.loggedPlayer.player_id,
+                    fame: fameGained
+                })
+            });
+
+            // 2. recargar datos reales
+            await loadPlayerStats(window.loggedPlayer.player_id, "level1");
+
+            // 3. sincronizar player
+            player.fame = window.loggedPlayer.fame;
+
+            // 4. guardar match CORRECTO
+            await saveMatch({
+                player_id: window.loggedPlayer.player_id,
+                archetype_id: selectedArchetypeId,
+                duration_seconds: Math.floor(levelTimer / 1000),
+                level_reached: currentLevel,
+                final_fame: window.loggedPlayer.fame, //  YA SIN SUMAS
+                life: player.hearts,
+                result: "WIN",
+                kills: killedEnemies,
+                cards_in_deck: cardSystem.playerDeck.length
+            });
+
+            // 5. actualizar score panel
+            await loadPlayerStats(window.loggedPlayer.player_id, "score");
+        })();
     }
 
     cameraX = updateCamera(player.position.x, canvasRef.width, worldWidth);  //move camera to follow player
@@ -483,12 +497,14 @@ window.loggedPlayer.fame = (window.loggedPlayer.fame || 0) + fameGained;
     cardSystem.update(deltaTime);  //tick card timers and effects
     imperialDecree(game, enemies);  //check if the imperial decree card effect needs to fire
 }
+
 //* handlers
 function handleMouseMoveLevel(event, canvas){
     const pos = handleMouseMove(event, canvas);
     mouseX = pos.x;
     mouseY = pos.y;
 }
+
 function handleClickLevel(){
     if(levelCompleted){
         return levelCompletedBox.handleClick(mouseX, mouseY);
@@ -536,12 +552,6 @@ function handleKeyDownLevel(event){
 
     keysDown[event.key] = true;
 
-    if(event.key === "ArrowLeft"){  //TODO no funciona :(
-        event.preventDefault();
-    }
-    if(event.key === "ArrowRight"){
-        event.preventDefault();
-    }
     if(event.key === "c" || event.key === "C"){
         event.preventDefault()
         cardSystem.toggleDeck();
@@ -642,7 +652,7 @@ function resetLevel(){
     cameraX = 0;
     spawnTimer = 0;
     levelTimer = 0;
-    randomEventTime = Math.random() * (40000 - 20000) + 20000;
+    randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);  //when will the event trigger
     cardEventTriggered = false;
     cardSystem.clearPermanentEffects();  //undo any permanent card effect before restarting
     cardSystem.close();
