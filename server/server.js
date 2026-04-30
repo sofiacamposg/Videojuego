@@ -100,29 +100,32 @@ app.post("/register", (req, res) => {
     // if username starts with @dm1n_, register as admin in Statistics instead of Player
     if (username.startsWith("@dm1n_")) {
         const cleanUsername = username.slice(6);  // strip the 6-char prefix
-        db.query("SELECT * FROM Statistics WHERE username = ?", [cleanUsername], (err, result) => {
-            if (err) return res.status(500).send("Server error");  //case1: check for errors
-            if (result.length > 0) return res.status(400).send("Admin already exists");  //case2: check if is an existing credential
-            //case3: insert in admin table
-            db.query("INSERT INTO Statistics (name, username, password) VALUES (?, ?, ?)", [name, cleanUsername, password], (err) => {
-                if (err) return res.status(500).send("Insert error");  //case3.1: error w server
-                console.log("ADMIN CREATED:", cleanUsername);  //case3.2: insert successfull
-                return res.json({ success: true, role: "admin" });
-            });
+        db.query("SELECT * FROM Player WHERE username = ?", [username], (err, result) => {
+            if (err) return res.status(500).send("Server error");
+            if (result.length > 0) return res.status(400).send("User already exists");
+            db.query("INSERT INTO Player (name, username, password) VALUES (?, ?, ?)", [name, username, password], (err, insertResult) => {
+        if (err) return res.status(500).send("Insert error");
+        console.log("USER CREATED:", username);
+        // fetch the newly created player to return their full data
+        db.query("SELECT * FROM Player WHERE player_id = ?", [insertResult.insertId], (err2, playerResult) => {
+            if (err2) return res.status(500).send("Fetch error");
+            res.json({ ...playerResult[0], role: "player" });
         });
+    });
+    });
         return;  // stop here so the player register code below doesn't run
     }
 
     // regular player registration, 
-    db.query("SELECT * FROM Player WHERE username = ?", [username], (err, result) => {
-        if (err) return res.status(500).send("Server error");
-        if (result.length > 0) return res.status(400).send("User already exists");
-        db.query("INSERT INTO Player (name, username, password) VALUES (?, ?, ?)", [name, username, password], (err) => {
-            if (err) return res.status(500).send("Insert error");
-            console.log("USER CREATED:", username);
-            res.json({ success: true, role: "player" });
-        });
-    });
+    db.query(
+        "SELECT * FROM Player WHERE player_id = ?",
+        [newPlayerId],
+        (err2, result2) => {
+            if (err2) return res.status(500).send("Fetch error");
+
+            return res.json({ ...result2[0], role: "player" });
+        }
+    );
 });
 
 // GET Archetypes for select scene
@@ -385,6 +388,20 @@ app.get("/player/live/:id", (req, res) => {
             console.error(err);
             return res.status(500).send(err.message);
         }
+        //for new users
+        if (result.length === 0) {
+            return res.json({
+                player_id: id,
+                username: "",
+                current_fame: 0,
+                total_runs: 0,
+                total_wins: 0,
+                total_losses: 0,
+                enemy_kills: 0,
+                cards_in_deck: 0,
+                current_level: 0
+            });
+        }
 
         res.json(result[0]);
     });
@@ -419,13 +436,9 @@ app.get("/player/stats/:id", (req, res) => {
             SUM(m.result = 'WIN') as total_wins,
             SUM(m.result = 'LOSE') as total_losses,
             COALESCE(AVG(m.duration_seconds), 0) as avg_duration,
-            COALESCE(MAX(m.final_fame), 0) as best_score,
-
-            COALESCE(SUM(
-                (SELECT COUNT(*) 
-                FROM SpecificLevel sl 
-                WHERE sl.match_id = m.match_id AND sl.finished = TRUE)
-            ), 0) as total_kills
+            COALESCE(
+                MIN(CASE WHEN m.result = 'WIN' THEN m.duration_seconds END),
+            0) as best_score
 
         FROM MatchGame m
         WHERE m.player_id = ?
@@ -449,11 +462,13 @@ app.get("/global/stats", (req, res) => {
             SUM(m.result = 'LOSE') AS losses,
             COALESCE(AVG(m.duration_seconds), 0) AS avg_duration,
             COALESCE(MAX(m.final_fame), 0) AS best_score,
-            COALESCE(AVG(
-                (SELECT COUNT(*) 
-                 FROM SpecificLevel sl 
-                 WHERE sl.match_id = m.match_id AND sl.finished = TRUE)
-            ), 0) AS avg_kills
+            COALESCE(
+                AVG(
+                    (SELECT COUNT(*) 
+                    FROM SpecificLevel sl 
+                    WHERE sl.match_id = m.match_id AND sl.finished = TRUE)
+                ), 0
+            ) AS avg_kills
         FROM MatchGame m
     `;
 

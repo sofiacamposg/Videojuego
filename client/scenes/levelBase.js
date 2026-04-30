@@ -161,7 +161,6 @@ let gameOver = false;  //screen and config when hearts = 0
             final_fame: window.loggedPlayer.fame,
             life: Math.max(0, player.hearts),
             result: "LOSE",
-            kills: killedEnemies,
             cards_in_deck: cardSystem.playerDeck.length
 
         });
@@ -196,8 +195,8 @@ function setSelectedCharacter(selectedCharacter){
         playerConfigs[selectedCharacter]
     );
     player.fame = window.loggedPlayer.fame || 0; 
-    player.hearts = window.loggedPlayer.hearts;
-    player.maxHearts = window.loggedPlayer.hearts;
+    player.hearts = window.loggedPlayer.hearts || 1;
+    player.maxHearts = window.loggedPlayer.hearts || 1;
     initPlatforms();
 }
 let enemies = currentLevelConfig.spawnPositions.map(pos =>
@@ -474,7 +473,6 @@ function updateLevel(deltaTime){
                 final_fame: window.loggedPlayer.fame, //  YA SIN SUMAS
                 life: player.hearts,
                 result: "WIN",
-                kills: killedEnemies,
                 cards_in_deck: cardSystem.playerDeck.length
             });
 
