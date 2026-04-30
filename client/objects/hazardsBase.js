@@ -3,6 +3,9 @@ import { AnimatedObject } from "../libs/AnimatedObject.js";
 import { Rect } from "../libs/Rect.js";
 import { Vector } from "../libs/Vector.js";
 
+const fireSound = new Audio("./assets/music/fire.mp3");
+fireSound.volume = 0.5;
+
 class HazardBase extends AnimatedObject {
     constructor(x, y, w, h) {
         super(new Vector(x + w/2, y + h), w, h, "transparent", "hazard", 2);
@@ -53,6 +56,25 @@ class FirePit extends HazardBase {
         this.spriteRect = new Rect(0, 0, 650, 350);
         this.setAnimation(0, 1, true, 600);
     }
+
+    update(player, deltaTime) {
+        this.updateAnimation(deltaTime);
+        if (this.damageCooldown > 0) {
+            this.damageCooldown -= deltaTime;
+            return;
+        }
+        this.attackHitbox = {
+            x: this.position.x - this.halfSize.x * this.scale,
+            y: this.position.y - this.size.y * this.scale,
+            width: this.size.x * this.scale,
+            height: this.size.y * this.scale,
+        };
+        if (hitboxOverlap(this.attackHitbox, player)) {
+            player.takeDamage(this.damage);
+            fireSound.currentTime = 0;
+            fireSound.play();
+            this.damageCooldown = this.damageCooldownMax;
+        }
+    }
 }
 export { Spikes, FirePit };
-

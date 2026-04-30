@@ -43,6 +43,10 @@ const gameOverSound = new Audio("./assets/music/game_over.mp3");
 gameOverSound.volume = 0.5;
 const victoriaSound = new Audio("./assets/music/victoria.mp3");
 victoriaSound.volume = 0.5;
+const pauseSound = new Audio("./assets/music/menu_sound.mp3");
+pauseSound.volume = 0.5;
+const alarmSound = new Audio("./assets/music/alarm.mp3");
+alarmSound.volume = 0.5;
 
 //? card system
 let cardEventTriggered = false;  //mid game event
@@ -247,29 +251,22 @@ async function triggerCardEvent(){  //? uses array from generateCardOptions when
         duration: apiCard.duration,
         image: cardImages[apiCard.card_name] || null,  //grab the sprite that matches the card name
 
-        //instead of calling applyEffect right now, we store it as a recipe to run later
-        //apicard stays inside (closure) so it remembers which card's data to use
-        // it only actually runs when the player confirms their pick
         applyEffect: (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
-        //all cards have reverse effect, to the specific time when temporal, or reset when level ends
         removeEffect: (player, enemies, game) => reverseEffect(apiCard, player, enemies, game),  
     }));
     cardSystem.show(convertedCards, player, enemies, game);  //show cards for the player to select
 }
 async function giveLevelRewards(){  //? reward cards, depending on fame, after level completition
-    //if levelTimer is lower than targetTime, the user gets 2 power ups 
     const rewardCount = levelTimer < currentLevelConfig.targetTime ? 2 : 1;
     try {
         const response = await fetch("http://localhost:3000/cards/random");  //ask the server for random cards
         if(!response.ok) throw new Error("API failed");  //edge case
         const data = await response.json();
        
-        //cards offered in this levels mid-game event, excludes them from rewards so the same card can't appear twice in the same level
         const eventIds = new Set(cardOptions.map(c => c.card_id));
-        const powerUps = data.filter(c => c.effect_type === "POWER_UP" && c.duration_type === "TEMPORARY" && !eventIds.has(c.card_id)); //rewards are only temporary power ups not shown in this level's event
-        const shuffled = powerUps.sort(() => Math.random() - 0.5);  //mix the powerups to obtain different options everytime
+        const powerUps = data.filter(c => c.effect_type === "POWER_UP" && c.duration_type === "TEMPORARY" && !eventIds.has(c.card_id));
+        const shuffled = powerUps.sort(() => Math.random() - 0.5);
 
-        //take only the first rewardCount cards and add each one to the player's deck
         cardSystem.rewardCards = [];
         shuffled.slice(0, rewardCount).forEach(apiCard => {
             const card = {
@@ -278,11 +275,7 @@ async function giveLevelRewards(){  //? reward cards, depending on fame, after l
                 type: apiCard.effect_type,
                 duration: apiCard.duration,
                 image: cardImages[apiCard.card_name] || null,
-                //instead of calling applyEffect right now, we store it as a recipe to run later
-                //apicard stays inside (closure) so it remembers which card's data to use
-                // it only actually runs when the player confirms their pick
                 applyEffect: (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
-                //all cards have reverse effect, to the specific time when temporal, or reset when level ends
                 removeEffect: (player, enemies, game) => reverseEffect(apiCard, player, enemies, game),
             };
             cardSystem.playerDeck.push(card);
@@ -449,13 +442,9 @@ function updateLevel(deltaTime){
         currentLevel ++;
         updateFame(player, currentLevelConfig, levelTimer);  //give "coins" (fame) for the time spent in the level
 
-        // ← NUEVO: guarda la fama ganada en la DB
-       const fameGained = levelTimer <= currentLevelConfig.targetTime ? 10 : 5;
+        const fameGained = levelTimer <= currentLevelConfig.targetTime ? 10 : 5;
 
         (async () => {
-            
-            // 1. actualizar DB
-
             await fetch("http://localhost:3000/player/update-fame", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -465,26 +454,22 @@ function updateLevel(deltaTime){
                 })
             });
 
-            // 2. recargar datos reales
             await loadPlayerStats(window.loggedPlayer.player_id, "level1");
 
-            // 3. sincronizar player
             player.fame = window.loggedPlayer.fame;
 
-            // 4. guardar match CORRECTO
             await saveMatch({
                 player_id: window.loggedPlayer.player_id,
                 archetype_id: selectedArchetypeId,
                 duration_seconds: Math.floor(levelTimer / 1000),
                 level_reached: currentLevel,
-                final_fame: window.loggedPlayer.fame, //  YA SIN SUMAS
+                final_fame: window.loggedPlayer.fame,
                 life: player.hearts,
                 result: "WIN",
                 kills: killedEnemies,
                 cards_in_deck: cardSystem.playerDeck.length
             });
 
-            // 5. actualizar score panel
             await loadPlayerStats(window.loggedPlayer.player_id, "score");
         })();
     }
@@ -546,6 +531,8 @@ function handleKeyDownLevel(event){
         }
         isPaused = !isPaused;
         if(isPaused){
+            pauseSound.currentTime = 0;
+            pauseSound.play();
             pauseBox.show();
         } else {
             pauseBox.hide();
@@ -592,17 +579,20 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
     deckPreviewTimer = 0;
     levelCompletedBox.hide();
     //show spikes warning on level 2
-    if(currentLevel === 2){
+if(currentLevel === 2){
     spikesWarningPulse = 0;
     spikesWarningBox.title = "ATTENTION GLADIATOR!!!";
     spikesWarningBox.message = "THERE ARE SPIKES IN THE SAND NOW!\n TRY NOT TO STEP ON THEM OR YOU'LL LOSE LIFE!.";
+    alarmSound.currentTime = 0;
+    alarmSound.play();
     spikesWarningBox.show();
 }
-    //show spikes warning on level 2 and firepits on level 3
-    if(currentLevel === 3){
+if(currentLevel === 3){
     spikesWarningPulse = 0;
     spikesWarningBox.title = "ATTENTION GLADIATOR!!!";
     spikesWarningBox.message = "THERE ARE NOW SPIKES AND FIRE PITS IN THE ARENA!\n AVOID BOTH OR YOU'LL LOSE LIFE QUICKLY!.";
+    alarmSound.currentTime = 0;
+    alarmSound.play();
     spikesWarningBox.show();
 }
 
@@ -657,7 +647,7 @@ function resetLevel(){
     cameraX = 0;
     spawnTimer = 0;
     levelTimer = 0;
-    randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);  //when will the event trigger
+    randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);
     cardEventTriggered = false;
     cardSystem.clearPermanentEffects();  //undo any permanent card effect before restarting
     cardSystem.close();
