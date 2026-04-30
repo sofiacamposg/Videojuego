@@ -677,6 +677,8 @@ function resetLevel(){
     randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);  //when will the event trigger
     cardEventTriggered = false;
     cardSystem.clearPermanentEffects();  //undo any permanent card effect before restarting
+    cardSystem.activeEffects = [];
+    cardSystem.playerDeck = [];
     cardSystem.close();
     cardSystem.isDeckOpen = false;
 }
