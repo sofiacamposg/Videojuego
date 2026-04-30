@@ -103,15 +103,7 @@ class cardsOnCanvas {
         saveCardUse(1, card.id, card.duration || 0); 
 
         //track the time so we can undo the effect later
-        if (card.duration && card.removeEffect) {  //case1: timed card, track it so we can undo it when the timer runs out
-            this.activeEffects.push({
-                card,
-                player: this._player,
-                enemies: this._enemies,
-                game: this._game,
-                endTime: card.duration
-            });
-        } else if (!card.duration && card.removeEffect) {  //case2: permanent card: track it so we can undo it when the level ends
+        if (!card.duration && card.removeEffect) {  //case2: permanent card: track it so we can undo it when the level ends
             this.permanentEffects.push({
                 card,
                 player: this._player,
@@ -217,6 +209,15 @@ class cardsOnCanvas {
                     const card = this.playerDeck[this.selectedDeckIndex];
                     card.applyEffect(this._player, this._enemies, this._game);
                     saveCardUse(1, card.id, card.duration || 0);
+                    if (card.duration && card.removeEffect) {  //added to show the banner (level_functions.js)
+                        this.activeEffects.push({
+                            card,
+                            player: this._player,
+                            enemies: this._enemies,
+                            game: this._game,
+                            endTime: card.duration
+                        });
+                    }
                     this.playerDeck.splice(this.selectedDeckIndex, 1);
                     this.selectedDeckIndex = -1;
                     this.isDeckOpen = false;

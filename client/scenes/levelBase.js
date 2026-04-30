@@ -4,9 +4,9 @@ import { MessageBox } from "../objects/MessageBox.js";
 import { cardsOnCanvas } from "../cards/cardsOnCanvas.js";
 import { applyEffect, reverseEffect, cardImages } from "../cards/Card.js";
 import { handleMouseMove, randomRange } from "../libs/game_functions.js";
-import { /*currentLevelConfig, level2Config, level3Config, */ getLevelConfig, playerConfigs } from "../libs/levelConfig.js";
+import { getLevelConfig, playerConfigs } from "../libs/levelConfig.js";
 import { spawnEnemy, generatePlatform, updateCamera, updateFame, drawFame, saveMatch, drawFog, imperialDecree,
-        loadPlayerStats, drawHealthBar, drawHearts } from "../libs/level_functions.js";
+        loadPlayerStats, drawHealthBar, drawHearts, cardBanner } from "../libs/level_functions.js";
 import { FirePit, Spikes } from "../objects/hazardsBase.js";
 "use strict"
 //* game core variables
@@ -308,14 +308,14 @@ function drawLevel(ctx, canvas, deltaTime){
     ctx.restore();  //undo the camera shift so next things draw at their normal position
 
     drawFog(ctx, canvas, game);  //amphitheatre fog effect
-    
+    cardBanner(ctx, canvas, cardSystem.activeEffects, cardSystem.permanentEffects);  //what cards are active?
     drawHealthBar(ctx, 30, 20, 100, 30, player.hp, player.maxHp);
     ctx.font = "50px VT323";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
     drawFame(ctx, 430, 40, player.fame);
+    
     //Timer
     let timePassed = levelTimer / 1000;
-    /*let timeLeft = Math.max(0, timeTarget - timePassed);*/
     let timeTarget = currentLevelConfig.targetTime / 1000;
     const timerDiv = document.getElementById("level-timer");
     if (timerDiv) {
@@ -354,7 +354,7 @@ function drawLevel(ctx, canvas, deltaTime){
         gameOverBox.draw(ctx);
         return;
     }
-    
+
     // cardsOnCanvas dibuja la selección de cartas y el deck del jugador
     if(levelCompleted){
         levelCompletedBox.draw(ctx);

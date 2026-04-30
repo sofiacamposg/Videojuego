@@ -122,7 +122,6 @@ export function drawHealthBar(ctx, x, y, width, height, current, max) { //curren
     ctx.fillStyle = "green";
     ctx.fillText("HP: " + current, 30, 70);
 
-
     ctx.fillStyle = "gray";
     ctx.fillRect(x, y, width, height);
 
@@ -142,10 +141,23 @@ export function drawHearts(ctx, x, y, current, max) {
     }
 }
 
-export function cardBanner(ctx, x, y, activeEffects) {
-    if (activeEffects.lenght === 0) return;
+export function cardBanner(ctx, canvas, activeEffects, permanentEffects) {
+    if (activeEffects.length === 0 && permanentEffects.length === 0) return;
     ctx.save();
-    ctx.fillStyle = "rgba(255, 174, 75, 0.62)";
-    ctx.fillRect(0, 0, canvas.width, 100);
+    //banner background
+    ctx.fillStyle = "rgba(48, 27, 0, 0.83)";
+    ctx.fillRect(0, 0, canvas.width, 70);
+    //active card names config
+    ctx.fillStyle = "white";
+    ctx.font = "18px VT323";
+    ctx.textAlign = "right";
+    activeEffects.forEach((effect, i) => {
+        const secs = Math.ceil(effect.endTime / 1000);
+        ctx.fillText(`${effect.card.name} ${effect.card.des} (${secs}s)`, canvas.width - 10, 26 + i * 22);
+    });
+    permanentEffects.forEach((effect, i) => {
+        ctx.fillText(`${effect.card.name}`, canvas.width - 10, 26 + i * 22);
+    });
+
     ctx.restore();
 }
