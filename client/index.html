@@ -116,7 +116,6 @@
                                 <tr><td>Losses</td><td id="hist-losses">-</td></tr>
                                 <tr><td>Avg Time</td><td id="hist-avg-time">-</td></tr>
                                 <tr><td>Best Score</td><td id="hist-best-score">-</td></tr>
-                                <tr><td>Total Kills</td><td id="hist-total-kills">-</td></tr>
                             </table>
                         </div>
                         <!-- PIE CHART -->
@@ -463,7 +462,6 @@
         document.getElementById("hist-losses").textContent = data.total_losses;
         document.getElementById("hist-avg-time").textContent = Number(data.avg_duration || 0).toFixed(1) + "s";
         document.getElementById("hist-best-score").textContent = data.best_score;
-        document.getElementById("hist-total-kills").textContent = data.total_kills;
 
         if (winLossChartInstance) winLossChartInstance.destroy();
         const chartCtx = document.getElementById("winLossChart").getContext("2d");

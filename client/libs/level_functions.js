@@ -53,6 +53,9 @@ export async function saveMatch(data) {
 
     const result = await res.json();
     window.lastMatchId = result.match_id;
+    setTimeout(() => {
+        loadPlayerStats(window.loggedPlayer.player_id);
+    }, 200);
     return result;
 }
 
