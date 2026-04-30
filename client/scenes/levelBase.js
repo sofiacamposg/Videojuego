@@ -296,7 +296,7 @@ function drawLevel(ctx, canvas, deltaTime){
     for(let i = 0; i < worldWidth; i += canvas.width){  //duplicate the background image to fill the whole world
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); }
 
-    if(!isPaused && (!cardSystem.isActive || !showDeckPreview) 
+    if(!isPaused && (!cardSystem.isActive || showDeckPreview) 
         && !spikesWarningBox.visible && !gameOver){  //only run game logic when not paused, not between levels, and no card menu is open
         updateLevel(deltaTime);
     }

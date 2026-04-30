@@ -90,7 +90,8 @@ export function getLevelConfig(level) {
             walkLeftSrc: `./assets/enemy${level}/walkLeft.png`,
             attackRightSrc: `./assets/enemy${level}/attackRight.png`,
             attackLeftSrc: `./assets/enemy${level}/attackLeft.png`,
-            deathSrc: `./assets/enemy${level}/death.png`,
+            deathLeftSrc: `./assets/enemy${level}/deathLeft.png`,
+            deathRightSrc: `./assets/enemy${level}/deathRight.png`,
         },
 
         spawnPositions: [
