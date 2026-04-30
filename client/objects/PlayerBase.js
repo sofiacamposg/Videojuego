@@ -69,7 +69,7 @@ class PlayerBase extends AnimatedObject {
 
     // card system
     this.canJump = true;
-    this.invincible = false;
+    this.invincible = true;
     this.hearts = 5;
     this.maxHearts = 5;
     this.range = 1;
@@ -173,7 +173,7 @@ class PlayerBase extends AnimatedObject {
   }
   
   takeDamage(hit){  //damage made by enemy, look EnemyBase to understand the whole logic
-    if (this.invincible) { this.invincible = false; return; }  //divine shield effect
+    if (this.invincible) { /*this.invincible = false; */return; }  //divine shield effect
     this.hp -= hit;
     if (this.hp <= 0) {
       if (this.doubleDeath) { this.hearts -= 1; this.doubleDeath = false; }  //senates judgment effect

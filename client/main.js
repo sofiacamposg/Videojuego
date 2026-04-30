@@ -150,16 +150,15 @@ function main() {
         }
         //CREATE ACCOUNT SCENE
         else if(currentScene === 'createAccount') {
-            clicked = handleClickCreateAccount(ctx);
+            clicked = handleClickCreateAccount(ctx, () => {
+                resetLogIn();
+                currentScene = 'login';
+            });
             if(clicked === 'back') {
                 resetCreateAccount();
                 currentScene = 'menu';
             }
-            if(clicked === 'login') currentScene = 'login'; 
-            if(clicked === 'confirm') {
-                resetLogIn();
-                currentScene = 'login';
-            }
+            if(clicked === 'login') currentScene = 'login';
         }
         //SELECT CHARACTER
         else if (currentScene === 'start'){

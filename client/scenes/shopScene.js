@@ -132,12 +132,12 @@ export async function handleClickShop() {
         const data = await res.json();
 
         if (res.ok && data.success) {
-    window.loggedPlayer.fame = data.fame;
-    window.loggedPlayer.hearts = data.hearts;
-    message = "❤️ Heart purchased!";
-    const fameEl = document.getElementById("fame");
-    if (fameEl) fameEl.textContent = data.fame;
-} else {
+            window.loggedPlayer.fame = data.fame;
+            window.loggedPlayer.hearts = data.hearts;
+            message = "❤️ Heart purchased!";
+            const fameEl = document.getElementById("fame");
+            if (fameEl) fameEl.textContent = data.fame;
+        } else {
             message = data.error || "Not enough fame";
         }
     }
