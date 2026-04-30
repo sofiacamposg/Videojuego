@@ -39,6 +39,11 @@ let spawnInterval = 2800;
 //? music
 const swordSound = new Audio("./assets/music/ataque_espada.mp3");  //attack
 swordSound.volume = 0.5;
+const gameOverSound = new Audio("./assets/music/game_over.mp3");
+gameOverSound.volume = 0.5;
+const victoriaSound = new Audio("./assets/music/victoria.mp3");
+victoriaSound.volume = 0.5;
+
 //? card system
 let cardEventTriggered = false;  //mid game event
 let cardOptions = [];  //3 cards shown in screen
@@ -378,6 +383,7 @@ function drawLevel(ctx, canvas, deltaTime){
             if (currentLevel <= 3)
                 transitionToNextLevel();
             else
+                victoriaSound.play();
                 goToScore = true;  //all 3 levels done, tell main.js to go to score scene
         }
     }
@@ -390,6 +396,7 @@ function updateLevel(deltaTime){
     if(player.hearts <= 0){  //player ran out of hearts, game over
         gameOver = true;
         gameOverBox.show();
+        gameOverSound.play();
         return;
     }
 
