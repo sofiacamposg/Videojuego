@@ -109,33 +109,9 @@
             <h2 id="global-avg-time">-</h2>
         </div>
         <div class="col-md-4">
-            <h4>💀 Avg Kills</h4>
-            <h2 id="global-kills">-</h2>
+            <h4>❤️ Hearts Bought</h4>
+            <h2 id="hearts_bought">-</h2>
         </div>
-    </div>
-
-    <!--  PLAYER + PIE -->
-    <div class="row">
-
-        <!-- PLAYER TABLE -->
-        <div class="col-md-6">
-            <h3>👤 PLAYER STATS</h3>
-            <table class="table-custom w-100">
-                <tr><td>Runs</td><td id="runs"></td></tr>
-                <tr><td>Wins</td><td id="wins-player"></td></tr>
-                <tr><td>Losses</td><td id="losses-player"></td></tr>
-                <tr><td>Avg Time</td><td id="avg-time"></td></tr>
-                <tr><td>Best Score</td><td id="best-score"></td></tr>
-                <tr><td>Total Kills</td><td id="total-kills"></td></tr>
-            </table>
-        </div>
-
-        <!-- PIE CHART -->
-        <div class="col-md-6 text-center">
-            <h3>📊 WIN RATIO</h3>
-            <canvas id="winLossChart"></canvas>
-        </div>
-
     </div>
 
     <!--  EXTRA CHARTS -->
@@ -146,11 +122,6 @@
             <canvas id="barChart"></canvas>
         </div>
 
-        <div class="col-md-6 text-center">
-            <h3>💀 KILL PERFORMANCE</h3>
-            <canvas id="killsChart"></canvas>
-        </div>
-
     </div>
 
 </div>
@@ -158,23 +129,9 @@
     <script>
         //From log in scene
         const player = JSON.parse(localStorage.getItem("player"));
+
         if (!player) {
-            alert("No user logged");
-            window.location.href = "login.html";
-        }
-
-        async function loadPlayerGlobalStats() {
-            const res = await fetch(`http://localhost:3000/player/stats/${player.player_id}`)
-            const data = await res.json();
-
-            document.getElementById("runs").textContent = data.total_runs;
-            document.getElementById("wins-player").textContent = data.total_wins;
-            document.getElementById("losses-player").textContent = data.total_losses;
-            document.getElementById("avg-time").textContent = Number(data.avg_duration || 0).toFixed(1);
-            document.getElementById("best-score").textContent = data.best_score;
-            document.getElementById("total-kills").textContent = data.total_kills;
-
-            createWinLossChart(data.total_wins, data.total_losses);
+            console.warn("Viewing stats without login");
         }
 
         async function loadGlobalStats() {
@@ -188,36 +145,12 @@
 
             document.getElementById("global-best").textContent = data.best_score || 0;
             document.getElementById("global-avg-time").textContent = Number(data.avg_duration || 0).toFixed(1);
-            document.getElementById("global-kills").textContent = Number(data.avg_kills || 0).toFixed(1);
+            document.getElementById("hearts_bought").textContent = data.total_hearts_bought;
 
             createBarChart(data.wins || 0, data.losses || 0);
             createKillsChart(Number(data.avg_kills || 0));
         }
 
-        //Charts for Player stats
-        function createWinLossChart(wins, losses) {
-            const ctx = document.getElementById("winLossChart").getContext("2d");
-
-            new Chart(ctx, {
-                type: "pie",
-                data: {
-                    labels: ["Wins", "Losses"],
-                    datasets: [{
-                        data: [wins, losses],
-                        backgroundColor: ["#28a745", "#dc3545"]
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: "white"
-                            }
-                        }
-                    }
-                }
-            });
-        }
         function createBarChart(wins, losses) {
             const ctx = document.getElementById("barChart").getContext("2d");
 
@@ -238,23 +171,7 @@
                 }
             });
         }
-
-        function createKillsChart(avgKills) {
-            const ctx = document.getElementById("killsChart").getContext("2d");
-
-            new Chart(ctx, {
-                type: "doughnut",
-                data: {
-                    labels: ["Avg Kills", "Remaining"],
-                    datasets: [{
-                        data: [avgKills, 10 - avgKills],
-                        backgroundColor: ["#ffc107", "#444"]
-                    }]
-                }
-            });
-        }
-
-        loadPlayerGlobalStats();
+        
         loadGlobalStats();
         
     </script>

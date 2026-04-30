@@ -100,27 +100,33 @@ app.post("/register", (req, res) => {
     // if username starts with @dm1n_, register as admin in Statistics instead of Player
     if (username.startsWith("@dm1n_")) {
         const cleanUsername = username.slice(6);  // strip the 6-char prefix
-        db.query("SELECT * FROM Statistics WHERE username = ?", [cleanUsername], (err, result) => {
-            if (err) return res.status(500).send("Server error");  //case1: check for errors
-            if (result.length > 0) return res.status(400).send("Admin already exists");  //case2: check if is an existing credential
-            //case3: insert in admin table
-            db.query("INSERT INTO Statistics (name, username, password) VALUES (?, ?, ?)", [name, cleanUsername, password], (err) => {
-                if (err) return res.status(500).send("Insert error");  //case3.1: error w server
-                console.log("ADMIN CREATED:", cleanUsername);  //case3.2: insert successfull
-                return res.json({ success: true, role: "admin" });
-            });
+        db.query("SELECT * FROM Player WHERE username = ?", [username], (err, result) => {
+            if (err) return res.status(500).send("Server error");
+            if (result.length > 0) return res.status(400).send("User already exists");
+            db.query("INSERT INTO Player (name, username, password) VALUES (?, ?, ?)", [name, username, password], (err, insertResult) => {
+        if (err) return res.status(500).send("Insert error");
+        console.log("USER CREATED:", username);
+        // fetch the newly created player to return their full data
+        db.query("SELECT * FROM Player WHERE player_id = ?", [insertResult.insertId], (err2, playerResult) => {
+            if (err2) return res.status(500).send("Fetch error");
+            res.json({ ...playerResult[0], role: "player" });
         });
+    });
+    });
         return;  // stop here so the player register code below doesn't run
     }
 
-    // regular player registration, 
+    // regular player registration
     db.query("SELECT * FROM Player WHERE username = ?", [username], (err, result) => {
         if (err) return res.status(500).send("Server error");
         if (result.length > 0) return res.status(400).send("User already exists");
-        db.query("INSERT INTO Player (name, username, password) VALUES (?, ?, ?)", [name, username, password], (err) => {
+        db.query("INSERT INTO Player (name, username, password) VALUES (?, ?, ?)", [name, username, password], (err, insertResult) => {
             if (err) return res.status(500).send("Insert error");
             console.log("USER CREATED:", username);
-            res.json({ success: true, role: "player" });
+            db.query("SELECT * FROM Player WHERE player_id = ?", [insertResult.insertId], (err2, playerResult) => {
+                if (err2) return res.status(500).send("Fetch error");
+                return res.json({ ...playerResult[0], role: "player" });
+            });
         });
     });
 });
@@ -173,44 +179,39 @@ app.get("/cards/random", (req, res) => {
 });
 
 //GET real time stats view
-app.post("/match", (req, res) => {
+app.get("/match/summary/:id", (req, res) => {
+    const matchId = req.params.id;
 
-    const {
-        player_id,
-        archetype_id,
-        duration_seconds,
-        level_reached,
-        final_fame,
-        life,
-        result
-    } = req.body;
+    console.log("GET SUMMARY FOR:", matchId);
 
     const query = `
-        INSERT INTO MatchGame 
-        (player_id, archetype_id, duration_seconds, level_reached, final_fame, life, result)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        SELECT 
+            m.match_id,
+            p.name AS player_name,
+            m.level_reached,
+            m.final_fame,
+            m.duration_seconds,
+            m.result
+        FROM MatchGame m
+        JOIN Player p ON m.player_id = p.player_id
+        WHERE m.match_id = ?
     `;
 
-    const values = [
-        player_id,
-        archetype_id,
-        duration_seconds,
-        level_reached,
-        final_fame,
-        life,
-        result
-    ];
-
-    db.query(query, values, (err, result) => {
+    db.query(query, [matchId], (err, result) => {
         if (err) {
             console.error(err);
-            return res.status(500).send(err);
+            return res.status(500).send(err.message);
         }
 
-        res.json({ match_id: result.insertId }); // 🔥 CLAVE
+        if (result.length === 0) {
+            return res.status(404).json({ error: "Match not found" });
+        }
+
+        console.log("SUMMARY DATA:", result[0]);
+
+        res.json(result[0]);
     });
 });
-
 //GET Game Progress view
 app.get("/match/progress/:id", (req, res) => {
     db.query(
@@ -243,7 +244,7 @@ app.get("/match/cards-live/:id", (req, res) => {
 });
 
 //POST match, with stored procedures
-app.post("/match", (req, res) => { //we INSERT into table match
+app.post("/match", (req, res) => {
     const {
         player_id,
         archetype_id,
@@ -254,38 +255,32 @@ app.post("/match", (req, res) => { //we INSERT into table match
         result
     } = req.body;
 
-    db.query( //Stored Procedure InsertMatch with current match values
-        "CALL InsertMatch(?, ?, ?, ?, ?, ?, ?)",
-        [
-            player_id,
-            archetype_id,
-            duration_seconds,
-            level_reached,
-            final_fame,
-            life,
-            result
-        ],
-        (err) => {
-            if (err) return res.status(500).send(err.message);
+    const query = `
+        INSERT INTO MatchGame 
+        (player_id, archetype_id, end_time, duration_seconds, level_reached, final_fame, life, result)
+        VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)
+    `;
 
-            res.json({ success: true });
-        }
-    );
+    const values = [
+        player_id,
+        archetype_id,
+        duration_seconds,
+        level_reached,
+        final_fame,
+        life,
+        result
+    ];
+
+    db.query(query, values, (err, resultInsert) => {
+        if (err) return res.status(500).send(err.message);
+
+        res.json({
+            success: true,
+            match_id: resultInsert.insertId
+        });
+    });
 });
 
-//================== STORED PROCEDURES====================0
-//GET summarizes an entire match, for scoreScene, you can get a full summary of the match after it ends
-app.get("/match/summary/:id", (req, res) => {
-    db.query(
-        "CALL GetMatchSummary(?)",
-        [req.params.id],
-        (err, result) => {
-            if (err) return res.status(500).send(err.message);
-
-            res.json(result[0][0]);
-        }
-    );
-});
 
 //POST, register card ussage (Deck)
 app.post("/deck", (req, res) => {
@@ -374,22 +369,46 @@ app.get("/stats", (req, res) => {
 
 //================== PLAYER CURRENT STATE ====================
 app.get("/player/live/:id", (req, res) => {
-    db.query(
-        "SELECT * FROM vw_player_current_state WHERE player_id = ?",
-        [req.params.id],
-        (err, result) => {
-            if (err) {
-                console.log("ERROR:", err);
-                return res.status(500).send(err.message);
-            }
+    const id = req.params.id;
 
-            if (result.length === 0) {
-                return res.status(404).json({ error: "Player not found" });
-            }
+    const query = `
+        SELECT 
+            p.player_id,
+            p.username,
+            p.fame AS current_fame,
+            (SELECT COUNT(*) FROM MatchGame WHERE player_id = p.player_id) AS total_runs,
+            (SELECT COUNT(*) FROM MatchGame WHERE player_id = p.player_id AND result = 'WIN') AS total_wins,
+            (SELECT COUNT(*) FROM MatchGame WHERE player_id = p.player_id AND result = 'LOSE') AS total_losses,
+            0 AS enemy_kills,
+            0 AS cards_in_deck,
+            0 AS current_level,
+            p.galen
+        FROM Player p
+        WHERE p.player_id = ?
+    `;
 
-            res.json(result[0]);
+    db.query(query, [id], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send(err.message);
         }
-    );
+        //for new users
+        if (result.length === 0) {
+            return res.json({
+                player_id: id,
+                username: "",
+                current_fame: 0,
+                total_runs: 0,
+                total_wins: 0,
+                total_losses: 0,
+                enemy_kills: 0,
+                cards_in_deck: 0,
+                current_level: 0
+            });
+        }
+
+        res.json(result[0]);
+    });
 });
 
 //LEVEL CONFIGS, ARCHETYPE, ENEMIES, LEVEL
@@ -421,13 +440,9 @@ app.get("/player/stats/:id", (req, res) => {
             SUM(m.result = 'WIN') as total_wins,
             SUM(m.result = 'LOSE') as total_losses,
             COALESCE(AVG(m.duration_seconds), 0) as avg_duration,
-            COALESCE(MAX(m.final_fame), 0) as best_score,
-
-            COALESCE(SUM(
-                (SELECT COUNT(*) 
-                FROM SpecificLevel sl 
-                WHERE sl.match_id = m.match_id AND sl.finished = TRUE)
-            ), 0) as total_kills
+            COALESCE(
+                MIN(CASE WHEN m.result = 'WIN' THEN m.duration_seconds END),
+            0) as best_score
 
         FROM MatchGame m
         WHERE m.player_id = ?
@@ -451,11 +466,14 @@ app.get("/global/stats", (req, res) => {
             SUM(m.result = 'LOSE') AS losses,
             COALESCE(AVG(m.duration_seconds), 0) AS avg_duration,
             COALESCE(MAX(m.final_fame), 0) AS best_score,
-            COALESCE(AVG(
-                (SELECT COUNT(*) 
-                 FROM SpecificLevel sl 
-                 WHERE sl.match_id = m.match_id AND sl.finished = TRUE)
-            ), 0) AS avg_kills
+            COALESCE(
+                AVG(
+                    (SELECT COUNT(*)
+                    FROM SpecificLevel sl
+                    WHERE sl.match_id = m.match_id AND sl.finished = TRUE)
+                ), 0
+            ) AS avg_kills,
+            (SELECT SUM(hearts) - COUNT(*) FROM Player) AS total_hearts_bought
         FROM MatchGame m
     `;
 
@@ -470,4 +488,103 @@ app.get("/global/stats", (req, res) => {
 
 app.listen(3000, () => {
     console.log("Servidor en http://localhost:3000 ");
+});
+
+//SHOPPING HEARTS MECHANICS FOR ROGUELITE
+//Being able to buy hearts
+app.post("/shop/buy-heart", (req, res) => {
+    const { player_id } = req.body;
+
+    db.query(
+        "SELECT fame, hearts FROM Player WHERE player_id = ?",
+        [player_id],
+        (err, result) => {
+            if (err) return res.status(500).send(err.message);
+
+            if (result.length === 0) {
+                return res.status(404).json({ error: "Player not found" });
+            }
+
+            const player = result[0];
+
+            if (player.fame < 50) {
+                return res.status(400).json({ error: "Not enough fame" });
+            }
+
+            db.query(
+                `UPDATE Player
+                 SET fame = fame - 50,
+                     hearts = hearts + 1
+                 WHERE player_id = ?`,
+                [player_id],
+                (err2) => {
+                    if (err2) return res.status(500).send(err2.message);
+
+                    res.json({
+                        success: true,
+                        fame: player.fame - 50,
+                        hearts: player.hearts + 1
+                    });
+                }
+            );
+        }
+    );
+});
+
+//* buy galen's remedy, like a shield that can 'save' the player
+app.post("/shop/buy-galen", (req, res) => {
+    const { player_id } = req.body;
+
+    db.query("SELECT fame, galen FROM Player WHERE player_id = ?", [player_id], (err, result) => {
+        if (err) return res.status(500).send(err.message);  //? case1: edge case
+        if (result.length === 0) return res.status(404).json({ error: "Player not found" });  //?case2: edge case
+
+        const player = result[0];  //first result that match
+        if (player.fame < 30) //? case3: not enough fame
+            return res.status(400).json({ error: "Not enough fame" });  
+
+        db.query(  //? case4: player bought galen's remedy
+            "UPDATE Player SET fame = fame - 30, galen = galen + 1 WHERE player_id = ?",
+            [player_id],
+            (err2) => {
+                if (err2) return res.status(500).send(err2.message);
+                res.json({ success: true, fame: player.fame - 30, galen: player.galen + 1 });
+            }
+        );
+    });
+});
+
+//* the player used the galen's remedy in the match
+app.post("/player/use-galen", (req, res) => {
+    const { player_id } = req.body;  //which player used the remedy?
+
+    db.query(  //? case1: update quantity of remedies
+        "UPDATE Player SET galen = galen - 1 WHERE player_id = ?",
+        [player_id],
+        (err) => {
+            if (err) return res.status(500).send(err.message);  //? case2: edge case
+            res.json({ success: true });
+        }
+    );
+});
+
+app.post("/player/update-fame", (req, res) => {
+    const { player_id, fame } = req.body;
+
+    if (!player_id || fame == null) {
+        return res.status(400).json({ error: "Missing data" });
+    }
+
+    db.query(
+        "UPDATE Player SET fame = fame + ? WHERE player_id = ?",
+        [fame, player_id],
+        (err, result) => {
+            if (err) return res.status(500).send(err.message);
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: "Player not found" });
+            }
+
+            res.json({ success: true });
+        }
+    );
 });

@@ -11,7 +11,6 @@ import {
 //? mouse track
 let mouseX = 0;
 let mouseY = 0;
-let registerSuccess = false;
 
 const buttonBack = { //? BACK TO MENU BUTTON
     x: 850,
@@ -116,11 +115,7 @@ function handleMouseMoveCreateAccount(event, canvas){
     mouseY = pos.y;
 }
 
-function handleClickCreateAccount(ctx){  //? handle cliks over any element
-    if(registerSuccess){
-        registerSuccess = false;
-        return "confirm";
-    }
+function handleClickCreateAccount(ctx, onSuccess){  //? handle cliks over any element
     if (errorMessage.visible) {
         return errorMessage.handleClick(mouseX, mouseY);
     }
@@ -154,7 +149,7 @@ function handleClickCreateAccount(ctx){  //? handle cliks over any element
             errorMessage.show();
             return null;
         }
-        registerUser();
+        registerUser(onSuccess);
         return null;
     }
 
@@ -199,7 +194,7 @@ function resetCreateAccount(){  //? reset to default values
 }
 
 //API CONNECTION
-async function registerUser(){
+async function registerUser(onSuccess){
     try{
         const res = await fetch("http://localhost:3000/register", {
             method: "POST",
@@ -221,7 +216,10 @@ async function registerUser(){
         }
 
         console.log("USER CREATED");
-        registerSuccess = true;
+        
+        //register ok? call the callback to handle the scene change
+        if(onSuccess) onSuccess();
+
 
     } catch(error){
         console.log(error);

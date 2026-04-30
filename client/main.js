@@ -5,7 +5,8 @@ import { getPlayer, drawLevel, handleMouseMoveLevel, handleClickLevel, resetLeve
         handleKeyUpLevel, setSelectedCharacter, goToMenu, resetGoToMenu, goToScore, resetGoToScore } from "./scenes/levelBase.js";  //all 3 levels now live here
 import { drawCreateAccount, handleMouseMoveCreateAccount, handleClickCreateAccount, handleKeyDownCreateAccount, resetCreateAccount } from "./scenes/createAccountScene.js";
 import { drawSettings, handleMouseMoveSettings, handleClickSettings, startDragging, stopDragging, resetSettings } from "./scenes/settingsScene.js";
-import { drawScoreScene, handleClickScoreScene, handleMouseMoveScore, loadMatchSummary } from "./scenes/scoreScene.js";
+import { drawScoreScene, handleClickScoreScene, handleMouseMoveScore, loadMatchSummary, resetScoreScene } from "./scenes/scoreScene.js";
+import { drawShop, handleMouseMoveShop, handleClickShop } from "./scenes/shopScene.js";
 import { loadPlayerStats } from "./libs/level_functions.js";
 import { loadPlayerConfigs, playerConfigs, loadEnemyConfigs, enemyConfigs, loadLevelConfigs, levelConfigsDB } from "./libs/levelConfig.js";
 //API update (THIS RIGHT NOW ISNT FROM API, INSTEAD OF POSTING AND THENN GETTING, WE JUST GRABBING JS VARIABLES)
@@ -24,6 +25,8 @@ let oldTime = 0;
 let currentScene = "menu";
 let currentPlayer = null;
 let selectedCharacter = null;
+//Shop hearts
+let loginFromShop = false;
 
 //API fetch info
 let configsReady = false;
@@ -51,6 +54,30 @@ function updateLiveStats() {
     document.getElementById("cards").textContent = cards;
 }
 
+function resetPanel() {
+    document.getElementById("username").textContent = "-";
+    document.getElementById("level").textContent = "-";
+    document.getElementById("kills").textContent = "-";
+    document.getElementById("fame").textContent = "-";
+    document.getElementById("cards").textContent = "-";
+    document.getElementById("runs").textContent = "-";
+    document.getElementById("wins").textContent = "-";
+    document.getElementById("losses").textContent = "-";
+}
+
+function logout() {
+    window.loggedPlayer = null;
+    localStorage.removeItem("player");
+
+    resetLogIn();
+    resetSelect();
+    resetLevel();
+    resetPanel();
+
+    currentPlayer = null;
+    selectedCharacter = null;
+}
+
 //FUNCTION MAIN
 function main() {
     canvas = document.getElementById("canvas");
@@ -60,12 +87,27 @@ function main() {
     ctx = canvas.getContext("2d"); 
 
     let clicked;
-    canvas.addEventListener("click", (event) => {
+    canvas.addEventListener("click", async (event) => {
         //MENU SCENE
         if(currentScene === 'menu'){
             clicked = handleClickMenu(ctx);
-            if (clicked === 'start') currentScene = 'login';
+            if (clicked === 'start') {
+                    loginFromShop = false;
+                    resetLogIn();
+                    resetPanel();
+                    currentScene = 'login';
+            }
             if (clicked === 'settings') currentScene = 'settings'; 
+            if (clicked === 'shop') {
+                if (!window.loggedPlayer) {
+                    loginFromShop = true;
+                    resetLogIn();   
+                    resetPanel();
+                    currentScene = "login";
+                } else {
+                    currentScene = "shop";
+                }
+            }
         }
         //SETTINGS SCENE
         else if(currentScene === 'settings') {
@@ -80,32 +122,50 @@ function main() {
             //? Se pasa un callback a handleClickLogIn para que cuando el fetch de login
             //? termine exitosamente, cambie la escena directamente sin necesitar otro click
             clicked = handleClickLogIn(ctx, () => {
+            if (loginFromShop) {
+                //API
+                (async () => {
+                    await loadPlayerStats(window.loggedPlayer.player_id, currentScene);
+                })();
+                loginFromShop = false;
+                currentScene = "shop";   //  regresa a shop
+            } else {
+                //API
+                setTimeout(() => {
+                    loadPlayerStats(window.loggedPlayer.player_id, currentScene);
+                }, 500);
                 resetSelect();
-                currentScene = 'start';
-            });
+                currentScene = 'start';  // flujo normal del juego
+            }
+        });
+
             if(clicked === 'back'){
                 resetLogIn();
                 currentScene = 'menu';
             }
             if (clicked === 'create'){
+                resetLogIn();
                 currentScene = 'createAccount';
             }
         }
         //CREATE ACCOUNT SCENE
         else if(currentScene === 'createAccount') {
-            clicked = handleClickCreateAccount(ctx);
+            clicked = handleClickCreateAccount(ctx, () => {
+                resetLogIn();
+                currentScene = 'login';
+            });
             if(clicked === 'back') {
                 resetCreateAccount();
                 currentScene = 'menu';
             }
-            if(clicked === 'login') currentScene = 'login'; 
-            if(clicked === 'confirm') {
-                currentScene = 'login';
-                resetLogIn();
-            }
+            if(clicked === 'login') currentScene = 'login';
         }
         //SELECT CHARACTER
         else if (currentScene === 'start'){
+            if (!window.loggedPlayer) {
+                currentScene = "login";
+                return;
+            }
             clicked = handleClickSelect(ctx); 
             if(clicked === 'back'){
                 resetSelect(); 
@@ -118,10 +178,6 @@ function main() {
                 selectedCharacter = getSelectedCharacter();
                 setSelectedCharacter(selectedCharacter);
                 currentPlayer = getPlayer();  //grab the player that was just created
-                //API
-                setTimeout(() => {
-                    loadPlayerStats(window.loggedPlayer.player_id, currentScene);
-                }, 500);
                 currentScene = 'level1';
             }
         }
@@ -130,21 +186,41 @@ function main() {
             clicked = handleClickLevel(ctx); 
             if(goToMenu){  //player clicked Home from the pause menu
                 resetGoToMenu();
-                resetLogIn();
-                resetSelect();
-                resetLevel();
+                logout();
                 currentScene = "menu";
             }
         }
-        //Score Scene
+        //SCORE SCENE
         else if(currentScene === "score"){
             clicked = handleClickScoreScene();
             if(clicked === "exit"){
-                currentScene = "menu";
+                (async () => {
+                    await loadPlayerStats(window.loggedPlayer.player_id, "menu");
+                    currentScene = "menu";
+                    resetScoreScene();
+                })();
             }
             if(clicked === "again"){
+                console.log("ANTES DE CREAR PLAYER:", window.loggedPlayer.fame);
                 resetLevel();
-                currentScene = "level1";
+                (async () => {
+                    await loadPlayerStats(window.loggedPlayer.player_id, "level1");
+
+                    resetScoreScene();
+
+                    // Creates player again
+                    setSelectedCharacter(selectedCharacter);
+                    currentPlayer = getPlayer();
+                    currentScene = "level1";
+                })();
+            }
+        }
+        //SHOP SCENE
+        else if (currentScene === "shop") {
+            clicked = await handleClickShop();
+
+            if (clicked === "back") {
+                currentScene = "menu";
             }
         }
     });
@@ -165,6 +241,7 @@ function main() {
         if(currentScene === 'start') handleMouseMoveSelect(event,canvas);
         if(currentScene === 'level1') handleMouseMoveLevel(event,canvas);
         if(currentScene === 'score') handleMouseMoveScore(event, canvas);
+        if(currentScene === "shop") handleMouseMoveShop(event, canvas);
     });
 
     window.addEventListener("keydown", (event) => {
@@ -209,14 +286,17 @@ function gameLoop(newTime) {
         drawLevel(ctx,canvas, deltaTime);  //levelBase handles all 3 levels now
         updateLiveStats();
         if(goToScore){  //levelBase signals game complete after level 3 deck preview
-            //Data
-            loadMatchSummary();
-            resetGoToScore();
             currentScene = 'score';
+            resetGoToScore();
+        }
+        else if(goToMenu){
+            currentScene = 'menu';
+            resetGoToMenu();
+            resetLevel();
         }
     }
-    else if(currentScene === 'score') drawScoreScene(ctx,canvas,deltaTime);
-
+    else if(currentScene === 'score')  drawScoreScene(ctx,canvas,deltaTime);
+    else if(currentScene === "shop") drawShop(ctx, canvas);
     oldTime = newTime;
     requestAnimationFrame(gameLoop);
 }
