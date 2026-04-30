@@ -56,9 +56,10 @@ export async function loadMatchSummary() {
 
 // DRAW
 function drawScoreScene(ctx, canvas) {
+    ctx.save();
     cachedCtx = ctx;
     if (!matchData) {
-        loadMatchSummary(); 
+        loadMatchSummary();
     }
     console.log("LAST MATCH ID:", window.lastMatchId);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -141,6 +142,7 @@ function drawScoreScene(ctx, canvas) {
 
     drawButton(ctx, buttonExit, mouseX, mouseY);
     drawButton(ctx, buttonAgain, mouseX, mouseY);
+    ctx.restore();
 }
 //Mouse Move
 

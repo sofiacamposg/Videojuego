@@ -295,8 +295,8 @@ function drawLevel(ctx, canvas, deltaTime){
     for(let i = 0; i < worldWidth; i += canvas.width){  //duplicate the background image to fill the whole world
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); }
 
-    if(!isPaused && (!cardSystem.isActive || showDeckPreview) 
-        && !spikesWarningBox.visible && !gameOver){  //only run game logic when not paused, not between levels, and no card menu is open
+    if(!isPaused && !cardSystem.isActive && !spikesWarningBox.visible 
+        && !gameOver && !levelCompleted){  //only run game logic when not paused, not between levels, and no card menu is open
         updateLevel(deltaTime);
     }
     ctx.save();
@@ -588,18 +588,23 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
     levelCompletedBox.hide();
     //show spikes warning on level 2
     if(currentLevel === 2){
-    spikesWarningPulse = 0;
-    spikesWarningBox.title = "ATTENTION GLADIATOR!!!";
-    spikesWarningBox.message = "THERE ARE SPIKES IN THE SAND NOW!\n TRY NOT TO STEP ON THEM OR YOU'LL LOSE LIFE!.";
-    spikesWarningBox.show();
-}
+        spikesWarningPulse = 0;
+        spikesWarningBox.title = "ATTENTION GLADIATOR!!!";
+        spikesWarningBox.message = "THERE ARE SPIKES IN THE SAND NOW!\n TRY NOT TO STEP ON THEM OR YOU'LL LOSE LIFE!.";
+        spikesWarningBox.show();
+    }
     //show spikes warning on level 2 and firepits on level 3
     if(currentLevel === 3){
-    spikesWarningPulse = 0;
-    spikesWarningBox.title = "ATTENTION GLADIATOR!!!";
-    spikesWarningBox.message = "THERE ARE NOW SPIKES AND FIRE PITS IN THE ARENA!\n AVOID BOTH OR YOU'LL LOSE LIFE QUICKLY!.";
-    spikesWarningBox.show();
-}
+        spikesWarningPulse = 0;
+        spikesWarningBox.title = "ATTENTION GLADIATOR!!!";
+        spikesWarningBox.message = "THERE ARE NOW SPIKES AND FIRE PITS IN THE ARENA!\n AVOID BOTH OR YOU'LL LOSE LIFE QUICKLY!.";
+        spikesWarningBox.show();
+    }
+
+    player.position.x = 200;  //player always start in the same position (safe zone)
+    player.position.y = 450;
+    player.velocityY = 0;
+    cameraX = 0;
 
     enemies = currentLevelConfig.spawnPositions.map(pos =>
         spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
@@ -613,6 +618,7 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
     spawnTimer = 0;
     levelTimer = 0;
     randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);  //when will the event trigger
+    matchSaved = false;
     cardEventTriggered = false;
     cardOptions = [];  //next levels rewards don't include this level's event cards
     cardSystem.clearPermanentEffects();  //undo any permanent card effect from last level
