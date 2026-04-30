@@ -381,7 +381,8 @@ app.get("/player/live/:id", (req, res) => {
             (SELECT COUNT(*) FROM MatchGame WHERE player_id = p.player_id AND result = 'LOSE') AS total_losses,
             0 AS enemy_kills,
             0 AS cards_in_deck,
-            0 AS current_level
+            0 AS current_level,
+            p.galen
         FROM Player p
         WHERE p.player_id = ?
     `;

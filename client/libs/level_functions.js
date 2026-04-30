@@ -129,6 +129,7 @@ export async function loadPlayerStats(playerId, currentScene) {
         document.getElementById("runs").textContent = data.total_runs;
         document.getElementById("wins").textContent = data.total_wins;
         document.getElementById("losses").textContent = data.total_losses;
+        document.getElementById("galen").textContent = data.galen;
     } catch (err) {
         console.error("Error loading player stats:", err);
     }

@@ -77,6 +77,11 @@
                 <hr>
 
                 <div class="statRow">
+                    <span class="statLabel">Galen's Remedy</span>
+                    <span class="statValue" id="galen">-</span>
+                </div>
+
+                <div class="statRow">
                     <span class="statLabel">Total Runs</span>
                     <span class="statValue" id="runs">-</span>
                 </div>
@@ -223,7 +228,8 @@
                 </div>
                 <div class="modal-body">
                     <p>You start each run with 1 life. If you die, it's Game Over and you restart from Level 1.</p>
-                    <p>You can buy more lives in the store, but only famous gladiators have this privilege.</p>
+                    <p>You can buy more lives or Galen's remedy in the store, but only famous gladiators have this privilege.</p>
+                    <p>Galen's Remedy will aid you when you stand between life and death, but it can only be used once per match.</p>
                 </div>
                 <div class="modal-footer justify-content-between">
                     <button class="btn btn-outline-light" data-bs-target="#tutorial-3" data-bs-toggle="modal">← Back</button>
@@ -260,11 +266,12 @@
                     <h3 class="modal-title mx-auto">Cards</h3>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <p>Two card events occur during each level:</p>
-                    <p><strong>Event 1 — end of level:</strong> The emperor rewards your effort. If you are famous, he'll give you 2 power-ups, 
-                        but if not, he'll give you one. You better give your best! <br> You can use this cards any time in the level, only press 'C' to know which ones you have.</p>
-                    <p><strong>Event 2 — mid-level:</strong> The crowd wants to help you, but you aren't everyone's favorite. Three cards appear face down, there could be punishments or power-ups, let your fate choose. <br> Their effect will apply inmediatly.</p>
+                    <div class="modal-body">
+                        <p>Two card events occur during each level:</p>
+                        <p><strong>Event 1 — end of level:</strong> The emperor rewards your effort. If you are famous, he'll give you 2 power-ups, 
+                            but if not, he'll give you one. You better give your best! <br> You can use this cards any time in the level, only press 'C' to know which ones you have.</p>
+                        <p><strong>Event 2 — mid-level:</strong> The crowd wants to help you, but you aren't everyone's favorite. Three cards appear face down, there could be punishments or power-ups, let your fate choose. <br> Their effect will apply inmediatly.</p>
+                    </div>
                 <div class="modal-footer justify-content-between">
                     <button class="btn btn-outline-light" data-bs-target="#tutorial-5" data-bs-toggle="modal">← Back</button>
                     <button class="btn btn-outline-light" data-bs-target="#tutorial-7" data-bs-toggle="modal">Next →</button>
@@ -333,9 +340,9 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>Level 1:</strong> enemies are lions. No floor hazards. Only Event 2 occurs (at mid-level).</p>
-                    <p><strong>Level 2:</strong> enemies are tigers, stronger than lions. Spikes appear in random floor positions. Both Event 1 and Event 2 occur.</p>
-                    <p><strong>Level 3:</strong> enemies are boars, the strongest. Spikes and fire zones appear in random floor positions. Both Event 1 and Event 2 occur.</p>
+                    <p><strong>Level 1:</strong> You have to hunt lions. No floor hazards, but it won't be that easy, lions are the strongest.</p>
+                    <p><strong>Level 2:</strong> You fight against tigers. Spikes appear in random floor positions. Both can kill you, watch out!</p>
+                    <p><strong>Level 3:</strong> Your enemies are boars. Spikes and fire zones appear in random floor positions. You can die in any second, losing all your progress.</p>
                 </div>
                 <div class="modal-footer justify-content-between">
                     <button class="btn btn-outline-light" data-bs-target="#tutorial-8" data-bs-toggle="modal">← Back</button>

@@ -163,8 +163,8 @@ let gameOver = false;  //screen and config when hearts = 0
             final_fame: window.loggedPlayer.fame,
             life: Math.max(0, player.hearts),
             result: "LOSE",
-            cards_in_deck: cardSystem.playerDeck.length
-
+            cards_in_deck: cardSystem.playerDeck.length,
+            galenUsed: galenUsed
         });
         await loadPlayerStats(window.loggedPlayer.player_id, "score");
     }   
@@ -482,10 +482,11 @@ function updateLevel(deltaTime){
                 archetype_id: selectedArchetypeId,
                 duration_seconds: Math.floor(levelTimer / 1000),
                 level_reached: currentLevel,
-                final_fame: window.loggedPlayer.fame, 
+                final_fame: window.loggedPlayer.fame,
                 life: player.hearts,
                 result: "WIN",
-                cards_in_deck: cardSystem.playerDeck.length
+                cards_in_deck: cardSystem.playerDeck.length,
+                galenUsed: galenUsed
             });
 
             // 5. actualizar score panel
