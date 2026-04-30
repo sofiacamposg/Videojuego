@@ -4,6 +4,8 @@ import { saveCardUse } from "../libs/level_functions.js";
 
 class cardsOnCanvas {
     constructor() {
+        this.type = "";
+
         //offered cards state, mid game
         this.isActive = false;
         this.offeredCards = [];
@@ -66,7 +68,7 @@ class cardsOnCanvas {
         this.offeredCards.forEach((card, i) => {  //cards display
             const x = startX + i * (cardW + gap);
             const isSelected = this.selectedIndex === i;
-            this.drawCard(ctx, card, x, cardY, cardW, cardH, isSelected);
+            this.drawCard(ctx, card, x, cardY, cardW, cardH, isSelected, "midgame");
         });
     }
     handleClick(mx, my, canvas) {  //? checks if the player clicked a card, marks it as selected and shows the confirm button
@@ -103,7 +105,15 @@ class cardsOnCanvas {
         saveCardUse(1, card.id, card.duration || 0); 
 
         //track the time so we can undo the effect later
-        if (!card.duration && card.removeEffect) {  //case2: permanent card: track it so we can undo it when the level ends
+        if (card.duration && card.removeEffect) {  //timed card: count down and remove when it expires
+            this.activeEffects.push({
+                card,
+                player: this._player,
+                enemies: this._enemies,
+                game: this._game,
+                endTime: card.duration
+            });
+        } else if (!card.duration && card.removeEffect) {  //permanent card: track it so we can undo it when the level ends
             this.permanentEffects.push({
                 card,
                 player: this._player,
@@ -162,7 +172,7 @@ class cardsOnCanvas {
             const row = Math.floor(i / cols);
             const x = startX + col * spacingX;
             const y = startY + row * spacingY;
-            this.drawCard(ctx, this.playerDeck[i], x, y, cardW, cardH, this.selectedDeckIndex === i);  
+            this.drawCard(ctx, this.playerDeck[i], x, y, cardW, cardH, this.selectedDeckIndex === i, "deck");  
         }
 
     }
@@ -183,7 +193,7 @@ class cardsOnCanvas {
 
         this.rewardCards.forEach((card, i) => {
             const x = startX + i * (cardW + gap);
-            this.drawCard(ctx, card, x, cardY, cardW, cardH, false);
+            this.drawCard(ctx, card, x, cardY, cardW, cardH, false, "reward");
         });
     }
     handleDeckClick(mx, my, canvas) {  //? checks if the player clicked a card, marks it as selected and shows the confirm button
@@ -230,13 +240,21 @@ class cardsOnCanvas {
     }
 
 // ========================= helpers for mid game event =========================
-    drawCard(ctx, card, x, y, w, h, isSelected) {
+    drawCard(ctx, card, x, y, w, h, isSelected, type) {
         //* para test
-        if (card.image && card.image.complete && card.image.naturalWidth > 0) {
+        /*if (card.image && card.image.complete && card.image.naturalWidth > 0) {
             ctx.drawImage(card.image, x, y, w, h);
-        } else {
-            ctx.drawImage(this.cardBackImage, x, y, w, h);  //esta es la linea real
-        }    
+        } else {*/
+            //ctx.drawImage(this.cardBackImage, x, y, w, h);  //esta es la linea real
+        //}    
+
+        if (type === "reward" || type === "deck")
+            ctx.drawImage(card.image, x, y, w, h);
+        else
+            ctx.drawImage(this.cardBackImage, x, y, w, h);
+
+        
+
         if (this._game?.revealNextCard) {  //reveal card effect
             const isPowerUp = card.type === "POWER_UP";
             ctx.fillStyle = "white";

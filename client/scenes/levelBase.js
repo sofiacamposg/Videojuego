@@ -76,15 +76,15 @@ function drawPlatforms(ctx){  //draw all the platforms in the array
 let hazards = [];  //array to store platforms displayed
 function initHazards(){
     hazards = [];
-    const safeZone = 80;  //no hazards near spawn 
+    const safeZone = 10;  //no hazards near spawn 
     const count = Math.random() < 0.5 ? 2 : 3;  //2 or 3 hazards per level
 
     for(let i = 0; i < count; i++){  //for spikes
-        hazards.push(new Spikes(randomRange(worldWidth - safeZone, safeZone), 115));
+        hazards.push(new Spikes(randomRange((worldWidth - 100) - safeZone, safeZone), 115));
     }
     if(currentLevel === 3){
         for(let i = 0; i < count; i++){
-            hazards.push(new FirePit(randomRange(worldWidth - safeZone, safeZone), 115));
+            hazards.push(new FirePit(randomRange((worldWidth - 100)  - safeZone, safeZone), 115));
         }
     }
 }
@@ -154,6 +154,7 @@ let gameOver = false;  //screen and config when hearts = 0
     //esto si se puede meterlo a game functions
     async function handleLose() {
         if (matchSaved) return;   //  evita duplicados
+        console.log("guardado como lose");
         matchSaved = true;
         await saveMatch({
             player_id: window.loggedPlayer.player_id,
@@ -241,6 +242,7 @@ async function triggerCardEvent(){  //? uses array from generateCardOptions when
     const convertedCards = cardOptions.map(apiCard => ({
         id: apiCard.card_id,
         name: apiCard.card_name,
+        description: apiCard.description,
         type: apiCard.effect_type,  //POWER_UP or PUNISHMENT
         duration: apiCard.duration,
         image: cardImages[apiCard.card_name] || null,  //grab the sprite that matches the card name
@@ -250,7 +252,7 @@ async function triggerCardEvent(){  //? uses array from generateCardOptions when
         // it only actually runs when the player confirms their pick
         applyEffect: (player, enemies, game) => applyEffect(apiCard, player, enemies, game),
         //all cards have reverse effect, to the specific time when temporal, or reset when level ends
-        removeEffect: (player, enemies, game) => reverseEffect(apiCard, player, enemies, game),  
+        removeEffect: (player, enemies, game) => reverseEffect(apiCard, player, enemies, game),
     }));
     cardSystem.show(convertedCards, player, enemies, game);  //show cards for the player to select
 }
@@ -273,6 +275,7 @@ async function giveLevelRewards(){  //? reward cards, depending on fame, after l
             const card = {
                 id: apiCard.card_id,
                 name: apiCard.card_name,
+                description: apiCard.description,
                 type: apiCard.effect_type,
                 duration: apiCard.duration,
                 image: cardImages[apiCard.card_name] || null,
@@ -299,11 +302,16 @@ function drawLevel(ctx, canvas, deltaTime){
     for(let i = 0; i < worldWidth; i += canvas.width){  //duplicate the background image to fill the whole world
         ctx.drawImage(backgroundImage, i - cameraX, 0, canvas.width, canvas.height); }
 
-    if(!isPaused && !cardSystem.isActive && !spikesWarningBox.visible 
+    if(!isPaused && !cardSystem.isActive && !cardSystem.isDeckOpen && !spikesWarningBox.visible
         && !gameOver && !levelCompleted){  //only run game logic when not paused, not between levels, and no card menu is open
         updateLevel(deltaTime);
     }
+
+
     ctx.save();
+    ctx.fillStyle = "rgba(48, 27, 0, 0.83)";
+    ctx.fillRect(0, 0, canvas.width, 75);
+
     ctx.translate(-cameraX, 0);  //shift drawing so the camera follows the player
 
     player.draw(ctx);
@@ -319,7 +327,7 @@ function drawLevel(ctx, canvas, deltaTime){
     drawHealthBar(ctx, 30, 20, 100, 30, player.hp, player.maxHp);
     ctx.font = "50px VT323";
     drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
-    drawFame(ctx, 430, 40, player.fame);
+    drawFame(ctx, 70, 70, player.fame);
     
     //Timer
     let timePassed = levelTimer / 1000;
