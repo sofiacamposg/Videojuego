@@ -56,9 +56,9 @@ let platformImage = new Image();
 platformImage.src = "./assets/Platform.png";
 function initPlatforms(){
     platforms = [];  //clean the array before starting
-    for(let i = 0; i < 7; i++){
+    for(let i = 0; i < 5; i++){
         if(platforms.length === 0){  
-            platforms.push({ x:200, y:300, width:100, height:70 });
+            platforms.push({ x:200, y:400, width:100, height:70 });
         } else {
             let last = platforms[platforms.length - 1];
             platforms.push(generatePlatform(last));
@@ -74,15 +74,15 @@ function drawPlatforms(ctx){  //draw all the platforms in the array
 let hazards = [];  //array to store platforms displayed
 function initHazards(){
     hazards = [];
-    const safeZone = 40;  //no hazards near spawn
-    const count = Math.random() < 0.5 ? 3 : 4;  //3 or 4 hazards per level
+    const safeZone = 80;  //no hazards near spawn 
+    const count = Math.random() < 0.5 ? 2 : 3;  //2 or 3 hazards per level
 
     for(let i = 0; i < count; i++){  //for spikes
-        hazards.push(new Spikes(randomRange(worldWidth), 115));
+        hazards.push(new Spikes(randomRange(worldWidth - safeZone, safeZone), 115));
     }
-    if(currentLevel === 3){  
+    if(currentLevel === 3){
         for(let i = 0; i < count; i++){
-            hazards.push(new FirePit(randomRange(worldWidth), 115));
+            hazards.push(new FirePit(randomRange(worldWidth - safeZone, safeZone), 115));
         }
     }
 }
@@ -387,6 +387,7 @@ function updateLevel(deltaTime){
     levelTimer += deltaTime;  //keep track of how long the player has been in this level
 
     if(player.hearts <= 0){  //player ran out of hearts, game over
+        player.hp = 0;
         gameOver = true;
         gameOverBox.show();
         return;
@@ -487,9 +488,6 @@ function updateLevel(deltaTime){
     cameraX = updateCamera(player.position.x, canvasRef.width, worldWidth);  //move camera to follow player
 
     let last = platforms[platforms.length - 1];
-    if(player.position.x > last.x - 500){  //player is getting close to the end, add more platforms
-        platforms.push(generatePlatform(last));
-    }
 
     if (currentLevel >= 2) 
         hazards.forEach(h => h.update(player, deltaTime));  //firepits active from level 2

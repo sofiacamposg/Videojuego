@@ -64,18 +64,18 @@ export function spawnEnemy(x, y, config){
     return new EnemyBase(new Vector(x,y), config);
 }
 export function generatePlatform(lastPlatform){
-    let minGap = 200;
-    let maxGap = 300;
+    let minGap = 300;
+    let maxGap = 400;
 
     let x = lastPlatform.x + Math.random() * (maxGap - minGap) + minGap;
     let y = lastPlatform.y + (Math.random() - 0.5) * 120;
 
-    if(y > 420) y = 420;
+    if(y > 400) y = 400;
     if(y < 380) y = 380;
 
     return {
         x, y,
-        width: 80,
+        width: 100,
         height: 70
     };
 }

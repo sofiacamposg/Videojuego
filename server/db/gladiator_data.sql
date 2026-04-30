@@ -16,17 +16,17 @@ USE gladiator;
 -- Insert archetypes catalog
 SET AUTOCOMMIT = 0;
 INSERT INTO Archetype (name, hp_start, speed_start, damage_start) VALUES
-('Warrior', 120, 5, 8),
-('Lancer', 100, 6, 13),
-('Heavy', 150, 3, 18);
+('Warrior', 120, 5, 10),
+('Lancer', 100, 6, 15),
+('Heavy', 150, 3, 20);
 COMMIT;
 
 -- Insert the 3 levels
 SET AUTOCOMMIT = 0;
 INSERT INTO Level (level_number, target_time, condition_enemies, description) VALUES
-(1, 25000, 6, 'First level of the arena'),
-(2, 30000, 9, 'Intermediate arena battle'),
-(3, 40000, 12, 'Final battle of the colosseum');
+(1, 35000, 6, 'First level of the arena'),
+(2, 45000, 8, 'Intermediate arena battle'),
+(3, 50000, 10, 'Final battle of the colosseum');
 COMMIT;
 
 -- Insert Cards catalog 
@@ -112,8 +112,8 @@ COMMIT;
 SET AUTOCOMMIT = 0;
 INSERT INTO Enemy (level_id, enemy_name, hp_start, speed_start, damage_start) VALUES
 (1, 'Lion', 600, 4, 20),
-(2, 'Tiger', 1050, 5, 28),
-(3, 'Boar', 1120, 6, 34);
+(2, 'Tiger', 850, 5, 28),
+(3, 'Boar', 1020, 6, 34);
 COMMIT;
 
 -- Dummy data for Player

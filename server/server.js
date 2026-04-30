@@ -116,16 +116,19 @@ app.post("/register", (req, res) => {
         return;  // stop here so the player register code below doesn't run
     }
 
-    // regular player registration, 
-    db.query(
-        "SELECT * FROM Player WHERE player_id = ?",
-        [newPlayerId],
-        (err2, result2) => {
-            if (err2) return res.status(500).send("Fetch error");
-
-            return res.json({ ...result2[0], role: "player" });
-        }
-    );
+    // regular player registration
+    db.query("SELECT * FROM Player WHERE username = ?", [username], (err, result) => {
+        if (err) return res.status(500).send("Server error");
+        if (result.length > 0) return res.status(400).send("User already exists");
+        db.query("INSERT INTO Player (name, username, password) VALUES (?, ?, ?)", [name, username, password], (err, insertResult) => {
+            if (err) return res.status(500).send("Insert error");
+            console.log("USER CREATED:", username);
+            db.query("SELECT * FROM Player WHERE player_id = ?", [insertResult.insertId], (err2, playerResult) => {
+                if (err2) return res.status(500).send("Fetch error");
+                return res.json({ ...playerResult[0], role: "player" });
+            });
+        });
+    });
 });
 
 // GET Archetypes for select scene
