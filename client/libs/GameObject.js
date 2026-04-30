@@ -1,122 +1,122 @@
 "use strict";
-//Base for alll the actors in the scene
+// Base class for all actors in the scene (player, enemies, hazards, etc.)
 import { Vector } from "./Vector.js";
 import { Rect } from "./Rect.js";
 
-// Global variables to select whether to display bounding boxes and colliders
+// Global variables to toggle bounding boxes and colliders for debugging
 let showBBox = false;
 let showColl = false;
 
-// Register event listeners to toggle bounding boxes
+// Press 'y' to toggle bounding box display, 'u' to toggle collider display
 window.addEventListener('keydown', event => {
     if (event.key == 'y') showBBox = !showBBox;
     if (event.key == 'u') showColl = !showColl;
 });
 
-
-
 class GameObject {
     constructor(position, width, height, color, type) {
-        this.position = position;
-        this.size = new Vector(width, height);
-        this.halfSize = new Vector(width / 2, height / 2);
-        this.color = color;
-        this.type = type;
+        this.position = position;       // Center position of the object (Vector)
+        this.size = new Vector(width, height);          // Full size of the object
+        this.halfSize = new Vector(width / 2, height / 2); // Half size for easier calculations
+        this.color = color;             // Fallback color if no sprite is set
+        this.type = type;               // Object type identifier (e.g. "player", "enemy")
         // Default scale for all new objects
         this.scale = 1.0;
 
-        // Sprite properties
+        // Sprite properties — set via setSprite() or directly in subclasses
         this.spriteImage = undefined;
         this.spriteRect = undefined;
 
-        // Intialize a collider with the default object size
+        // Initialize a collider with the default object size
         this.setCollider(width, height);
     }
 
+    // Load a sprite image from a path and optionally set a spritesheet rect
     setSprite(imagePath, rect) {
         this.spriteImage = new Image();
         this.spriteImage.src = imagePath;
         if (rect) {
-            this.spriteRect = rect;
+            this.spriteRect = rect; // Only set if a rect is provided (spritesheet)
         }
     }
 
+    // Update the scale of the object (affects drawing and collider size)
     setScale(scale) {
         this.scale = scale;
     }
 
+    // Define the collider size — the hitbox used for collision detection
     setCollider(width, height) {
-        // The top left corner of the collider is offset by half of its size
-        // TODO: Provide the correct values for the collider rectangle
-        // Use the scale as well
-        //this.xOffset = 0;
-        //this.yOffset = 0;
-        //TAREA
-        this.colliderWidth = width * this.scale;;
-        this.colliderHeight = height * this.scale;;
-        this.updateCollider();
+        // The collider dimensions are scaled with the object's scale
+        this.colliderWidth = width * this.scale;
+        this.colliderHeight = height * this.scale;
+        this.updateCollider(); // Immediately position the collider
     }
 
+    // Recalculate the collider position based on the object's current position
+    // The collider is anchored at the feet (toes to head alignment)
     updateCollider() {
-        //TAREA
-        // Adjust the Rect of the object with its position
-        // TODO: Center the collider around the object position
-        // Use the scale as well
-       this.collider = new Rect(
-            this.position.x - this.colliderWidth / 2,
-            this.position.y - this.colliderHeight,  //toes to head
+        this.collider = new Rect(
+            this.position.x - this.colliderWidth / 2,   // Centered horizontally
+            this.position.y - this.colliderHeight,       // Anchored at the bottom (feet)
             this.colliderWidth,
             this.colliderHeight
-);
+        );
     }
 
+    // Draw the object on the canvas
+    // Uses spritesheet if spriteRect is set, full image if not, or a colored rect as fallback
     draw(ctx) {
         if (this.spriteImage) {
             if (this.spriteRect) {
+                // Draw a specific frame from a spritesheet
                 ctx.drawImage(this.spriteImage,
-                              // The coordiantes within the image file to show
+                              // Source coordinates within the spritesheet
                               this.spriteRect.x,
                               this.spriteRect.y,
                               this.spriteRect.width,
                               this.spriteRect.height,
-                              // The position to draw the image (toes to head)
+                              // Destination on canvas (toes to head)
                               (this.position.x - this.halfSize.x * this.scale),
                               (this.position.y - this.size.y * this.scale),
                               this.size.x * this.scale,
                               this.size.y * this.scale);
             } else {
+                // Draw the full image without a spritesheet rect
                 ctx.drawImage(this.spriteImage,
-                              // The position to draw the image (toes to head)
                               (this.position.x - this.halfSize.x * this.scale),
                               (this.position.y - this.size.y * this.scale),
                               this.size.x * this.scale,
                               this.size.y * this.scale);
             }
         } else {
-            ctx.fillStyle = this.color; // (toes to head)
+            // No sprite — draw a plain colored rectangle as fallback
+            ctx.fillStyle = this.color;
             ctx.fillRect((this.position.x - this.halfSize.x * this.scale),
                          (this.position.y - this.size.y * this.scale),
                          this.size.x * this.scale,
                          this.size.y * this.scale);
         }
 
+        // Draw debug overlays if enabled
         if (showBBox) this.drawBoundingBox(ctx);
         if (showColl) this.drawCollider(ctx);
     }
 
+    // Draw a semi-transparent overlay and red border showing the object's bounding box
+    // Used for debugging — toggle with 'y' key
     drawBoundingBox(ctx) {
-        // Attempt to compose the overlay so it makes the image lighter
+        // Use screen blend mode to lighten the image instead of covering it
         ctx.globalCompositeOperation = "screen";
-        // A transparent layer on top
         ctx.fillStyle = "rgb(0.5, 0.5, 0.5, 0.3)";
         ctx.fillRect((this.position.x - this.halfSize.x * this.scale),
                      (this.position.y - this.size.y * this.scale),
                      this.size.x * this.scale,
                      this.size.y * this.scale);
-        // Return to default composition type
+        // Reset to default blend mode
         ctx.globalCompositeOperation = "source-over";
 
-        // Draw the bounding box of the sprite
+        // Draw red border around the bounding box
         ctx.strokeStyle = "red";
         ctx.beginPath();
         ctx.rect((this.position.x - this.halfSize.x * this.scale),
@@ -125,11 +125,13 @@ class GameObject {
                  this.size.y * this.scale);
         ctx.stroke();
 
-        // A dot in the center of the sprite
+        // Draw a small red dot at the object's center position
         ctx.fillStyle = "red";
         ctx.fillRect(this.position.x - 2, this.position.y - 2, 4, 4);
     }
 
+    // Draw a white border showing the collider rect used for collision detection
+    // Used for debugging — toggle with 'u' key
     drawCollider(ctx) {
         ctx.strokeStyle = "white";
         ctx.beginPath();
@@ -140,7 +142,7 @@ class GameObject {
         ctx.stroke();
     }
 
-    // Empty template for all GameObjects to be able to update
+    // Empty update method — meant to be overridden by subclasses
     update() {
 
     }
