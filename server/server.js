@@ -86,7 +86,8 @@ app.post("/login", (req, res) => {
                 return res.status(401).send("Invalid credentials");
             }
 
-            //case5: regular player found, send back their data with role flag
+            //case5: regular player found — update last_login to fire trg_after_login
+            db.query("UPDATE Player SET last_login = NOW() WHERE player_id = ?", [playerResult[0].player_id]);
             console.log("USER LOGGED:", playerResult[0]);
             return res.json({ ...playerResult[0], role: "player" });
         });
@@ -254,30 +255,18 @@ app.post("/match", (req, res) => {
         result
     } = req.body;
 
-    const query = `
-        INSERT INTO MatchGame 
-        (player_id, archetype_id, end_time, duration_seconds, level_reached, final_fame, life, result)
-        VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)
-    `;
+    db.query(
+        "CALL InsertMatch(?, ?, ?, ?, ?, ?, ?)",
+        [player_id, archetype_id, duration_seconds, level_reached, final_fame, life, result],
+        (err, result) => {
+            if (err) return res.status(500).send(err.message);
 
-    const values = [
-        player_id,
-        archetype_id,
-        duration_seconds,
-        level_reached,
-        final_fame,
-        life,
-        result
-    ];
-
-    db.query(query, values, (err, resultInsert) => {
-        if (err) return res.status(500).send(err.message);
-
-        res.json({
-            success: true,
-            match_id: resultInsert.insertId
-        });
-    });
+            res.json({
+                success: true,
+                match_id: result[0][0].match_id
+            });
+        }
+    );
 });
 
 
