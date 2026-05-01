@@ -162,13 +162,13 @@ function handleClickSettings(ctx){
         return;
     }
 
-    // toggle daltonismo
+    // toggle color blindness mode, implemented with the help of AI and https://daltonlens.org/colorblindness-simulator
+    // to determine if the colors had high contrast for any type of color blindness
     if(isMouseOverBox(mouseX, mouseY, colorblindBox)){
         colorblindMode = !colorblindMode;
-        const canvas = document.getElementById("canvas");
-        canvas.style.filter = colorblindMode 
-            ? "url(#deuteranopia)" 
-            : "none";
+        document.documentElement.style.filter = colorblindMode
+        ? "hue-rotate(180deg)"
+        : "none";
         return;
     }
 

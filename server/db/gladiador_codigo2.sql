@@ -24,6 +24,7 @@ CREATE TABLE Player (
     hearts SMALLINT UNSIGNED NOT NULL DEFAULT 1,  -- players can buy more
     galen SMALLINT UNSIGNED NOT NULL DEFAULT 0,  -- like a shield players can buy
     fame SMALLINT NOT NULL DEFAULT 0,  -- used to buy upgrades
+    last_login TIMESTAMP NULL DEFAULT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (player_id),
     CONSTRAINT chk_hearts CHECK (hearts <= 5),
@@ -353,6 +354,22 @@ END //
 
 DELIMITER ;
 
+-- Trigger: increment logins_count in Statistics when a player logs in
+DELIMITER //
+CREATE TRIGGER trg_after_login
+AFTER UPDATE ON Player
+FOR EACH ROW
+BEGIN
+    IF NEW.last_login != OLD.last_login OR (OLD.last_login IS NULL AND NEW.last_login IS NOT NULL) THEN
+        UPDATE Statistics
+        SET logins_count = logins_count + 1,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE statistics_id = 1;
+    END IF;
+END //
+
+DELIMITER ;
+
 -- & STORED PROCEDURES
 -- Stored Procedure: get all matches by player
 DELIMITER //
@@ -382,6 +399,7 @@ BEGIN
         in_player_id, in_archetype_id, NOW(), in_duration_seconds,
         in_level_reached, in_final_fame, in_life, in_result
     );
+    SELECT LAST_INSERT_ID() AS match_id;
 END //
 DELIMITER ;
 
