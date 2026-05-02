@@ -1,7 +1,22 @@
+/* 
+& Handles everything related to drawing and managing cards within the game, includes:
+& mid-level card event, player deck, and end-of-level reward
+
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+*/
+
 "use strict";
+//* === imports ===
 import { MessageBox } from "../objects/MessageBox.js";
 import { saveCardUse } from "../libs/level_functions.js";
 
+//* === class cards On Canvas ===
+//~ general info about events
 class cardsOnCanvas {
     constructor() {
         this.type = "";
@@ -16,7 +31,7 @@ class cardsOnCanvas {
         this.isDeckOpen = false;
         this.selectedDeckIndex = -1;
 
-        //references set on show()
+        //references set on show function
         this._player = null;
         this._enemies = null;
         this._game = null;
@@ -27,7 +42,7 @@ class cardsOnCanvas {
         this.cardBackImage = new Image();
         this.cardBackImage.src = "../Videojuego/assets/cards/BaseCard.png";
 
-        //MessageBox as background container for each overlay
+        //MessageBox as background container for each event
         this.cardBox = new MessageBox("SELECT A CARD", "The crowd wants to help you, but your fate will choose!", 80, 30, 840, 540);
         this.deckBox = new MessageBox("YOUR DECK", "Choose wisely", 80, 30, 840, 540);
         this.rewardBox = new MessageBox("Your reward, gladiator.", "By order of the Emperor, these powers are yours. Use them wisely, gladiator.", 80, 30, 840, 540);
@@ -36,8 +51,8 @@ class cardsOnCanvas {
         this.rewardCards = [];
     }
 
-// ========================= Mid game cards =========================
-    show(allCards, player, enemies, game = null) {  //? call this to open the card pick screen with the 3 options
+    //* === mid game cards ===
+    show(allCards, player, enemies, game = null) {  //~ call this to open the card pick screen with the 3 options
         this.offeredCards = allCards;
         this.selectedIndex = null;
         this.isActive = true;
@@ -46,14 +61,16 @@ class cardsOnCanvas {
         this._game = game;
         this.cardBox.show();
     }
-    close() {  //? hides everything and resets the offered cards state
+
+    close() {  //~ hides everything and resets the offered cards state
         this.isActive = false;
         this.offeredCards = [];
         this.selectedIndex = null;
         this.cardBox.buttons = [];
         this.cardBox.hide();
     }
-    draw(ctx, canvas) {  //? draws the background box and the 3 cards centered on screen
+
+    draw(ctx, canvas) {  //~ draws the background box and the 3 cards centered on screen
         if (!this.isActive) return;  //no event triggered
         //dimentions
         const W = canvas.width;
@@ -64,6 +81,7 @@ class cardsOnCanvas {
         const count = 3;
         const startX = (W - (count * cardW + (count - 1) * gap)) / 2;
         const cardY = (H - cardH) / 2;
+
         this.cardBox.draw(ctx);  //draw form messageBox.js
         this.offeredCards.forEach((card, i) => {  //cards display
             const x = startX + i * (cardW + gap);
@@ -71,7 +89,8 @@ class cardsOnCanvas {
             this.drawCard(ctx, card, x, cardY, cardW, cardH, isSelected, "midgame");
         });
     }
-    handleClick(mx, my, canvas) {  //? checks if the player clicked a card, marks it as selected and shows the confirm button
+
+    handleClick(mx, my, canvas) {  //~ checks if the player clicked a card, marks it as selected and shows the confirm button
         if (!this.isActive) return null;  //no event triggered
         //dimentions
         const cardW = 220;
@@ -90,10 +109,10 @@ class cardsOnCanvas {
             }
         }
 
-        //lets the messagebox check if the confirm button was clicked
-        return this.cardBox.handleClick(mx, my);
+        return this.cardBox.handleClick(mx, my);  //lets the messagebox check if the confirm button was clicked
     }
-    confirm() {  //? applies the card effect and saves it to the db
+
+    confirm() {  //~ applies the card effect and saves it to the db
         const card = this.offeredCards[this.selectedIndex];  //which card?
         this.close();  //ahh okay, close the screen
         card.applyEffect(this._player, this._enemies, this._game);  //apply the cards effect 
@@ -124,7 +143,8 @@ class cardsOnCanvas {
 
         return card;
     }
-    update(deltaTime) {  //?counts down active card timers and removes effects when they run out
+
+    update(deltaTime) {  //~ counts down active card timers and removes effects when they run out
         this.activeEffects = this.activeEffects.filter(effect => {
             effect.endTime -= deltaTime;
             if (effect.endTime <= 0) {
@@ -134,19 +154,24 @@ class cardsOnCanvas {
             return true;
         });
     }
-    clearPermanentEffects() {  //undo all permanent cards effects when level ends or game resets
+
+    clearPermanentEffects() {  //~ undo all permanent cards effects when level ends or game resets
         this.permanentEffects.forEach(e => e.card.removeEffect(e.player, e.enemies, e.game));
         this.permanentEffects = [];
     }
-// ========================= deck cards =========================
-    toggleDeck() {  //? call this to open the card pick screen
+
+    //* === deck cards (when c is pressed) ===
+    toggleDeck() {  //~ call this to open the card pick screen
         this.isDeckOpen = !this.isDeckOpen;
         this.selectedDeckIndex = -1;
         this.deckBox.buttons = [];
-        if (this.isDeckOpen) this.deckBox.show();  //show from messageBox.js
-        else this.deckBox.hide();
+        if (this.isDeckOpen)  //show from messageBox.js
+            this.deckBox.show();  
+        else 
+            this.deckBox.hide();
     }
-    drawDeck(ctx, canvas) {  //? draw plpayers deck in a box
+
+    drawDeck(ctx, canvas) {  //~ draw plpayers deck in a box
         if (!this.isDeckOpen) return;  //c not clicked
 
         this.deckBox.draw(ctx); //background and title from MessageBox
@@ -160,6 +185,7 @@ class cardsOnCanvas {
         const spacingY = 240;
         const startX = (W - (cols * cardW + (cols - 1) * (spacingX - cardW))) / 2;
         const startY = 110;
+
         //no cards screen
         if (this.playerDeck.length === 0) {
             ctx.fillStyle = "white";
@@ -167,6 +193,7 @@ class cardsOnCanvas {
             ctx.fillText("No cards yet", W / 2, H / 2);
             return;
         }
+
         for (let i = 0; i < this.playerDeck.length; i++) {  //cards display
             const col = i % cols;
             const row = Math.floor(i / cols);
@@ -176,10 +203,11 @@ class cardsOnCanvas {
         }
 
     }
-    //draws the reward cards centered on screen using the same style as the mid-game event
-    drawReward(ctx, canvas) {
-        if (this.rewardCards.length === 0) return;
 
+    //* === reward event (end of level event) ===
+    drawReward(ctx, canvas) { //~ draws the reward cards centered on screen using the same style as the mid-game event
+        if (this.rewardCards.length === 0) return;
+        //dimentions
         const W = canvas.width;
         const H = canvas.height;
         const cardW = 220;
@@ -196,8 +224,9 @@ class cardsOnCanvas {
             this.drawCard(ctx, card, x, cardY, cardW, cardH, false, "reward");
         });
     }
-    handleDeckClick(mx, my, canvas) {  //? checks if the player clicked a card, marks it as selected and shows the confirm button
-        if (!this.isDeckOpen) return null;  //deck is close
+
+    //* === helpers ===
+    handleDeckClick(mx, my, canvas) {  //~ checks if the player clicked a card, marks it as selected and shows the confirm button
         //dimentions
         const cardW = 140;
         const cardH = 200;
@@ -239,23 +268,13 @@ class cardsOnCanvas {
         this.deckBox.handleClick(mx, my)  //handle click in the botton
     }
 
-// ========================= helpers for mid game event =========================
-    drawCard(ctx, card, x, y, w, h, isSelected, type) {
-        //* para test
-        /*if (card.image && card.image.complete && card.image.naturalWidth > 0) {
+    drawCard(ctx, card, x, y, w, h, isSelected, type) {   //~ handle full logic on how to draw all cards
+        if (type === "reward" || type === "deck")  //if is a reward or deck event, cards are upward
             ctx.drawImage(card.image, x, y, w, h);
-        } else {*/
-            //ctx.drawImage(this.cardBackImage, x, y, w, h);  //esta es la linea real
-        //}    
-
-        if (type === "reward" || type === "deck")
-            ctx.drawImage(card.image, x, y, w, h);
-        else
+        else  //mid game event, cards are downward
             ctx.drawImage(this.cardBackImage, x, y, w, h);
 
-        
-
-        if (this._game?.revealNextCard) {  //reveal card effect
+        if (this._game?.revealNextCard) {  //reveal card effect: show the cards type in the next event
             const isPowerUp = card.type === "POWER_UP";
             ctx.fillStyle = "white";
             ctx.font = "bold 30px 'VT323'";
@@ -277,4 +296,6 @@ class cardsOnCanvas {
     }
 
 }
+
+//* === exports ===
 export { cardsOnCanvas };
