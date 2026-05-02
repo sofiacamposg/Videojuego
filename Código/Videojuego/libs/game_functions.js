@@ -1,21 +1,23 @@
-/*
- * Collection of functions that will be used in the games
- *
- * Gilberto Echeverria
- * 2026-02-10
- */
+/* 
+& Generic utility functions for cross-scene usage. Includes:
+& collision detection, random number generation, mouse movement handling, mouse-over-box detection, click handling, and button rendering
+& Made by Gilberto Echeverría and Gladiator team
 
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+*/
 "use strict";
 
 /*
- * Detect a collision of two box colliders
- *
- * Arguments:
- * - obj1: A GameObject with position (center) and halfSize
- * - obj2: A GameObject with position (center) and halfSize
- *
- * Returns:
- * - true if the boxes overlap, false otherwise
+ ~ Detect a collision of two box colliders
+ ~ Arguments:
+ ~ - obj1: A GameObject with position (center) and halfSize
+ ~ - obj2: A GameObject with position (center) and halfSize
+ ~ Returns: true if the boxes overlap, false otherwise
  */
 function boxOverlap(obj1, obj2) {
     const L1 = obj1.position.x - obj1.halfSize.x;
@@ -32,14 +34,23 @@ function boxOverlap(obj1, obj2) {
 }
 
 /*
- * Detect overlap between an attack hitbox and a GameObject
- *
- * Arguments:
- * - hitbox: Plain rect { x, y, width, height } where x,y is the top-left corner
- * - obj: A GameObject with position (center) and halfSize
- *
- * Returns:
- * - true if they overlap, false otherwise
+~ Generate a random integer in the range [start, start + size - 1]
+~ Arguments:
+~ - size: The size of the range (number of possible values)
+~ - start: The starting value of the range (default is 0)
+~ Returns: A random integer in the specified range
+*/
+function randomRange(size, start) {  
+    return Math.floor(Math.random() * size) + ((start === undefined) ? 0 : start);
+}
+
+/* 
+* modified to accept a hitbox and object
+~ Detect overlap between an attack hitbox and a GameObject
+~ Arguments:
+~ - hitbox: Plain rect { x, y, width, height } where x,y is the top-left corner
+~ - obj: A GameObject with position (center) and halfSize
+~ Returns: true if they overlap, false otherwise
  */
 function hitboxOverlap(hitbox, obj) {
     const L1 = hitbox.x;
@@ -55,38 +66,23 @@ function hitboxOverlap(hitbox, obj) {
     return (L1 < R2 && R1 > L2 && T1 < B2 && B1 > T2);
 }
 
-/*
- * Generate a random integer in the range [start, start + size - 1]
- *
- * Arguments:
- * - size: The size of the range (number of possible values)
- * - start: The starting value of the range (default is 0)
- *
- * Returns:
- * - A random integer in the specified range
-*/
-function randomRange(size, start) {  //random del tamaño de la caja
-    return Math.floor(Math.random() * size) + ((start === undefined) ? 0 : start);
-}
-
-//=======================OUR FUNCTIONS============================
-//Handle Mouse Move
-export function handleMouseMove(event, canvas) {
+//* === functions made by gladiator team ===
+export function handleMouseMove(event, canvas) {  //~ converts screen coordinates to canvas coordinates.
     const rect = canvas.getBoundingClientRect();
     return {
         x: event.clientX - rect.left,
         y: event.clientY - rect.top
     };
 }
-//Is Mouse Over Box
-export function isMouseOverBox(mouseX, mouseY, element) {
+
+export function isMouseOverBox(mouseX, mouseY, element) {  //~ detects hover state over an element
     return mouseX > element.x - element.w / 2 &&
            mouseX < element.x + element.w / 2 &&
            mouseY > element.y - element.h / 2 &&
            mouseY < element.y + element.h / 2;
 }
-//Handle Click
-export function handleClick(mouseX, mouseY, button, ctx) {
+
+export function handleClick(mouseX, mouseY, button, ctx) {  //~ detects clicks on a text button by measuring its width
     ctx.font = "25px 'VT323'";
 
     const w = ctx.measureText(button.text).width;
@@ -98,8 +94,7 @@ export function handleClick(mouseX, mouseY, button, ctx) {
            mouseY < button.y + h / 2;
 }
 
-//Draw Button 
-export function drawButton(ctx, button, mouseX, mouseY) {
+export function drawButton(ctx, button, mouseX, mouseY) {  //~ draws button text with hover effects (red color and underline)
     ctx.font = "25px 'VT323'";
     ctx.textAlign = "center";
 
@@ -130,4 +125,5 @@ export function drawButton(ctx, button, mouseX, mouseY) {
     }
 }
 
+//* === exports ===
 export { boxOverlap, hitboxOverlap, randomRange };

@@ -1,15 +1,26 @@
-//LEVEL CONFIGURATIONS
-//Player Configurations 
+/* 
+& Acts as a bridge between the database and game scenes, preventing levels from hardcoding their values. Includes:
+& API data fetching: 3 async functions that fetch data from localhost:3000 to populate exported objects
+& level config constructor: Combines background, scale, and spawn positions with dynamic DB data to return an object ready for scene 
 
-//API
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+*/
+
+//* === player config ===
+//~ gets archetype catalog data and push it in playerConfigs, no hardcoded data
 export let playerConfigs = {};
 export async function loadPlayerConfigs() {
-    const res = await fetch("http://localhost:3000/archetypes");
-    const data = await res.json();
+    const res = await fetch("http://localhost:3000/archetypes");  //gets the info
+    const data = await res.json();  //put it in a json
 
-    const configs = {};
+    const configs = {};  //empty object to add the catalog
 
-    data.forEach(a => {
+    data.forEach(a => {  //organize info of each character
         configs[a.name] = {
             hp: a.hp_start,
             maxHp: a.hp_start,
@@ -25,17 +36,19 @@ export async function loadPlayerConfigs() {
         };
     });
 
-    playerConfigs = configs;
+    playerConfigs = configs;  //copy
 }
-//Enemy configs from API
+
+//* === enemy config ===
+//~ gets enemies catalog data and push it in enemyCondig, no hardcoded data
 export let enemyConfigs = {};
 export async function loadEnemyConfigs() {
-    const res = await fetch("http://localhost:3000/enemies");
-    const data = await res.json();
+    const res = await fetch("http://localhost:3000/enemies");  //gets info
+    const data = await res.json();  //add it to a json
 
-    const configs = {};
+    const configs = {};  //empty object to save the catalog
 
-    data.forEach(e => {
+    data.forEach(e => {  //organize info
         configs[e.level_id] = {
             hp: e.hp_start,
             damage: e.damage_start,
@@ -43,28 +56,31 @@ export async function loadEnemyConfigs() {
         };
     });
 
-    enemyConfigs = configs;
+    enemyConfigs = configs;  //copy
 }
-//LevelConfigs from API
+
+//* === level config ===
+//~ gets level catalog data and push it in levelConfig, no hardcoded data
 export let levelConfigsDB = {};
 export async function loadLevelConfigs() {
-    const res = await fetch("http://localhost:3000/levels");
-    const data = await res.json();
+    const res = await fetch("http://localhost:3000/levels");  //gets info
+    const data = await res.json();  //put it in a json
 
-    const configs = {};
+    const configs = {};  //empty object to save data
 
-    data.forEach(l => {
+    data.forEach(l => {  //add data
         configs[l.level_id] = {
             targetTime: l.target_time,
             conditionEnemies: l.condition_enemies
         };
     });
 
-    levelConfigsDB = configs;
+    levelConfigsDB = configs;  //copy
 }
-export function getLevelConfig(level) {
+
+export function getLevelConfig(level) {  //~ puts all info in a single object to use it in LevelBase.js (debugged w IA)
     const db = levelConfigsDB[level] || {};
-    const baseConfigs = {
+    const baseConfigs = {  //background
         1: {
             background: "../Videojuego/assets/Coliseo1.png",
             scale: 0.6,
@@ -79,12 +95,12 @@ export function getLevelConfig(level) {
         }
     };
     const base = baseConfigs[level];
-    return {
-        ...base,
-        targetTime: db.targetTime || 10000,
-        conditionEnemies: db.conditionEnemies || 8,
+    return {  //all info (game, enemies, player)
+        ...base,  //organize info for each level
+        targetTime: db.targetTime || 10000,  //hardcoded time for edge case
+        conditionEnemies: db.conditionEnemies || 8, //hardcoded time for edge case
         enemyConfig: {
-            ...enemyConfigs[level], // ahora sí funciona
+            ...enemyConfigs[level], 
             scale: base.scale,
             walkRightSrc: `../Videojuego/assets/enemy${level}/walkRight.png`,
             walkLeftSrc: `../Videojuego/assets/enemy${level}/walkLeft.png`,

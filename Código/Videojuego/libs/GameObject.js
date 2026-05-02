@@ -1,20 +1,33 @@
+/* 
+& Base class for all game actors. Manages:
+& position and scale, toe-to-head drawing, and collision box / collider
+& Made by Gilberto Echeverría 
+
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+*/
 "use strict";
-//Base for alll the actors in the scene
+
+//* === imports ===
+//~ Base for all the actors in the scene
 import { Vector } from "./Vector.js";
 import { Rect } from "./Rect.js";
 
-// Global variables to select whether to display bounding boxes and colliders
+//* === Global variables to select whether to display bounding boxes and colliders ===
 let showBBox = false;
 let showColl = false;
 
-// Register event listeners to toggle bounding boxes
+//~ Register event listeners to toggle bounding boxes
 window.addEventListener('keydown', event => {
     if (event.key == 'y') showBBox = !showBBox;
     if (event.key == 'u') showColl = !showColl;
 });
 
-
-
+//* === class game object === 
 class GameObject {
     constructor(position, width, height, color, type) {
         this.position = position;
@@ -66,8 +79,7 @@ class GameObject {
             this.position.x - this.colliderWidth / 2,
             this.position.y - this.colliderHeight,  //toes to head
             this.colliderWidth,
-            this.colliderHeight
-);
+            this.colliderHeight);
     }
 
     draw(ctx) {
@@ -139,10 +151,6 @@ class GameObject {
                  this.collider.height);
         ctx.stroke();
     }
-
-    // Empty template for all GameObjects to be able to update
-    update() {
-
-    }
 }
+//* === export ===
 export { GameObject }
