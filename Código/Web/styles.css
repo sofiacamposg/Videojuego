@@ -1,13 +1,24 @@
+/*
+& Style for index.html
+
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+*/
+/** import our selected font*/
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Cinzel:wght@400;700&display=swap');
 
-/* RESET */
+/** reset */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/*PIXEL TEXT*/
+/** pixel font for headers*/
 .pixelText {
     font-family: 'VT323', monospace;
     font-weight: 900;
@@ -18,7 +29,7 @@
     text-shadow: 3px 3px 0px #000, 0 0 18px rgba(150, 20, 20, 0.6);
 }
 
-body {  /*general page style*/
+body {  /**general page style*/
     background: radial-gradient(circle at top, #1a0e07, #000);
     display: flex;
     flex-direction: column;
@@ -26,38 +37,38 @@ body {  /*general page style*/
     color: white;
     font-family: 'Cinzel', serif;
     margin: 0;  
-    padding: 0;  /*removes default inner spacing*/
+    padding: 0;  /*~ removes default inner spacing*/
 }
 
-#headerContainer {  /*top banner*/
+#headerContainer {  /** top banner*/
     text-align: center;  
 }
-#headerContainer h2 {  /*header 2*/
+#headerContainer h2 {  /** header 2*/
     color: #812323;  
     font-size: 2rem;  
     text-align: center;  
     font-weight: 600; 
 }
-#headerContainer p {  /*header 3*/
+#headerContainer p {  /** header 3*/
     color: #876f4e; 
     font-size: 1rem;  
     font-weight: 800;
-    padding-left: 1rem;  /*space between bullet point and text*/
+    padding-left: 1rem;  /*~ space between bullet point and text*/
     margin-top: .7rem;  
 }
-hr {  /*divider*/
+hr {  /** divider*/
     border: 0;
-    border-top: 0.15rem dashed #4029093f;  /*--- style*/
+    border-top: 0.15rem dashed #4029093f;  /*~ --- style*/
     opacity: 1;
     width: 100%;
 }
 
-/* BUTTONS */
-.tutorial {
+/** top buttons */
+.tutorial {  /*~ top gap between header and buttons*/
     margin-top: 5px;
 }
 
-.tutorialButton {
+.tutorialButton {  /** buttons style*/
     text-decoration: none;
     background: linear-gradient(145deg, #ffd166, #c9a44c);
     color: black;
@@ -70,26 +81,25 @@ hr {  /*divider*/
     cursor: pointer;
 }
 
-.tutorialButton:hover {
+.tutorialButton:hover {  /** on hover effect*/
     transform: translateY(-3px) scale(1.05);
     background: #ffe08a;
 }
 
-/* MAIN LAYOUT: canvas + stats */
+/** MAIN LAYOUT: canvas + stats */
 .layout {
     display: grid;
-    grid-template-columns: auto 260px; /* size of each column*/
-    gap: 2rem; /*distance from canvas*/
+    grid-template-columns: auto 260px; /*~ size of each column*/
+    gap: 2rem; /*~ distance from canvas*/
     align-items: start;
     justify-content: left;
     width: 100%;
     max-width: 1200px;
-    margin-top: 20px; /*gap between tabs and canvas*/
-    margin-bottom: 3rem;  /*gap between canvas and window*/
+    margin-top: 20px; /*~ gap between tabs and canvas*/
+    margin-bottom: 3rem;  /*~ gap between canvas and window*/
 }
 
-/* BOXES 
-.descriptionBox,*/
+/** (right-side) stats style */
 .statsBox {
     background: rgba(20, 10, 5, 0.85);
     border: 2px solid #c9a44c;
@@ -98,7 +108,7 @@ hr {  /*divider*/
     box-shadow: 0 0 15px rgba(0,0,0,0.8);
 }
 
-/* DROPDOWN */
+/** DROPDOWN button*/
 .dropdownButton {
     width: 100%;
     background: #c9a44c;
@@ -111,18 +121,11 @@ hr {  /*divider*/
     margin-bottom: 4px;
 }
 
-.dropdownButton:hover {
+.dropdownButton:hover {  /** on hover effect*/
     background: #e6c76b;
 }
-/*
-.descriptionContent {
-    margin-top: 10px;
-    display: none;
-    line-height: 1.5;
-    color: white;
-}*/
 
-/* STATS */
+/** (top) STATS */
 .statsContent {
     display: none;
     margin-top: 10px;
@@ -145,14 +148,14 @@ hr {  /*divider*/
     font-weight: bold;
 }
 
-/* CANVAS */
+/** CANVAS style */
 #canvas {
     border: 3px solid rgb(255, 187, 86);
     border-radius: 10px;
     box-shadow: 0 0 25px rgba(255, 187, 86, 0.5);
 }
 
-/* RESPONSIVE */
+/** RESPONSIVE */
 @media (max-width: 900px) {
     .layout {
         display: flex;
@@ -160,7 +163,7 @@ hr {  /*divider*/
         align-items: center;
     }
 
-  /*  .descriptionBox,*/
+  /*~  .descriptionBox,*/
     .statsBox {
         width: 80%;
     }
@@ -172,7 +175,7 @@ p {
     line-height: 1.6;       
 }
 
-/* MODAL */
+/** MODAL */
 .modal-content {
     background: #1a0e07!important;
     border: 2px solid #c9a44c;
@@ -193,7 +196,7 @@ h3 {
     text-shadow: 3px 3px 0px #000, 0 0 18px rgba(150, 20, 20, 0.6);
 }
 
-/* TUTORIAL MODALS */
+/** TUTORIAL MODALS */
 .tutorial-page {
     font-family: 'VT323', monospace;
     font-size: 1rem;
@@ -206,7 +209,7 @@ h3 {
     border-top: 1px solid #c9a44c;
 }
 
-/* CREDITS MODAL */
+/** CREDITS MODAL */
 .credits-body {
     display: flex;
     flex-direction: column;
