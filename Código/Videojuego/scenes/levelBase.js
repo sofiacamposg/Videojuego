@@ -1,3 +1,17 @@
+/* 
+& Levels scene, handles 3 levels transitions, timing, events. Includes:
+& buttons, draw, helpers, and api 
+
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+*/
+"use strict"
+
+//* === imports ===
 import { PlayerBase } from "../objects/PlayerBase.js";
 import { Vector } from "../libs/Vector.js";
 import { MessageBox } from "../objects/MessageBox.js";
@@ -8,9 +22,9 @@ import { getLevelConfig, playerConfigs } from "../libs/levelConfig.js";
 import { spawnEnemy, generatePlatform, updateCamera, updateFame, drawFame, saveMatch, drawFog, imperialDecree,
         loadPlayerStats, drawHealthBar, drawHearts, cardBanner } from "../libs/level_functions.js";
 import { FirePit, Spikes } from "../objects/hazardsBase.js";
-"use strict"
-//* game core variables
-//? level transition 
+
+//* === game core variables ===
+//~ level transition 
 let levelCompleted = false; 
 let matchSaved = false; 
 let showDeckPreview = false;
@@ -19,17 +33,16 @@ let currentLevelConfig = getLevelConfig(1);  //always starts at level 1, transit
 let deckPreviewTimer = 0;
 let levelTimer = 0;  //how much does the player take in one level? (fame, cards gained)
 let randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);  //when will the event trigger?
-//? world config
+//~ world config
 let worldWidth = 2000;
-let worldHeight = 600;  //esto no lo usamos
 let cameraX = 0;
 let canvasRef = { width: 1000 }; 
 let mouseX = 0
 let mouseY = 0
 let spikesWarningPulse = 0;
-let backgroundImage = new Image();
+let backgroundImage = new Image();  //~ background, our assets were made by NanoBanana
 backgroundImage.src = currentLevelConfig.background;
-//? player/enemy variables
+//~ player/enemy variables
 let player
 let keysDown = {};
 let jumpPressed = false;
@@ -38,25 +51,26 @@ let spawnTimer = 0;  //we check spawntimer and interval to know when to spawn a 
 let spawnInterval = 2800;  
 let galenActive = false;  //'shield' from shop, player has shields?
 let galenUsed = false; //did the player use their shield?
-//? music
+//~ music
 const swordSound = new Audio("../Videojuego/assets/music/ataque_espada.mp3");  //attack
 swordSound.volume = 0.5;
-//? card system
+//~ card system
 let cardEventTriggered = false;  //mid game event
 let cardOptions = [];  //3 cards shown in screen
 const cardSystem = new cardsOnCanvas();     
-const game = {  //imperial decree effect
+const game = {  //imperial decree effect, debugged with IA
     spawnEnemy: () => spawnEnemy(cameraX + canvasRef.width + 100, 450, currentLevelConfig.enemyConfig),
 };
-//? pause
+//~ pause logic
 let isPaused = false;
 let goToMenu = false;
 let goToScore = false;  //signals main.js to switch to score scene after level 3
-//? platforms
+
+//*=== platforms ===
 let platforms = [];  //array to store platforms displayed
 let platformImage = new Image();
-platformImage.src = "../Videojuego/assets/Platform.png";
-function initPlatforms(){
+platformImage.src = "../Videojuego/assets/Platform.png";  // our assets were made by NanoBanana
+function initPlatforms(){  //~ start/restart platforms
     platforms = [];  //clean the array before starting
     for(let i = 0; i < 5; i++){
         if(platforms.length === 0){  
@@ -67,14 +81,16 @@ function initPlatforms(){
         }
     }
 }
-function drawPlatforms(ctx){  //draw all the platforms in the array
+
+function drawPlatforms(ctx){  //~ start/restart all the platforms in the array
     platforms.forEach(p=>{
         ctx.drawImage(platformImage, p.x, p.y - 70, p.width, p.height);
     });
 }
-//? hazards, spikes on level 2, firepits on level 3
+
+//* === hazards, spikes on level 2, firepits on level 3 ===
 let hazards = [];  //array to store platforms displayed
-function initHazards(){
+function initHazards(){  //~ start/restart hazards
     hazards = [];
     const safeZone = 10;  //no hazards near spawn 
     const count = Math.random() < 0.5 ? 2 : 3;  //2 or 3 hazards per level
@@ -88,108 +104,94 @@ function initHazards(){
         }
     }
 }
-//? scenes
-let pauseBox = new MessageBox(  //paused scene
-        "PAUSED",
-        "Game is paused",
-        250, 150, 500, 300
-    );
-let spikesWarningBox = new MessageBox(  // spikes warning
-        "ATTENTION GLADIATOR!!!",
-        "THERE ARE SPIKES IN THE SAND NOW!\n TRY NOT TO STEP ON THEM OR YOU'LL LOSE LIFE!",
-        250, 150, 500, 300
-    );
-    spikesWarningBox.addButton("I'm ready", 420, 350, 160, 40, () => {
-        spikesWarningBox.hide();
-    });
-let confirmBox = new MessageBox(  //screen appears when user click on restart or home
-        "ARE YOU SURE?",
-        "",
-        300, 200, 400, 150
-    );
-    let confirmAction = null;
-    confirmBox.addButton("Yes", 390, 280, 100, 35, () => {
-        confirmBox.hide();
-        pauseBox.hide();
-        isPaused = false;
-        if(confirmAction) confirmAction();
-        confirmAction = null;
-    });  
-    confirmBox.addButton("No", 510, 280, 100, 35, () => {
-        confirmBox.hide();
-    });
-    pauseBox.addButton("Continue", 440, 290, 120, 35, () => {
-        isPaused = false;
-        pauseBox.hide();
-    });
-    pauseBox.addButton("Restart", 440, 340, 120, 35, () => {
-        confirmAction = () => {
-            resetLevel();
-        };
-        confirmBox.show();
-    });
-    pauseBox.addButton("Home", 440, 390, 120, 35, () => {
-        confirmAction = () => {
-            goToMenu = true;
-        };
-        confirmBox.show();
-    });
-let levelCompletedBox = new MessageBox(  //message shown between levels
-        "You survived the arena.",
-        "Good luck, the emperor is watching!",  
-        250, 150, 500, 300
-    );
-    levelCompletedBox.addButton("Ready for more?", 420, 350, 160, 40, () => {
+
+//* === message boxes ===
+let pauseBox = new MessageBox(  //~paused scene
+    "PAUSED",
+    "Game is paused",
+    250, 150, 500, 300
+);
+
+let spikesWarningBox = new MessageBox(  //~ spikes warning
+    "ATTENTION GLADIATOR!!!",
+    "THERE ARE SPIKES IN THE SAND NOW!\n TRY NOT TO STEP ON THEM OR YOU'LL LOSE LIFE!",
+    250, 150, 500, 300
+);
+spikesWarningBox.addButton("I'm ready", 420, 350, 160, 40, () => {
+    spikesWarningBox.hide();
+});
+
+let confirmBox = new MessageBox(  //~ screen appears when user click on restart or home
+    "ARE YOU SURE?",
+    "",
+    300, 200, 400, 150
+);
+let confirmAction = null;
+confirmBox.addButton("Yes", 390, 280, 100, 35, () => {
+    confirmBox.hide();  //~ erase everything and go where user wants
+    pauseBox.hide();
+    isPaused = false;
+    if(confirmAction) confirmAction();  //do the designated action for the button user clicked
+    confirmAction = null;
+});  
+confirmBox.addButton("No", 510, 280, 100, 35, () => {  //~ hide the box 
+    confirmBox.hide();
+});
+pauseBox.addButton("Continue", 440, 290, 120, 35, () => {  //~ user wants to keep playing
+    isPaused = false;
+    pauseBox.hide();
+});
+pauseBox.addButton("Restart", 440, 340, 120, 35, () => {  //~ restart from level 1
+    confirmAction = () => {
+        resetLevel();
+    };
+    confirmBox.show();
+});
+pauseBox.addButton("Home", 440, 390, 120, 35, () => {  //~ tell main.js user wants to go to menu
+    confirmAction = () => {
+        goToMenu = true;
+    };
+    confirmBox.show();
+});
+
+let levelCompletedBox = new MessageBox(  //~ message shown between levels
+    "You survived the arena.",
+    "Good luck, the emperor is watching!",  
+    250, 150, 500, 300
+);
+levelCompletedBox.addButton("Ready for more?", 420, 350, 160, 40, () => {
     levelCompletedBox.hide();
     showDeckPreview = true;
     deckPreviewTimer = 0;
     cardSystem.rewardBox.show();
-    });
-let gameOver = false;  //screen and config when hearts = 0
-    let gameOverBox = new MessageBox(
-        "Game Over",
-        "You died!\n The emperor is dissapointed in you",
-        250, 150, 500, 300
-    );
-    //esto si se puede meterlo a game functions
-    async function handleLose() {
-        if (matchSaved) return;   //  evita duplicados
-        console.log("guardado como lose");
-        matchSaved = true;
-        await saveMatch({
-            player_id: window.loggedPlayer.player_id,
-            archetype_id: selectedArchetypeId,
-            duration_seconds: Math.floor(levelTimer / 1000),
-            level_reached: currentLevel,
-            final_fame: window.loggedPlayer.fame,
-            life: Math.max(0, player.hearts),
-            result: "LOSE",
-            cards_in_deck: cardSystem.playerDeck.length,
-            galenUsed: galenUsed
-        });
-        await loadPlayerStats(window.loggedPlayer.player_id, "score");
-    }   
+});
 
-    gameOverBox.addButton("Home", 440, 400, 120, 35, async () => {
-        await handleLose();
-        goToScore = false;
-        goToMenu = true;
-    });
+let gameOver = false;  //~ screen and config when hearts = 0
+let gameOverBox = new MessageBox(
+    "Game Over",
+    "You died!\n The emperor is dissapointed in you",
+    250, 150, 500, 300
+);
+gameOverBox.addButton("Home", 440, 400, 120, 35, async () => {
+    await handleLose();
+    goToScore = false;
+    goToMenu = true;
+});
+gameOverBox.addButton("Go to Score", 440, 340, 120, 35, async () => {
+    console.log("RESTART GAME OVER CLICKED");
+    //Updates live stats, runs and defeats
+    await handleLose();
+    console.log("Lose saved, match saved, going to score");
+    goToMenu = false;
+    goToScore = true;
+    gameOverBox.hide();
+}); 
 
-    gameOverBox.addButton("Go to Score", 440, 340, 120, 35, async () => {
-        console.log("RESTART GAME OVER CLICKED");
-        //Updates live stats, runs and defeats
-        await handleLose();
-        console.log("Lose saved, match saved, going to score");
-        goToMenu = false;
-        goToScore = true;
-        gameOverBox.hide();
-    }); 
-
-//? initial config for all the game
+//* === initial config for all the game ===
 const archetypeIds = { Warrior: 1, Lancer: 2, Heavy: 3 };  //match DB archetype IDs
 let selectedArchetypeId = 1;
-function setSelectedCharacter(selectedCharacter){  
+
+function setSelectedCharacter(selectedCharacter){  //~ start everything
     selectedArchetypeId = archetypeIds[selectedCharacter] ?? 1;
     currentLevelConfig = getLevelConfig(1);  //solve bug of db not uploading on time
     randomEventTime = randomRange(currentLevelConfig.targetTime / 2, currentLevelConfig.targetTime / 3);
@@ -204,11 +206,31 @@ function setSelectedCharacter(selectedCharacter){
     galenUsed = false;
     initPlatforms();
 }
-let enemies = currentLevelConfig.spawnPositions.map(pos =>
+
+let enemies = currentLevelConfig.spawnPositions.map(pos =>  //~ spwan enemies in their spawn positions (db data)
     spawnEnemy(pos.x, pos.y, currentLevelConfig.enemyConfig)
 );
-//* API - Cards logic
-async function generateCardOptions(){  //? take 3 cards from db and put it into an array
+
+//* === API ===
+async function handleLose() {  //~ what to do when user lose
+    if (matchSaved) return;   //avoid duplicates
+    console.log("guardado como lose");  //confirmation
+    matchSaved = true;
+    await saveMatch({  //info to send
+        player_id: window.loggedPlayer.player_id,
+        archetype_id: selectedArchetypeId,
+        duration_seconds: Math.floor(levelTimer / 1000),
+        level_reached: currentLevel,
+        final_fame: window.loggedPlayer.fame,
+        life: Math.max(0, player.hearts),
+        result: "LOSE",
+        cards_in_deck: cardSystem.playerDeck.length,
+        galenUsed: galenUsed
+    });
+    await loadPlayerStats(window.loggedPlayer.player_id, "score");  //update stats
+}  
+
+async function generateCardOptions(){  //~ take 3 cards from db and put it into an array
     try{
         const response = await fetch("http://localhost:3000/cards/random"); //ask the server for 15 random cards from the db
 
@@ -234,7 +256,8 @@ async function generateCardOptions(){  //? take 3 cards from db and put it into 
         ];
     }
 }
-async function triggerCardEvent(){  //? uses array from generateCardOptions when the event is triggered
+
+async function triggerCardEvent(){  //~ uses array from generateCardOptions when the event is triggered
     console.log("EVENT TRIGGERED");
     await generateCardOptions();  //waits for cardOption array
 
@@ -256,7 +279,8 @@ async function triggerCardEvent(){  //? uses array from generateCardOptions when
     }));
     cardSystem.show(convertedCards, player, enemies, game);  //show cards for the player to select
 }
-async function giveLevelRewards(){  //? reward cards, depending on fame, after level completition
+
+async function giveLevelRewards(){  //~ reward cards, depending on fame, after level completition
     //if levelTimer is lower than targetTime, the user gets 2 power ups 
     const rewardCount = levelTimer < currentLevelConfig.targetTime ? 2 : 1;
     try {
@@ -293,8 +317,9 @@ async function giveLevelRewards(){  //? reward cards, depending on fame, after l
         console.log("Could not fetch reward cards:", err);
     }
 }
-//* draw everything and update:)
-function drawLevel(ctx, canvas, deltaTime){
+
+//* === functions ===
+function drawLevel(ctx, canvas, deltaTime){  //~ draw all the canvas
     if (!player) return;  //skip if no player is loaded yet
     canvasRef = canvas;  //save canvas so other functions know the screen size
 
@@ -307,16 +332,16 @@ function drawLevel(ctx, canvas, deltaTime){
         updateLevel(deltaTime);
     }
 
-
     ctx.save();
-    ctx.fillStyle = "rgba(48, 27, 0, 0.83)";
+    // top banner 
+    ctx.fillStyle = "rgba(48, 27, 0, 0.83)";  
     ctx.fillRect(0, 0, canvas.width, 75);
 
     ctx.translate(-cameraX, 0);  //shift drawing so the camera follows the player
 
-    player.draw(ctx);
-    drawPlatforms(ctx);
-    enemies.forEach(enemy => enemy.draw(ctx));
+    player.draw(ctx);  //draw player
+    drawPlatforms(ctx);  //draw platforms
+    enemies.forEach(enemy => enemy.draw(ctx));  //draw each enemy 
     if (currentLevel >= 2) 
         hazards.forEach(h => h.draw(ctx));  //firepits active from level 2
 
@@ -324,17 +349,16 @@ function drawLevel(ctx, canvas, deltaTime){
 
     drawFog(ctx, canvas, game);  //amphitheatre fog effect
     cardBanner(ctx, canvas, cardSystem.activeEffects, cardSystem.permanentEffects);  //what cards are active?
-    drawHealthBar(ctx, 30, 20, 100, 30, player.hp, player.maxHp);
-    ctx.font = "50px VT323";
-    drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);
-    drawFame(ctx, 70, 70, player.fame);
+    drawHealthBar(ctx, 30, 20, 100, 30, player.hp, player.maxHp);  //draw health bar
+    drawHearts(ctx, 150, 50, player.hearts, player.maxHearts);  //draw user hearts
+    drawFame(ctx, 70, 70, player.fame);  //draw player fame
     
     //Timer
     let timePassed = levelTimer / 1000;
     let timeTarget = currentLevelConfig.targetTime / 1000;
     const timerDiv = document.getElementById("level-timer");
     if (timerDiv) {
-        timerDiv.textContent =
+        timerDiv.textContent =  //update the timer in the right-side stats
             `${timePassed.toFixed(1)}s / ${timeTarget.toFixed(1)}s`;
         if (timeTarget - timePassed < 3) {
             timerDiv.style.color = "red";
@@ -343,17 +367,17 @@ function drawLevel(ctx, canvas, deltaTime){
         }
     }
 
-    pauseBox.draw(ctx);
-    confirmBox.draw(ctx);
+    pauseBox.draw(ctx); //draw pause box
+    confirmBox.draw(ctx); 
 
-    if(spikesWarningBox.visible){
+    if(spikesWarningBox.visible){  //tell the user whats comming next
         spikesWarningPulse += deltaTime * 0.005;
         let scale = 1 + Math.sin(spikesWarningPulse) * 0.05;
         ctx.save();
         // overlay red transparent
         ctx.fillStyle = "rgba(255, 0, 0, 0.15)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        // efecto de pulso (zoom leve)
+        // pulse effect (zoom leve)
         ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.scale(scale, scale);
         ctx.translate(-canvas.width / 2, -canvas.height / 2);
@@ -363,20 +387,18 @@ function drawLevel(ctx, canvas, deltaTime){
         spikesWarningBox.draw(ctx);
     }
 
-    spikesWarningBox.draw(ctx);
-
-    if(gameOver){
+    if(gameOver){  //player die
         gameOverBox.draw(ctx);
         return;
     }
 
-    // cardsOnCanvas dibuja la selección de cartas y el deck del jugador
+    // draw the reward screen
     if(levelCompleted){
         levelCompletedBox.draw(ctx);
     }
 
-    cardSystem.draw(ctx, canvas);
-    cardSystem.drawDeck(ctx, canvas);
+    cardSystem.draw(ctx, canvas);  //draw mid game event
+    cardSystem.drawDeck(ctx, canvas);  //draw deck
 
     //Shows reward cards after each level completed
     if(showDeckPreview){
@@ -393,8 +415,8 @@ function drawLevel(ctx, canvas, deltaTime){
         }
     }
 }
-function updateLevel(deltaTime){
 
+function updateLevel(deltaTime){  //~ update what happen depending on delta time
     if (!player) return;  //skip if no player is loaded yet
     levelTimer += deltaTime;  //keep track of how long the player has been in this level
 
@@ -462,14 +484,9 @@ function updateLevel(deltaTime){
         currentLevel ++;
         updateFame(player, currentLevelConfig, levelTimer);  //give "coins" (fame) for the time spent in the level
 
-        // ← NUEVO: guarda la fama ganada en la DB
        const fameGained = levelTimer <= currentLevelConfig.targetTime ? 10 : 5;
-
         (async () => {
-            
-            // 1. actualizar DB
-
-            await fetch("http://localhost:3000/player/update-fame", {
+            await fetch("http://localhost:3000/player/update-fame", {  //update fame earned in the db
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -477,14 +494,10 @@ function updateLevel(deltaTime){
                     fame: fameGained
                 })
             });
-
-            // 2. recargar datos reales
+            //update stats 
             await loadPlayerStats(window.loggedPlayer.player_id, "level1");
-
-            // 3. sincronizar player
             player.fame = window.loggedPlayer.fame;
-
-            // 4. guardar match CORRECTO
+            //save the match as win
             await saveMatch({
                 player_id: window.loggedPlayer.player_id,
                 archetype_id: selectedArchetypeId,
@@ -496,11 +509,9 @@ function updateLevel(deltaTime){
                 cards_in_deck: cardSystem.playerDeck.length,
                 galenUsed: galenUsed
             });
-
-            // 5. actualizar score panel
+            //update score scene if needed
             await loadPlayerStats(window.loggedPlayer.player_id, "score");
-
-            // 6. cargar cartas de recompensa para el deck preview
+            //calculate reward cards
             await giveLevelRewards();
         })();
     }
@@ -514,44 +525,51 @@ function updateLevel(deltaTime){
     imperialDecree(game, enemies);  //check if the imperial decree card effect needs to fire
 }
 
-//* handlers
-function handleMouseMoveLevel(event, canvas){
+//* === helpers ===
+function handleMouseMoveLevel(event, canvas){  //~ where is the mouse?
     const pos = handleMouseMove(event, canvas);
     mouseX = pos.x;
     mouseY = pos.y;
 }
 
-function handleClickLevel(){
+function handleClickLevel(){  //~ where does the user click?
     if(levelCompleted){
-        return levelCompletedBox.handleClick(mouseX, mouseY);
+        return levelCompletedBox.handleClick(mouseX, mouseY);  //messageBox.js handle the click
     }
+
     if(gameOver){
-        return gameOverBox.handleClick(mouseX, mouseY);
+        return gameOverBox.handleClick(mouseX, mouseY);  //messageBox.js handle the click
     }
+
     if(confirmBox.visible){
-        return confirmBox.handleClick(mouseX, mouseY);
+        return confirmBox.handleClick(mouseX, mouseY);  //messageBox.js handle the click
     }
+
     if(spikesWarningBox.visible){
-        return spikesWarningBox.handleClick(mouseX, mouseY);
+        return spikesWarningBox.handleClick(mouseX, mouseY);  //messageBox.js handle the click
     }
+
     if(isPaused){
-        return pauseBox.handleClick(mouseX, mouseY);
+        return pauseBox.handleClick(mouseX, mouseY);  //messageBox.js handle the click
     }
+
     if(cardSystem.isDeckOpen){
-        cardSystem.handleDeckClick(mouseX, mouseY, canvasRef);
+        cardSystem.handleDeckClick(mouseX, mouseY, canvasRef);  //messageBox.js handle the click
         return;
     }
+
     if(cardSystem.isActive){
-        cardSystem.handleClick(mouseX, mouseY, canvasRef);
+        cardSystem.handleClick(mouseX, mouseY, canvasRef);  //messageBox.js handle the click
         return;
     }
 }
-function handleKeyDownLevel(event){
-    if(event.repeat) return;
 
-    if(event.key === "Escape"){
-        event.preventDefault()
-        if(confirmBox.visible){
+function handleKeyDownLevel(event){  //~ handle keyboard clicks
+    if(event.repeat) return;  //user hasn't pressed any key
+
+    if(event.key === "Escape"){  //case1: user pressed esc, tey want to pause the game
+        event.preventDefault()  
+        if(confirmBox.visible){ 
             confirmBox.hide();
             return;
         }
@@ -564,19 +582,21 @@ function handleKeyDownLevel(event){
         return;
     }
 
-    if(isPaused) return;
+    if(isPaused) return;  //omit any other key while paussed
 
     keysDown[event.key] = true;
 
-    if(event.key === "c" || event.key === "C"){
+    if(event.key === "c" || event.key === "C"){  //case2: user pressed c, they want to see their deck
         event.preventDefault()
         cardSystem.toggleDeck();
     }
-    if(event.key === " "){
+
+    if(event.key === " "){  //case3: user pressed spacebar, the want to jump
         event.preventDefault()
         jumpPressed = true;
     }
-    if(event.key === "j" || event.key === "J"){
+
+    if(event.key === "j" || event.key === "J"){  //case4: user pressed j, they want to attack
         if(!player.playeratack){
             player.playeratack = true;
             player.attackFrames = 0;
@@ -585,16 +605,20 @@ function handleKeyDownLevel(event){
         }
     }
 }
-function handleKeyUpLevel(event){
+
+function handleKeyUpLevel(event){    //~player is not pressing any key
     keysDown[event.key] = false;
 }
-function resetGoToMenu(){
+
+function resetGoToMenu(){  //~ player is already in menu, so turn off your flag
     goToMenu = false;
 }
-function resetGoToScore(){
+
+function resetGoToScore(){  //~ player is going to score, so turn off your falg
     goToScore = false;
 }
-function transitionToNextLevel(){  //? called after deck preview ends, sets up the next level
+
+function transitionToNextLevel(){  //~ called after deck preview ends, sets up the next level
     currentLevelConfig = getLevelConfig(currentLevel)  //pick config based on new level
     backgroundImage.src = currentLevelConfig.background;  //swap background
 
@@ -602,6 +626,7 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
     showDeckPreview = false;
     deckPreviewTimer = 0;
     levelCompletedBox.hide();
+
     //show spikes warning on level 2
     if(currentLevel === 2){
         spikesWarningPulse = 0;
@@ -609,6 +634,7 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
         spikesWarningBox.message = "THERE ARE SPIKES IN THE SAND NOW!\n TRY NOT TO STEP ON THEM OR YOU'LL LOSE LIFE!.";
         spikesWarningBox.show();
     }
+
     //show spikes warning on level 2 and firepits on level 3
     if(currentLevel === 3){
         spikesWarningPulse = 0;
@@ -641,8 +667,8 @@ function transitionToNextLevel(){  //? called after deck preview ends, sets up t
     cardSystem.close();
     cardSystem.isDeckOpen = false;
 }
-//* goes back to level 1, resets everything
-function resetLevel(){
+
+function resetLevel(){  //~ goes back to level 1, resets everything
     currentLevel = 1; 
     matchSaved = false;
     currentLevelConfig = getLevelConfig(1);
@@ -682,9 +708,12 @@ function resetLevel(){
     cardSystem.close();
     cardSystem.isDeckOpen = false;
 }
-function getPlayer() { return player; }  //lets main grab the player object when needed
 
-//* exports to main
+function getPlayer() {  //~ lets main grab the player object when needed
+    return player;
+}  
+
+//* === exports ===
 export {
     getPlayer,
     drawLevel,

@@ -26,7 +26,7 @@ export async function loadPlayerConfigs() {
             maxHp: a.hp_start,
             speed: a.speed_start / 10,
             damage: a.damage_start,
-
+            //our assets were made by NanoBanana
             walkRightSrc: `../Videojuego/assets/player${a.archetype_id}/1.png`,
             walkLeftSrc: `../Videojuego/assets/player${a.archetype_id}/2.png`,
             jumpRightSrc: `../Videojuego/assets/player${a.archetype_id}/3.png`,
@@ -80,6 +80,7 @@ export async function loadLevelConfigs() {
 
 export function getLevelConfig(level) {  //~ puts all info in a single object to use it in LevelBase.js (debugged w IA)
     const db = levelConfigsDB[level] || {};
+    //our assets were made by NanoBanana
     const baseConfigs = {  //background
         1: {
             background: "../Videojuego/assets/Coliseo1.png",
@@ -100,6 +101,7 @@ export function getLevelConfig(level) {  //~ puts all info in a single object to
         targetTime: db.targetTime || 10000,  //hardcoded time for edge case
         conditionEnemies: db.conditionEnemies || 8, //hardcoded time for edge case
         enemyConfig: {
+            //our assets were made by NanoBanana
             ...enemyConfigs[level], 
             scale: base.scale,
             walkRightSrc: `../Videojuego/assets/enemy${level}/walkRight.png`,

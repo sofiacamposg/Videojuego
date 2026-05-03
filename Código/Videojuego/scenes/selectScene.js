@@ -1,17 +1,30 @@
-"use strict"
+/* 
+& Select an archetype scene, includes:
+& buttons, draw, helpers, and api call
 
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+*/
+"use strict"
+ //* === imports ===
 import { MessageBox } from "../objects/MessageBox.js";
 import { handleMouseMove, drawButton, handleClick } from "../libs/game_functions.js";
 
-//? mouse
+//* === mouse track and global variables ===
 let mouseX = 0;
 let mouseY = 0;
+//zones for hover
+let zones =[];
+let selectedCharacter = null;
 
-//? buttons
+//* === buttons ===
 const buttonBack = { x: 150, y: 50, text: "BACK TO MENU" };
 const buttonConfirm = { x: 850, y: 50, text: "CONFIRM" };
 
-//? error
 let errorMessage = new MessageBox(
     "ERROR", 
     "You must select a Character to continue",
@@ -22,39 +35,23 @@ errorMessage.addButton("Resume", 440, 300, 120, 50, () =>{
    errorMessage.hide();
 });
 
-//? images
+//~ background, our assets were made by NanoBanana
 let backgroundImage = new Image();
 backgroundImage.src = "../Videojuego/assets/PortadaBase.png";
 
 let gladiatorsImage = new Image();
 gladiatorsImage.src = "../Videojuego/assets/gladiadores.png";
 
-//? zones
-/*let zones = [
-    { x: 200, y: 190, width: 180, height: 150, name: "Guerrero", stats: "Vida:120 Ataque:20 Vel:5", description: "Gladiador equilibrado en ataque y defensa." },
-    { x: 400, y: 190, width: 180, height: 150, name: "Lancero", stats: "Vida:100 Ataque:25 Vel:6", description: "Gladiador rápido con mayor alcance." },
-    { x: 600, y: 190, width: 180, height: 150, name: "Pesado", stats: "Vida:150 Ataque:15 Vel:3", description: "Gladiador resistente y lento." }
-];*/
-let zones =[];
-let selectedCharacter = null;
-
-//? reset
-function resetSelect() {
-    mouseX = 0;
-    mouseY = 0;
-    selectedCharacter = null;
-    loadArchetypes();
-}
-// ================== LOAD FROM API ==================
+//* === api ===
 async function loadArchetypes(){
     try{
-        const res = await fetch("http://localhost:3000/archetypes");
+        const res = await fetch("http://localhost:3000/archetypes");  //bring the archetypes data
 
         if(!res.ok) throw new Error("HTTP " + res.status);
 
-        const data = await res.json();
+        const data = await res.json();  //save the data in a json
 
-        zones = data.map((arch, index) => ({
+        zones = data.map((arch, index) => ({  //organize info
             x: 200 + index * 200,
             y: 190,
             width: 180,
@@ -64,13 +61,15 @@ async function loadArchetypes(){
             description: `${arch.name}`
         }));
 
-        console.log(" Archetypes loaded:", zones);
+        console.log(" Archetypes loaded:", zones);  //confirmation
 
     }catch(err){
-        console.error(" API failed, using fallback:", err);
+        console.error(" API failed", err);  
     }
 }
-function drawSelect(ctx, canvas) {
+
+//*  === functions ===
+function drawSelect(ctx, canvas) {   //~ draw all canvas
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
     // title
@@ -92,7 +91,7 @@ function drawSelect(ctx, canvas) {
     const targetH = gladiatorsImage.height * scale;
     ctx.drawImage(gladiatorsImage, 200, 150, targetW, targetH);
 
-    // hover + selection
+    // hover and selection logic
     zones.forEach((zone) => {
         const isHover =
             mouseX > zone.x &&
@@ -112,6 +111,7 @@ function drawSelect(ctx, canvas) {
             ctx.fillStyle = "rgba(0,0,0,0.85)";
             ctx.fillRect(150, 480, 700, 160);
 
+            //harcoded data for any edge case
             const vida = zone.stats.match(/Vida:(\d+)/)?.[1] || "?";
             const ataque = zone.stats.match(/Ataque:(\d+)/)?.[1] || "?";
             const vel = zone.stats.match(/Vel:(\d+)/)?.[1] || "?";
@@ -132,21 +132,19 @@ function drawSelect(ctx, canvas) {
         }
     });
 
-    errorMessage.draw(ctx);
+    errorMessage.draw(ctx);  //user hasn't picked a character
 }
 
-//? mouse global
-function handleMouseMoveSelect(event, canvas) {
+//* === helpeers ===
+function handleMouseMoveSelect(event, canvas) {   //~ where is the mouse?
     const pos = handleMouseMove(event, canvas);
     mouseX = pos.x;
     mouseY = pos.y;
 }
 
-//? click
-function handleClickSelect(ctx) {
-
+function handleClickSelect(ctx) {  //where does the user click?
     if(errorMessage.visible){
-        return errorMessage.handleClick(mouseX, mouseY);
+        return errorMessage.handleClick(mouseX, mouseY);  //if there is an error, message box will handle the click
     }
 
     // select character
@@ -159,28 +157,34 @@ function handleClickSelect(ctx) {
 
         if (inside) {
             selectedCharacter = zone.name;
-            return "selectedCharacter";
+            return "selectedCharacter";  //go to main.js and tell them
         }
     }
 
-    // buttons
-    if (handleClick(mouseX, mouseY, buttonBack, ctx)) {
+    if (handleClick(mouseX, mouseY, buttonBack, ctx)) {  //~ user wants to go back
         return "back";
     }
 
-    if (handleClick(mouseX, mouseY, buttonConfirm, ctx)) {
-        if(selectedCharacter != null){
+    if (handleClick(mouseX, mouseY, buttonConfirm, ctx)) {  //~ user wants to continue
+        if(selectedCharacter != null){  //case1: player has chose a character
             return "confirm";
-        } else {
+        } else {  //case2: user didnt select a character
             errorMessage.show();
         }
     }
-
     return null;
 }
 
-function getSelectedCharacter(){
+function getSelectedCharacter(){  //~ getter
     return selectedCharacter;
 }
 
+function resetSelect() {  //~ base data
+    mouseX = 0;
+    mouseY = 0;
+    selectedCharacter = null;
+    loadArchetypes();
+}
+ 
+//* === export ===
 export { drawSelect, handleMouseMoveSelect, handleClickSelect, resetSelect, getSelectedCharacter };

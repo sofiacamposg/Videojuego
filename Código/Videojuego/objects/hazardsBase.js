@@ -52,6 +52,7 @@ class HazardBase extends AnimatedObject {
 }
 
 //* === daughter classes: spkies and firepit ===
+//our assets were made by NanoBanana
 class Spikes extends HazardBase {
     constructor(x, y) {  //~ has their own image and damage
         super(x, y, 650, 350);

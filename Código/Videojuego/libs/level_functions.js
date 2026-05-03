@@ -58,7 +58,7 @@ export function drawFog(ctx, canvas, game) {  //~ amphitheatre effect: adds a "f
     ctx.restore();
 }
 
-export function imperialDecree(game, enemies){  //~ imperial decree effect: add 2 more enemies
+export function imperialDecree(game, enemies){  //~ imperial decree effect: add 2 more enemies, debugged with 
     if (game.spawnExtra > 0){
         for (let i = 0; i < game.spawnExtra; i++){
             enemies.push(game.spawnEnemy());
