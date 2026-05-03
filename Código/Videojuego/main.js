@@ -1,3 +1,15 @@
+/* 
+& Handle all possible flows, changes screens, reset and show stats
+
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+*/
+
+//* === imports ===
 import { drawMenu,  handleMouseMoveMenu, handleClickMenu } from "./scenes/menuScene.js";
 import { drawLogIn, handleMouseMoveLogIn, handleClickLogIn, handleKeyDownLogIn, resetLogIn } from "./scenes/logInScene.js";
 import { drawSelect, handleMouseMoveSelect, handleClickSelect, resetSelect, getSelectedCharacter } from "./scenes/selectScene.js";
@@ -11,33 +23,29 @@ import { loadPlayerStats } from "./libs/level_functions.js";
 import { loadPlayerConfigs, playerConfigs, loadEnemyConfigs, enemyConfigs, loadLevelConfigs, levelConfigsDB } from "./libs/levelConfig.js";
 import { killedEnemies, currentLevel, cardSystem } from "./scenes/levelBase.js";  //live stats come from levelBase now
 
+//* === global variables ===
 const canvasWidth = 1000;
 const canvasHeight = 600;
-
 let canvas;
 let ctx;
 let oldTime = 0;
 let currentScene = "menu";
 let currentPlayer = null;
 let selectedCharacter = null;
-//Shop hearts
-let loginFromShop = false;
+let loginFromShop = false;  //login from show, flag to remember to go back to shop
+let configsReady = false;  //API fetch info
 
-//API fetch info
-let configsReady = false;
+//* === api ===
+function updateLiveStats() {  //~ player stats, right-side stats
+    if (!window.loggedPlayer) return;  //no player logged
 
-//API Connection, current player stats
-//This is beacause there are some variables that update in JS
-function updateLiveStats() {
-    if (!window.loggedPlayer) return;
-
-    document.getElementById("username").textContent = window.loggedPlayer.username;
-
-    let level = "-";
+    document.getElementById("username").textContent = window.loggedPlayer.username;  //put user name in the stats
+    //deafult data till user start a match
+    let level = "-";  
     let kills = 0;
     let cards = 0;
 
-    if (currentScene === "level1") {
+    if (currentScene === "level1") {  //there is a match now, so display the correct info
         level = currentLevel;
         kills = killedEnemies;
         cards = cardSystem.playerDeck.length;
@@ -49,7 +57,7 @@ function updateLiveStats() {
     document.getElementById("cards").textContent = cards;
 }
 
-function resetPanel() {
+function resetPanel() {  //~ go to default info
     document.getElementById("username").textContent = "-";
     document.getElementById("level").textContent = "-";
     document.getElementById("kills").textContent = "-";
@@ -60,7 +68,7 @@ function resetPanel() {
     document.getElementById("losses").textContent = "-";
 }
 
-function logout() {
+function logout() {  //~ reset everything, player log out
     window.loggedPlayer = null;
     localStorage.removeItem("player");
 
@@ -73,111 +81,109 @@ function logout() {
     selectedCharacter = null;
 }
 
-//FUNCTION MAIN
-function main() {
+//* === funtions ===
+function main() {  //~ change scenes function, knows the flow and handle all buttons directions
     canvas = document.getElementById("canvas");
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
-
     ctx = canvas.getContext("2d"); 
-
     let clicked;
+
     canvas.addEventListener("click", async (event) => {
         //MENU SCENE
         if(currentScene === 'menu'){
             clicked = handleClickMenu(ctx);
-            if (clicked === 'start') {
-                    loginFromShop = false;
-                    resetLogIn();
+            if (clicked === 'start') {  //player wants to start playing...
+                    loginFromShop = false;  //they clicked start, so we do not need to go to shop after
+                    resetLogIn();  //clean everything
                     resetPanel();
-                    currentScene = 'login';
+                    currentScene = 'login';  //... but they need to log in first
             }
-            if (clicked === 'settings') currentScene = 'settings'; 
-            if (clicked === 'shop') {
-                if (!window.loggedPlayer) {
+            if (clicked === 'settings') currentScene = 'settings';   //user wants to go to settings
+            if (clicked === 'shop') {  //user wants to go to shop
+                if (!window.loggedPlayer) { //case 1: there is not a player logged in
                     loginFromShop = true;
-                    resetLogIn();   
+                    resetLogIn();  //clean before continuing
                     resetPanel();
-                    currentScene = "login";
+                    currentScene = "login";  //go to login
                 } else {
-                    currentScene = "shop";
+                    currentScene = "shop";  //case 2: there is a player logged in, go to shop
                 }
             }
         }
         //SETTINGS SCENE
         else if(currentScene === 'settings') {
-            clicked = handleClickSettings(ctx);
-            if(clicked === 'back' || clicked === 'confirm') {
+            clicked = handleClickSettings(ctx);  //all click logic is handled in settings scene
+            if(clicked === 'back' || clicked === 'confirm') {  //if player clicks confirm or back, go to menu
                 resetSettings();
                 currentScene = 'menu';
             }
         }
         //LOG IN SCENE
         else if (currentScene === 'login'){
-            //? Se pasa un callback a handleClickLogIn para que cuando el fetch de login
-            //? termine exitosamente, cambie la escena directamente sin necesitar otro click
+            // we give a callback funtion to handleClick, when api says credentials are ok, we change scene inmediatly
+            // no second click needed. debugged with IA
             clicked = handleClickLogIn(ctx, () => {
-            if (loginFromShop) {
-                //API
-                (async () => {
-                    await loadPlayerStats(window.loggedPlayer.player_id, currentScene);
-                })();
-                loginFromShop = false;
-                currentScene = "shop";   //  regresa a shop
-            } else {
-                //API
-                setTimeout(() => {
-                    loadPlayerStats(window.loggedPlayer.player_id, currentScene);
-                }, 500);
-                resetSelect();
-                currentScene = 'start';  // flujo normal del juego
-            }
-        });
-
-            if(clicked === 'back'){
+                if (loginFromShop) {  // player wants to log in and then go back to store
+                    (async () => {  //update stats
+                        await loadPlayerStats(window.loggedPlayer.player_id, currentScene);
+                    })();
+                    loginFromShop = false;
+                    currentScene = "shop";   // go back to shop
+                } else {
+                    setTimeout(() => {  //wait a sec to update stats
+                        loadPlayerStats(window.loggedPlayer.player_id, currentScene);
+                    }, 500);
+                    resetSelect(); //clean before going
+                    currentScene = 'start';  //start normal game flow
+                }
+            });
+            if(clicked === 'back'){ //user wants to go to menu
                 resetLogIn();
                 currentScene = 'menu';
             }
-            if (clicked === 'create'){
+            if (clicked === 'create'){  //user wants to create a new account
                 resetLogIn();
                 currentScene = 'createAccount';
             }
         }
         //CREATE ACCOUNT SCENE
         else if(currentScene === 'createAccount') {
+            // we give a callback funtion to handleClick, when api says credentials are ok, we change scene inmediatly
+            // no second click needed. debugged with IA
             clicked = handleClickCreateAccount(ctx, () => {
-                resetLogIn();
-                currentScene = 'login';
+                resetLogIn();  //clean before going
+                currentScene = 'login';  //go to login
             });
-            if(clicked === 'back') {
-                resetCreateAccount();
+            if(clicked === 'back') {  //go back to menu
+                resetCreateAccount();  //clean before leaving
                 currentScene = 'menu';
             }
-            if(clicked === 'login') currentScene = 'login';
+            if(clicked === 'login') currentScene = 'login';  //go to log in
         }
         //SELECT CHARACTER
         else if (currentScene === 'start'){
-            if (!window.loggedPlayer) {
+            if (!window.loggedPlayer) {  //there is no player logged in
                 currentScene = "login";
                 return;
             }
             clicked = handleClickSelect(ctx); 
-            if(clicked === 'back'){
+            if(clicked === 'back'){  //user wants to go to menu
                 resetSelect(); 
                 currentScene = 'menu';
             }
-            if (clicked === 'selectedCharacter'){
+            if (clicked === 'selectedCharacter'){  //user has selected a charcter
                 selectedCharacter = getSelectedCharacter();
             }
-            if (clicked === 'confirm'){
+            if (clicked === 'confirm'){  //user wants to start playing
                 selectedCharacter = getSelectedCharacter();
                 setSelectedCharacter(selectedCharacter);
-                currentPlayer = getPlayer();  //grab the player that was just created
+                currentPlayer = getPlayer();  //grab the player that was just created/logged in
                 currentScene = 'level1';
             }
         }
         //LEVELS SCENE
-        else if (currentScene === 'level1'){
+        else if (currentScene === 'level1'){  //start the game
             clicked = handleClickLevel(ctx); 
             if(goToMenu){  //player clicked Home from the pause menu
                 resetGoToMenu();
@@ -186,23 +192,21 @@ function main() {
             }
         }
         //SCORE SCENE
-        else if(currentScene === "score"){
+        else if(currentScene === "score"){  //player lose/win and is in score scene
             clicked = handleClickScoreScene();
-            if(clicked === "exit"){
+            if(clicked === "exit"){  //wants to go to menu
                 (async () => {
-                    await loadPlayerStats(window.loggedPlayer.player_id, "menu");
+                    await loadPlayerStats(window.loggedPlayer.player_id, "menu");  //update the stats
                     currentScene = "menu";
-                    resetScoreScene();
+                    resetScoreScene(); //clean before leaving
                 })();
             }
-            if(clicked === "again"){
+            if(clicked === "again"){  //player want to play again
                 console.log("ANTES DE CREAR PLAYER:", window.loggedPlayer.fame);
-                resetLevel();
-                (async () => {
+                resetLevel();  //reset everything
+                (async () => {  //update stats
                     await loadPlayerStats(window.loggedPlayer.player_id, "level1");
-
-                    resetScoreScene();
-
+                    resetScoreScene();  //clean before leaving
                     // Creates player again
                     setSelectedCharacter(selectedCharacter);
                     currentPlayer = getPlayer();
@@ -211,24 +215,24 @@ function main() {
             }
         }
         //SHOP SCENE
-        else if (currentScene === "shop") {
+        else if (currentScene === "shop") {  //player want to shop
             clicked = await handleClickShop();
 
-            if (clicked === "back") {
+            if (clicked === "back") {  //player want to go to menu
                 currentScene = "menu";
             }
         }
     });
 
     canvas.addEventListener("mousedown", () => {
-        if(currentScene === "settings") startDragging();
+        if(currentScene === "settings") startDragging();  //player is moving the volume bar
     });
 
     canvas.addEventListener("mouseup", () => {
-        if(currentScene === "settings") stopDragging();
+        if(currentScene === "settings") stopDragging();  //player has stoped moving the vollume bar
     });
 
-    canvas.addEventListener("mousemove", (event) => {
+    canvas.addEventListener("mousemove", (event) => {  //calls the function depending on the scene
         if(currentScene === 'menu') handleMouseMoveMenu(event,canvas);
         if(currentScene === 'settings') handleMouseMoveSettings(event,canvas);
         if(currentScene === 'login') handleMouseMoveLogIn(event,canvas);
@@ -239,19 +243,18 @@ function main() {
         if(currentScene === "shop") handleMouseMoveShop(event, canvas);
     });
 
-    window.addEventListener("keydown", (event) => {
+    window.addEventListener("keydown", (event) => {  //calls the function depending on the scene
         if (currentScene === "login") handleKeyDownLogIn(event);
         if(currentScene === "createAccount") handleKeyDownCreateAccount(event);
         if(currentScene === "level1") handleKeyDownLevel(event);
     });
 
-    window.addEventListener("keyup", (event)=>{
+    window.addEventListener("keyup", (event)=>{  //track when user is not pressing any key
         if(currentScene === 'level1') handleKeyUpLevel(event);
     });
 }
 
-//WE INIT RAF wen API fetch is ready
-async function init() {
+async function init() {  //~ bring everything you need and do not start till youre ready
     console.log("Loading configs...");
     await loadPlayerConfigs();
     await loadEnemyConfigs();
@@ -260,33 +263,34 @@ async function init() {
     console.log("Configs ready:", enemyConfigs);
     console.log("Configs ready:", levelConfigsDB);
     configsReady = true;
-    requestAnimationFrame(gameLoop); // ahora sí arranca
+    requestAnimationFrame(gameLoop); //when everythings ready, start the game
 }
 
-function gameLoop(newTime) {
-    let deltaTime = (newTime - oldTime);
+function gameLoop(newTime) {  //~ update everything depending on new tiem
+    let deltaTime = (newTime - oldTime);  //update delta time
     if (deltaTime > 50) deltaTime = 50; 
 
-    if (!configsReady) {
+    if (!configsReady) {  //if config arent ready, request animation and wait
         requestAnimationFrame(gameLoop);
         return;
     }
-
+    
+    //calls the function depending on the scene
     if(currentScene === 'menu') drawMenu(ctx,canvas);
     else if(currentScene === 'settings') drawSettings(ctx,canvas);
     else if(currentScene === 'login') drawLogIn(ctx,canvas);
     else if(currentScene === 'createAccount') drawCreateAccount(ctx,canvas);
     else if(currentScene === 'start') drawSelect(ctx,canvas);   
     else if(currentScene === 'level1') {
-        drawLevel(ctx,canvas, deltaTime);  //levelBase handles all 3 levels now
+        drawLevel(ctx,canvas, deltaTime);  //levelBase handles all 3 levels 
         updateLiveStats();
-        if(goToScore){  //levelBase signals game complete after level 3 deck preview
+        if(goToScore){  //levelBase signals when to go to score 
             currentScene = 'score';
-            resetGoToScore();
+            resetGoToScore();  //clean before going
         }
-        else if(goToMenu){
+        else if(goToMenu){  //player wants to go to menu scene
             currentScene = 'menu';
-            resetGoToMenu();
+            resetGoToMenu(); //clean everything before going
             resetLevel();
         }
     }
@@ -295,8 +299,8 @@ function gameLoop(newTime) {
     oldTime = newTime;
     requestAnimationFrame(gameLoop);
 }
-
 main();
 init();
 
+//* === exports ===
 export { loadPlayerStats };
