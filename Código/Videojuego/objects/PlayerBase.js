@@ -1,13 +1,25 @@
+/* 
+& All player mechanics logic, includes:
+& movement, attack and take damage, lives. 
+
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+*/
+
+//* === imports ===
 import { AnimatedObject } from "../libs/AnimatedObject.js";
 import { hitboxOverlap } from "../libs/game_functions.js";
 import { Rect } from "../libs/Rect.js";
 
-
+//* === class player base ===
 class PlayerBase extends AnimatedObject {  
   constructor(position, config = {}) {
     const {
-    //& le decimos al parametro 'config' que es lo que debe tener el config
-    //& que le vamos a pasar desde level1 para que tenga una idea de que esperar, es como el this.hp = hp
+    // all this data is included in the config object
         hp = 100,
         maxHp = 100,
         speed = 5,
@@ -22,21 +34,22 @@ class PlayerBase extends AnimatedObject {
 
     super(position, 160, 160, "white", "this", 4);
     this.setCollider(75, 130);  //hurtbox 
-    this.direction = "right";
+    this.setAnimation(0, 3, true, 200); 
 
+    //mechanics info
+    this.direction = "right";
     this.hp = hp;
     this.maxHp = maxHp;
     this.speed = speed;
     this.damage = damage;
     this.fame = 0; //"coins" to buy upgrades in the game
-
-    this.setAnimation(0, 3, true, 200); 
     this.velocityY = 0;
-    this.gravity = 0.0028; // px/ms²  (compatible con deltaTime en ms)
+    this.gravity = 0.0028; // px/ms² 
     this.jumpStrength = -0.84; // px/ms
     this.isOnGround = true;
     this.isMoving = false;
-    //sprites, must have the same name to work
+
+    //sprites, must have the same name between all configs to work
     this.spriteRight = new Image(); 
     this.spriteRight.src = walkRightSrc;
     this.spriteLeft = new Image(); 
@@ -57,7 +70,7 @@ class PlayerBase extends AnimatedObject {
     this.playeratack = false;
     this.attackFrames = 0;
     this.attackDuration = 10;
-     //hitbox platform colission
+    //hitbox platform colission
     this.hitbox = {
         width: 35,  
         height: 80   
@@ -65,11 +78,11 @@ class PlayerBase extends AnimatedObject {
     this.HITBOX_WIDTH = 50;
     this.HITBOX_HEIGHT = 100;
     this.HITBOX_OFFSET = -15;
-    this.hitEnemies = new Set();
+    this.hitEnemies = new Set();  //only can hit one time each enemy per swing
 
     // card system
-    this.canJump = true;
-    this.invincible = false;
+    this.canJump = true;  // ceasar chains effect
+    this.invincible = false;  //take the next hit without damage
     this.hearts = 5;
     this.maxHearts = 5;
     this.range = 1;
@@ -77,7 +90,8 @@ class PlayerBase extends AnimatedObject {
     this.cardCostHP = false;
   }
 
-  update(goLeft, goRight, jumpPressed, platforms, groundY, deltaTime){  //manage movement, hurtbox, attack
+  //* === functions ===
+  update(goLeft, goRight, jumpPressed, platforms, groundY, deltaTime){  //~ manage movement, hurtbox, attack
     this.isMoving = false;
     this.walk(goLeft, goRight, deltaTime);
     this.jump(jumpPressed);
@@ -85,7 +99,7 @@ class PlayerBase extends AnimatedObject {
     this.checkPlatforms(platforms, groundY, deltaTime);
     this.updateCollider();
 
-    //sprites depending on status (jump, walk, attack, ...)
+    //~ sprites depending on status (jump, walk, attack, ...)
     if (!this.isOnGround) {
       //case 1: jump (no attack allowed in the air)
       this.spriteImage = (this.direction === "right") ? this.spriteJumpRight : this.spriteJumpLeft;
@@ -118,7 +132,7 @@ class PlayerBase extends AnimatedObject {
     }
   };
 
-  walk(goLeft, goRight, deltaTime){  //x position
+  walk(goLeft, goRight, deltaTime){  //~ x position
     if (goLeft && !goRight) {  //case 1: only left keys are pressed
         this.position.x -= this.speed * deltaTime;
         this.isMoving = true;
@@ -130,19 +144,19 @@ class PlayerBase extends AnimatedObject {
     }
   }
 
-  jump(jumpPressed){  //jump logic
+  jump(jumpPressed){  //~ jump logic
     if (jumpPressed && this.isOnGround && this.canJump){ //this meets all requirements
         this.velocityY = this.jumpStrength;
         this.isOnGround = false;
     }
   }
 
-  applyGravity(deltaTime){  //gravity parameters
+  applyGravity(deltaTime){  //~ gravity parameters
     this.velocityY += this.gravity * deltaTime;
     this.position.y += this.velocityY *deltaTime;
   }
   
-  checkPlatforms(platforms, groundY, deltaTime){  //check colision between player and platform
+  checkPlatforms(platforms, groundY, deltaTime){  //~ check colision between player and platform
     //Platform collision
     this.isOnGround = false;
     platforms.forEach(p => {
@@ -172,14 +186,14 @@ class PlayerBase extends AnimatedObject {
     }
   }
   
-  takeDamage(hit){  //* damage made by enemy, look EnemyBase to understand the whole logic
-    if (this.invincible) {   //? case1: divine shield effect
+  takeDamage(hit){  //~ damage made by enemy, look EnemyBase to understand the whole logic
+    if (this.invincible) {   // case1: divine shield effect: next hit does not make damage
       this.invincible = false; 
       return; 
     }  
     this.hp -= hit;
     if (this.hp <= 0) {
-      if (this.doubleDeath) { //? cas2: senates judgment effect
+      if (this.doubleDeath) { // case2: senates judgment effect: next death cost 2 hearts
         this.hearts -= 1; 
         this.doubleDeath = false; 
       }  
@@ -192,20 +206,20 @@ class PlayerBase extends AnimatedObject {
     }
   }
 
-  attackEnemy(enemies){
-    if (!this.playeratack || !this.attackHitbox) //"this is attacking?"
+  attackEnemy(enemies){  //~ make damage to enemies
+    if (!this.playeratack || !this.attackHitbox) //player is attacking?
             return;  
         enemies.forEach(enemy => {
-            if (this.hitEnemies.has(enemy))  //single attack doesnt hit the same enemy more than once
+            if (this.hitEnemies.has(enemy))  //single attack, doesnt hit the same enemy more than once
                 return;  
-            if (hitboxOverlap(this.attackHitbox, enemy)) {
+            if (hitboxOverlap(this.attackHitbox, enemy)) { //did player touch the enemy hurtbox?
                 this.hitEnemies.add(enemy);
-                enemy.takeDamage(this.damage, this);
+                enemy.takeDamage(this.damage, this);  // enemy manage take damage logic
             }
         });
   }
 
-  createHitbox(){  //data hitbox, left/right
+  createHitbox(){  //~ data hitbox, change position depending on direction (left/right)
     if (this.direction === "right") {
       this.attackHitbox = {
         x: (this.position.x + this.halfSize.x + this.HITBOX_OFFSET),
@@ -217,14 +231,16 @@ class PlayerBase extends AnimatedObject {
       this.attackHitbox = {
         x: (this.position.x - this.halfSize.x - this.HITBOX_WIDTH - this.HITBOX_OFFSET),
         y: this.position.y - this.HITBOX_HEIGHT * 1.2,
-        width: this.HITBOX_WIDTH * this.range,
+        width: this.HITBOX_WIDTH * this.range,  // colloseums fury: range of hitbox increase for 8 sec
         height: this.HITBOX_HEIGHT
       };
     }
   };
 
-  draw(ctx){  //draw this, attack, jump and death on canvas
+  draw(ctx){  //~ draw plyer, attack, jump and death on canvas
     super.draw(ctx)
   }
 };
+
+//* === exports ===
 export { PlayerBase }; 

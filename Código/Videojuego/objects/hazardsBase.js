@@ -1,8 +1,22 @@
+/* 
+& All hazards mechanics logic, includes:
+& creation and handle collision
+
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+*/
+
+//* === imports ===
 import { hitboxOverlap } from "../libs/game_functions.js";
 import { AnimatedObject } from "../libs/AnimatedObject.js";
 import { Rect } from "../libs/Rect.js";
 import { Vector } from "../libs/Vector.js";
 
+//* mother class: hazard base ===
 class HazardBase extends AnimatedObject {
     constructor(x, y, w, h) {
         super(new Vector(x + w/2, y + h), w, h, "transparent", "hazard", 2);
@@ -13,7 +27,9 @@ class HazardBase extends AnimatedObject {
         this.damageCooldownMax = 800;
         this.attackHitbox = null;
     }
-    update(player, deltaTime){  //? handle attack and animation
+
+    //* === function ===
+    update(player, deltaTime){  //~ handle attack and animation
         this.updateAnimation(deltaTime);  //moves frames
         if(this.damageCooldown > 0){  //control of hits
             this.damageCooldown -= deltaTime;
@@ -30,12 +46,14 @@ class HazardBase extends AnimatedObject {
             this.damageCooldown = this.damageCooldownMax;
         }
     }
-    draw(ctx){  //? draw the animation
+    draw(ctx){  //~ draw the animation
         super.draw(ctx);
     }
 }
+
+//* === daughter classes: spkies and firepit ===
 class Spikes extends HazardBase {
-    constructor(x, y) {
+    constructor(x, y) {  //~ has their own image and damage
         super(x, y, 650, 350);
         this.damage = 10;
         this.spriteImage = new Image();
@@ -45,7 +63,7 @@ class Spikes extends HazardBase {
     }
 }
 class FirePit extends HazardBase {
-    constructor(x, y) {
+    constructor(x, y) {  //~ has their own image and damage
         super(x, y, 650, 350);
         this.damage = 30;
         this.spriteImage = new Image();
@@ -54,5 +72,7 @@ class FirePit extends HazardBase {
         this.setAnimation(0, 1, true, 600);
     }
 }
+
+//* === exports ===
 export { Spikes, FirePit };
 
