@@ -33,7 +33,7 @@ cd Videojuego
 
 ### 2. Set up the database
 
-Open MySQL Workbench (or any MySQL client) and run the schema file:
+Open MySQL Workbench (or any MySQL program) and run the schema file:
 
 ```
 mysql -u root -p < "Código/base_de_datos/gladiador_codigo2.sql"
@@ -98,7 +98,7 @@ You can also visit the **Shop** from the main menu (requires login) to spend Fam
 
 ## Game Objective
 
-Survive all three colosseum levels by defeating enemies and avoiding hazards. Each level ends when you kill enough enemies. Earn **Fame** by clearing levels quickly — Fame is the in-game currency used to buy extra lives and items in the shop.
+Survive all three colosseum levels by defeating enemies and avoiding hazards. Each level ends when you kill enough enemies. Earn **Fame** by clearing levels quickly. Fame is the in-game currency used to buy extra lives and shields in the shop.
 
 ---
 
@@ -110,20 +110,19 @@ Survive all three colosseum levels by defeating enemies and avoiding hazards. Ea
 Choose from three gladiator archetypes at the start of each run, each with different base stats for HP, speed, and damage. Your choice shapes the rest of the run.
 
 **Levels**
-- **Level 1 — The Colosseum:** Straightforward arena, no hazards. Kill the required number of enemies to advance.
-- **Level 2 — The Sand Pit:** Spikes appear in the arena floor. Watch your step while fighting.
-- **Level 3 — The Final Arena:** Spikes and fire pits. Survive the chaos and defeat the strongest enemies to win.
+- **Level 1:** Straightforward arena, no hazards. Kill the required number of enemies to advance.
+- **Level 2:** Spikes appear in the arena floor. Watch your step while fighting.
+- **Level 3:** Spikes and fire pits. Survive the chaos and defeat the strongest enemies to win.
 
 **Card Events**
-At a random point mid-level, a card event triggers. You are shown three cards — two **Power-Ups** and one **Punishment** — and must pick one. Power-Ups permanently improve your stats (speed, damage, etc.). Punishments apply a penalty. Choose wisely.
+At a random point mid-level, a card event triggers. You are shown three face-down cards (two **Power-Ups** and one **Punishment**) and must pick one. Choose wisely.
 
 **Level Rewards**
-Complete a level before the target time and earn two reward cards added to your deck. Finish late and you only get one. These are temporary boosts that last through the run.
-
+Complete a level before the target time and earn two power-ups cards added to your deck. Finish late and you only get one. 
 **The Shop**
 Spend Fame earned in matches on:
-- **Extra Heart (life):** 50 Fame — increases your HP bar for the next run (up to 5 hearts max).
-- **Galen's Remedy:** 25 Fame — a one-use shield that absorbs one fatal hit.
+- **Extra Heart (life):** 50 Fame, increases your hearts for the next run (up to 5 hearts max).
+- **Galen's Remedy:** 25 Fame, a one-use shield that absorbs one fatal hit (no limit).
 
 **Winning and Losing**
 Clear all three levels to **WIN**. Run out of hearts and you **LOSE**. Either way, your match stats (level reached, fame earned, duration) are saved to the database and shown on the score screen.
@@ -132,6 +131,7 @@ Clear all three levels to **WIN**. Run out of hearts and you **LOSE**. Either wa
 Register with a username starting with `@dm1n_` to create an admin account, which has access to global game statistics across all players.
 
 ---
+All our assets were made by NanoBanana.
 
 Gladiator Team:
 - Daniela Angulo
