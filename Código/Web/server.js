@@ -1,32 +1,26 @@
-require("dotenv").config();
-//=====IMPORTS=====
+/*
+& Queries to connect db with javascriot code and frontend
+
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+*/
+
+//* === config and imports ===
+require("dotenv").config();  //~ credentials to connect
+//~ imports 
 const express = require("express");
 const mysql = require("mysql2");
 const app = express();
-//=====CONFIG=====
+//~ config
 const cors = require("cors");
 app.use(cors());
 app.use(express.json());
 
-/* entra a mysql desde la terminal (sudo mysql) y pon los comandos:
-* CREATE USER 'gladiator'@'localhost' IDENTIFIED BY 'gladiator123';
-que hace? crea un usuario llamado gladiator que se conecta desde esta misma computadora, con contraseña gladiator123
-* GRANT ALL PRIVILEGES ON gladiator.* TO 'gladiator'@'localhost';
-que hace? dale todos los permisos sobre la base de datos gladiator 
-(el .* es "todas las tablas de esa base de datos") al usuario gladiator
-* FLUSH PRIVILEGES;
-que hace? aplica los cambios de permisos inmediatamente 
-* exit;
-que hace? sal de MySQL y regresa a la terminal normal
-* sudo mysql < ~/ruta/a/su/proyecto/server/db/gladiador_codigo2.sql
-que hace? carga el schema (cambian la ruta por la suya)
-y ya luego encienden la api
-* cd ~/ruta/a/su/proyecto/server
-* node server.js
-si jala tiene que salir lo de Servidor en 'link' MySQL conectado
-*/
-
-//=====DB CONNECTION =======
+//* === db connection (.env) ===
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -37,17 +31,16 @@ const db = mysql.createConnection({
     queueLimit: 0
 });
 
-//=======CONNECT========
-db.connect((err) => {
+db.connect((err) => {  //~ connection confirmation
     if (err) {
         console.log("Error MySQL:", err);
         return;
     }
     console.log("MySQL conectado");
 });
-//======ROUTES (GET AND POST)========
 
-//GET all from 'Players' for log in and create account
+//* === GET AND POST ===
+//~ GET all from 'Players' for log in and create account
 app.get("/players", (req, res) => {
     console.log("ENTRÓ A /players");
     db.query("SELECT * FROM Player", (err, result) => {
@@ -60,9 +53,8 @@ app.get("/players", (req, res) => {
     });
 });
 
-//POST Log In
+//~ POST Log In
 app.post("/login", (req, res) => {
-
     const { username, password } = req.body;
 
     //check Statistics first, if they're in there, they're an admin
@@ -96,7 +88,7 @@ app.post("/login", (req, res) => {
     });
 });
 
-//POST create account
+//~ POST create account
 app.post("/register", (req, res) => {
     const { username, password, name } = req.body;
 
@@ -133,10 +125,10 @@ app.post("/register", (req, res) => {
     });
 });
 
-// GET Archetypes for select scene
+//~ GET Archetypes for select scene
 app.get("/archetypes", (req, res) => {
     console.log("GET /archetypes");
-//Select all from table Archetypes
+    //Select all from table Archetypes
     db.query("SELECT * FROM Archetype", (err, result) => {
         if (err) {
             console.log("QUERY ERROR:", err);
@@ -148,10 +140,9 @@ app.get("/archetypes", (req, res) => {
     });
 });
 
-//=======================GAME LOGIC==============================
-//Get card for random card effect event
+//* === GAME LOGIC ===
+//~ Get card for random card effect event
 app.get("/cards/random", (req, res) => {
-
     const query = `
         SELECT
             card_id,
@@ -175,17 +166,14 @@ app.get("/cards/random", (req, res) => {
             console.log(err);
             return res.status(500).json({ error: err.message }); //send proper error status so the frontend catch picks it up
         }
-
         res.json(result);
     });
 });
 
-//GET real time stats view
+//~ GET real time stats view
 app.get("/match/summary/:id", (req, res) => {
     const matchId = req.params.id;
-
     console.log("GET SUMMARY FOR:", matchId);
-
     const query = `
         SELECT 
             m.match_id,
@@ -198,35 +186,35 @@ app.get("/match/summary/:id", (req, res) => {
         JOIN Player p ON m.player_id = p.player_id
         WHERE m.match_id = ?
     `;
-
     db.query(query, [matchId], (err, result) => {
         if (err) {
-            console.error(err);
+            console.error(err);  //edge case
             return res.status(500).send(err.message);
         }
 
-        if (result.length === 0) {
+        if (result.length === 0) {  //no data 
             return res.status(404).json({ error: "Match not found" });
         }
 
-        console.log("SUMMARY DATA:", result[0]);
+        console.log("SUMMARY DATA:", result[0]);  //first result found
 
         res.json(result[0]);
     });
 });
-//GET Game Progress view
+
+//~ GET Game Progress view
 app.get("/match/progress/:id", (req, res) => {
     db.query(
         "SELECT * FROM vw_match_progress WHERE match_id = ?",
         [req.params.id], //Retrieves the progress of each LEVEL within the match, tracks progression
         (err, result) => { 
-            if (err) return res.status(500).send(err.message);
+            if (err) return res.status(500).send(err.message);  //edge case
             res.json(result);
         }
     );
 });
 
-//GET active cards view
+//~ GET active cards view
 app.get("/match/cards-live/:id", (req, res) => {
     db.query(
         `SELECT * FROM vw_match_cards_live 
@@ -239,13 +227,13 @@ app.get("/match/cards-live/:id", (req, res) => {
                         //In the sub-query first gets all levels that belong to the match
                         //Then gets all cards used in those levels
         (err, result) => {
-            if (err) return res.status(500).send(err.message);
+            if (err) return res.status(500).send(err.message);  //edge case
             res.json(result);
         }
     );
 });
 
-//POST match, with stored procedures
+//~ POST match, with stored procedures
 app.post("/match", (req, res) => {
     const {
         player_id,
@@ -261,7 +249,7 @@ app.post("/match", (req, res) => {
         "CALL InsertMatch(?, ?, ?, ?, ?, ?, ?)",
         [player_id, archetype_id, duration_seconds, level_reached, final_fame, life, result],
         (err, result) => {
-            if (err) return res.status(500).send(err.message);
+            if (err) return res.status(500).send(err.message);  //edge case
 
             res.json({
                 success: true,
@@ -270,9 +258,8 @@ app.post("/match", (req, res) => {
         }
     );
 });
-
-
-//POST, register card ussage (Deck)
+ 
+//~POST, register card ussage (Deck)
 app.post("/deck", (req, res) => {
     const { specific_level_id, card_id, effect_duration } = req.body;
 
@@ -282,13 +269,13 @@ app.post("/deck", (req, res) => {
     `;
 
     db.query(query, [specific_level_id, card_id, effect_duration], (err) => {
-        if (err) return res.status(500).send(err.message);
+        if (err) return res.status(500).send(err.message);  //edge case
 
         res.json({ success: true });
     });
 });
 
-//GET player stats view (this goes on another tab)
+//~ GET player stats view (this goes on another tab)
 app.get("/player/profile/:id", (req, res) => {
     db.query(
         "SELECT * FROM vw_player_profile WHERE player_id = ?",
@@ -296,68 +283,69 @@ app.get("/player/profile/:id", (req, res) => {
                         // including name, username, and overall stats (runs, wins, losses)
                         // Used for account info and general stats overview
         (err, result) => {
-            if (err) return res.status(500).send(err.message);
+            if (err) return res.status(500).send(err.message);  //edge case
             res.json(result);
         }
     );
 });
-// Winrate view useful from current Player
+
+//~ Winrate view useful from current Player
 app.get("/player/winrate/:id", (req, res) => {
     db.query(
         "SELECT * FROM vw_player_winrate WHERE player_id = ?",
         [req.params.id],
         (err, result) => {
-            if (err) return res.status(500).send(err.message);
+            if (err) return res.status(500).send(err.message);  //edge case
             res.json(result);
         }
     );
 });
 
-//Match history  view from current Player
+//~ Match history  view from current Player
 app.get("/player/history/:username", (req, res) => {
     db.query(
         "SELECT * FROM vw_player_match_history WHERE username = ?",
         [req.params.username],
         (err, result) => {
-            if (err) return res.status(500).send(err.message);
+            if (err) return res.status(500).send(err.message);  //edge case
             res.json(result);
         }
     );
 });
 
-//Total fame view from Current Player
+//~ Total fame view from Current Player
 app.get("/player/fame/:id", (req, res) => {
     db.query(
         "SELECT * FROM vw_player_total_fame WHERE player_id = ?",
         [req.params.id],
         (err, result) => {
-            if (err) return res.status(500).send(err.message);
+            if (err) return res.status(500).send(err.message);  //edge case
             res.json(result);
         }
     );
 });
 
-//General card usage from the Player along the game
+//~ General card usage from the Player along the game
 app.get("/player/cards/:username", (req, res) => {
     db.query(
         "SELECT * FROM vw_player_card_usage WHERE username = ?",
         [req.params.username],
         (err, result) => {
-            if (err) return res.status(500).send(err.message);
+            if (err) return res.status(500).send(err.message);  //edge case
             res.json(result);
         }
     );
 });
 
-//================== GLOBAL STATS FROM ADMIN (another tab) ====================
-app.get("/stats", (req, res) => {
+//* === GLOBAL STATS FROM ADMIN (another tab) ===
+app.get("/stats", (req, res) => {  //~ view with all stats planned since the beginging
     db.query("SELECT * FROM vw_general_statistics", (err, result) => {
         if (err) return res.status(500).send(err.message);
         res.json(result);
     });
 });
 
-//================== DEATHS PER LEVEL ====================
+//~ DEATHS PER LEVEL, extra chart added before
 app.get("/stats/deaths-per-level", (req, res) => {
     db.query(
         "SELECT level_reached, COUNT(*) AS deaths FROM MatchGame WHERE result = 'LOSE' GROUP BY level_reached ORDER BY level_reached",
@@ -368,7 +356,7 @@ app.get("/stats/deaths-per-level", (req, res) => {
     );
 });
 
-//================== PLAYER CURRENT STATE ====================
+//* === PLAYER CURRENT STATE ===
 app.get("/player/live/:id", (req, res) => {
     const id = req.params.id;
 
@@ -390,11 +378,11 @@ app.get("/player/live/:id", (req, res) => {
     `;
 
     db.query(query, [id], (err, result) => {
-        if (err) {
+        if (err) {  //edge case
             console.error(err);
             return res.status(500).send(err.message);
         }
-        //for new users
+        //for new users, hard coded data
         if (result.length === 0) {
             return res.json({
                 player_id: id,
@@ -408,16 +396,15 @@ app.get("/player/live/:id", (req, res) => {
                 current_level: 0
             });
         }
-
-        res.json(result[0]);
+        res.json(result[0]);  // give the first result found
     });
 });
 
-//LEVEL CONFIGS, ARCHETYPE, ENEMIES, LEVEL
+//~ LEVEL CONFIGS, ARCHETYPE, ENEMIES, LEVEL
 app.get("/enemies", (req, res) => {
     db.query("SELECT * FROM Enemy", (err, result) => {
-        if (err) return res.status(500).send(err.message);
-        res.json(result);
+        if (err) return res.status(500).send(err.message);  //edge case
+        res.json(result);  //bring catalgue
     });
 });
 
@@ -425,14 +412,14 @@ app.get("/levels", (req, res) => {
     db.query("SELECT * FROM Level", (err, result) => {
         if (err) {
             console.error(err);
-            return res.status(500).send(err.message);
+            return res.status(500).send(err.message); //edge case
         }
-        res.json(result);
+        res.json(result);  //bring catalog
     });
 });
 
-//GLOBAL STATS FOR STATS.HTML
-// As a single player
+//* GLOBAL STATS FOR STATS.HTML
+//~ As a single player
 app.get("/player/stats/:id", (req, res) => {
     const playerId = req.params.id;
 
@@ -492,28 +479,27 @@ app.listen(process.env.PORT || 3000, () => {
     console.log(`Servidor en http://localhost:${process.env.PORT || 3000}`);
 });
 
-//SHOPPING HEARTS MECHANICS FOR ROGUELITE
-//Being able to buy hearts
-app.post("/shop/buy-heart", (req, res) => {
+//* SHOPPING QUERIES
+app.post("/shop/buy-heart", (req, res) => {  //~Being able to buy hearts
     const { player_id } = req.body;
 
     db.query(
         "SELECT fame, hearts FROM Player WHERE player_id = ?",
         [player_id],
         (err, result) => {
-            if (err) return res.status(500).send(err.message);
+            if (err) return res.status(500).send(err.message);  //edge case 
 
-            if (result.length === 0) {
+            if (result.length === 0) {  // player not found in db
                 return res.status(404).json({ error: "Player not found" });
             }
 
             const player = result[0];
 
-            if (player.fame < 50) {
+            if (player.fame < 50) {  //player cant affor hearts
                 return res.status(400).json({ error: "Not enough fame" });
             }
 
-            db.query(
+            db.query(  //update fame in players table
                 `UPDATE Player
                  SET fame = fame - 50,
                      hearts = hearts + 1
@@ -533,19 +519,19 @@ app.post("/shop/buy-heart", (req, res) => {
     );
 });
 
-//* buy galen's remedy, like a shield that can 'save' the player
+//~ buy galen's remedy, like a shield that can 'save' the player
 app.post("/shop/buy-galen", (req, res) => {
-    const { player_id } = req.body;
+    const { player_id } = req.body;  //bring the id 
 
     db.query("SELECT fame, galen FROM Player WHERE player_id = ?", [player_id], (err, result) => {
-        if (err) return res.status(500).send(err.message);  //? case1: edge case
-        if (result.length === 0) return res.status(404).json({ error: "Player not found" });  //?case2: edge case
+        if (err) return res.status(500).send(err.message);  // case1: edge case
+        if (result.length === 0) return res.status(404).json({ error: "Player not found" });  //case2: edge case
 
         const player = result[0];  //first result that match
-        if (player.fame < 30) //? case3: not enough fame
+        if (player.fame < 30) // case3: not enough fame
             return res.status(400).json({ error: "Not enough fame" });  
 
-        db.query(  //? case4: player bought galen's remedy
+        db.query(  // case4: player bought galen's remedy
             "UPDATE Player SET fame = fame - 30, galen = galen + 1 WHERE player_id = ?",
             [player_id],
             (err2) => {
@@ -556,7 +542,7 @@ app.post("/shop/buy-galen", (req, res) => {
     });
 });
 
-//* the player used the galen's remedy in the match
+//~ the player used the galen's remedy in the match
 app.post("/player/use-galen", (req, res) => {
     const { player_id } = req.body;  //which player used the remedy?
 
@@ -570,10 +556,10 @@ app.post("/player/use-galen", (req, res) => {
     );
 });
 
-app.post("/player/update-fame", (req, res) => {
-    const { player_id, fame } = req.body;
+app.post("/player/update-fame", (req, res) => {  //~ update fame after every bought
+    const { player_id, fame } = req.body;  //bring player id and fame number
 
-    if (!player_id || fame == null) {
+    if (!player_id || fame == null) {  //edge case 
         return res.status(400).json({ error: "Missing data" });
     }
 
@@ -586,7 +572,7 @@ app.post("/player/update-fame", (req, res) => {
                 return res.status(404).json({ error: "Player not found" });
             }
 
-            res.json({ success: true });
+            res.json({ success: true });  //ipdate done
         }
     );
 });
