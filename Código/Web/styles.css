@@ -1,0 +1,284 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Cinzel:wght@400;700&display=swap');
+
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/*PIXEL TEXT*/
+.pixelText {
+    font-family: 'VT323', monospace;
+    font-weight: 900;
+    font-size: 100px;
+    line-height: 1;
+    letter-spacing: 1rem;
+    color: #ffd166;
+    text-shadow: 3px 3px 0px #000, 0 0 18px rgba(150, 20, 20, 0.6);
+}
+
+body {  /*general page style*/
+    background: radial-gradient(circle at top, #1a0e07, #000);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    font-family: 'Cinzel', serif;
+    margin: 0;  
+    padding: 0;  /*removes default inner spacing*/
+}
+
+#headerContainer {  /*top banner*/
+    text-align: center;  
+}
+#headerContainer h2 {  /*header 2*/
+    color: #812323;  
+    font-size: 2rem;  
+    text-align: center;  
+    font-weight: 600; 
+}
+#headerContainer p {  /*header 3*/
+    color: #876f4e; 
+    font-size: 1rem;  
+    font-weight: 800;
+    padding-left: 1rem;  /*space between bullet point and text*/
+    margin-top: .7rem;  
+}
+hr {  /*divider*/
+    border: 0;
+    border-top: 0.15rem dashed #4029093f;  /*--- style*/
+    opacity: 1;
+    width: 100%;
+}
+
+/* BUTTONS */
+.tutorial {
+    margin-top: 5px;
+}
+
+.tutorialButton {
+    text-decoration: none;
+    background: linear-gradient(145deg, #ffd166, #c9a44c);
+    color: black;
+    padding: 10px 18px;
+    margin: 5px;
+    border-radius: 12px;
+    font-weight: bold;
+    transition: 0.25s;
+    border: none;
+    cursor: pointer;
+}
+
+.tutorialButton:hover {
+    transform: translateY(-3px) scale(1.05);
+    background: #ffe08a;
+}
+
+/* MAIN LAYOUT: canvas + stats */
+.layout {
+    display: grid;
+    grid-template-columns: auto 260px; /* size of each column*/
+    gap: 2rem; /*distance from canvas*/
+    align-items: start;
+    justify-content: left;
+    width: 100%;
+    max-width: 1200px;
+    margin-top: 20px; /*gap between tabs and canvas*/
+    margin-bottom: 3rem;  /*gap between canvas and window*/
+}
+
+/* BOXES 
+.descriptionBox,*/
+.statsBox {
+    background: rgba(20, 10, 5, 0.85);
+    border: 2px solid #c9a44c;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.8);
+}
+
+/* DROPDOWN */
+.dropdownButton {
+    width: 100%;
+    background: #c9a44c;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.dropdownButton:hover {
+    background: #e6c76b;
+}
+/*
+.descriptionContent {
+    margin-top: 10px;
+    display: none;
+    line-height: 1.5;
+    color: white;
+}*/
+
+/* STATS */
+.statsContent {
+    display: none;
+    margin-top: 10px;
+    color: white;
+}
+
+.statRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.statLabel {
+    opacity: 0.8;
+}
+
+.statValue {
+    color: #ffd166;
+    font-weight: bold;
+}
+
+/* CANVAS */
+#canvas {
+    border: 3px solid rgb(255, 187, 86);
+    border-radius: 10px;
+    box-shadow: 0 0 25px rgba(255, 187, 86, 0.5);
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .layout {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+  /*  .descriptionBox,*/
+    .statsBox {
+        width: 80%;
+    }
+}
+
+p {
+    max-width: 600px;
+    margin: 20px auto;
+    line-height: 1.6;       
+}
+
+/* MODAL */
+.modal-content {
+    background: #1a0e07!important;
+    border: 2px solid #c9a44c;
+    color: white!important;
+}
+
+.modal-header {
+    border-bottom: 1px solid #c9a44c;
+}
+
+h3 {
+    font-family: 'VT323', monospace;
+    font-weight: 10;
+    font-size: 3rem;
+    line-height: 1;
+    letter-spacing: 1rem;
+    color: #ffd166;
+    text-shadow: 3px 3px 0px #000, 0 0 18px rgba(150, 20, 20, 0.6);
+}
+
+/* TUTORIAL MODALS */
+.tutorial-page {
+    font-family: 'VT323', monospace;
+    font-size: 1rem;
+    color: #c9a44c;
+    position: absolute;
+    left: 1rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #c9a44c;
+}
+
+/* CREDITS MODAL */
+.credits-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 20px;
+}
+
+.credits-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+    max-width: none;
+}
+
+.credits-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(201, 164, 76, 0.3);
+    border-radius: 12px;
+    padding: 14px 18px;
+}
+
+.credits-initials {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(201, 164, 76, 0.15);
+    border: 1px solid #c9a44c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    color: #ffd166;
+    flex-shrink: 0;
+}
+
+.credits-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.credits-name {
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+}
+
+.credits-role {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c9a44c;
+}
+
+.credits-footer {
+    margin-top: 8px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.25);
+    text-align: center;
+    max-width: none;
+}
+
