@@ -131,7 +131,12 @@ Clear all three levels to **WIN**. Run out of hearts and you **LOSE**. Either wa
 Register with a username starting with `@dm1n_` to create an admin account, which has access to global game statistics across all players.
 
 ---
-All our assets were made by NanoBanana.
+> [!NOTE] 
+> Código: all our code (JS, HTML, CSS, SQL)
+> DOcumentos: GDD and Especificacion de diseño
+> Presentacion: video and final reflection
+
+* All our assets were made by NanoBanana. *
 
 Gladiator Team:
 - Daniela Angulo
