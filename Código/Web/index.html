@@ -1,14 +1,26 @@
+<!--
+& Draw all the web, includes:
+& header, canvas, buttons, canvas, connection to main and style.css
+
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+-->
+
 <!DOCTYPE html>
 <html>
-<head>
+<head>  
     <title>Gladiator Game</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">  <!-- import bootstramp-->
+    <link rel="stylesheet" href="styles.css">  <!-- import style.css -->
 </head>
 
 <body>
     <hr>
-    <header id="headerContainer">
+    <header id="headerContainer">  <!--* header, includes: tittle and slogan-->
         <h1 class="pixelText">GLADIATOR</h1>
         <h2>Enter the Arena</h2>
         <p>Fight, survive, and earn glory in the Roman Colosseum</p>
@@ -16,8 +28,7 @@
     
     <hr>
 
-    </header>
-    <div class="tutorial">
+    <div class="tutorial">  <!--* 4 top buttons, content specified later -->
         <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#matchesHistorial">Your Record</button>
         <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#storyModal">Story</button>
         <button class="tutorialButton" data-bs-toggle="modal" data-bs-target="#tutorial-1">Tutorial</button>
@@ -25,22 +36,22 @@
     </div>
 
 
-    <audio id="bgMusic" loop>
-        <source src="../Videojuego/client/assets/music/background.mp3" type="audio/mpeg">
-        <source src="../Videojuego/client/assets/music/background.ogg" type="audio/ogg">
+    <audio id="bgMusic" loop>  <!--* ambient music -->
+        <source src="../Videojuego/assets/music/background.mp3" type="audio/mpeg">
+        <source src="../Videojuego/assets/music/background.ogg" type="audio/ogg">
     </audio>
 
-    <main class="layout">
-        <!-- CENTER/LEFT -->
+    <main class="layout">  <!--* web is organized in 2 parts, canvas and stats-->
+        <!--~ CENTER/LEFT -->
         <canvas id="canvas"></canvas>
 
-        <!-- RIGHT -->
+        <!--~ RIGHT -->
         <section class="statsBox">
             <button class="dropdownButton" onclick="toggleStats()">
                 Player Stats
-            </button>
+            </button> 
             <button onclick="openStatsPage()" class="dropdownButton" id="globalStatsBtn" style="display:none;">
-                View Global Stats
+                View Global Stats  <!-- button starts closed, stats update in lvie time-->
             </button>
             <div class="statsContent" id="statsContent">
 
@@ -102,7 +113,7 @@
 
     </main>
 
-    <!-- HISTORIAL MODAL -->
+    <!--* HISTORIAL MODAL, record stats, first top button -->
     <div class="modal fade" id="matchesHistorial" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -112,7 +123,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <!-- PLAYER TABLE -->
+                        <!--~ PLAYER TABLE -->
                         <div class="col-md-6">
                             <h5 style="color:#c9a44c;">👤 PLAYER STATS</h5>
                             <table class="table-custom w-100">
@@ -123,7 +134,7 @@
                                 <tr><td>Best Score</td><td id="hist-best-score">-</td></tr>
                             </table>
                         </div>
-                        <!-- PIE CHART -->
+                        <!--~ PIE CHART -->
                         <div class="col-md-6 text-center">
                             <h5 style="color:#c9a44c;">📊 WIN RATIO</h5>
                             <canvas id="winLossChart"></canvas>
@@ -135,7 +146,7 @@
     </div>
 
 
-    <div class="modal fade" id="storyModal" tabindex="-1">
+    <div class="modal fade" id="storyModal" tabindex="-1">  <!--* second top button, states the backgroung and story-->
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
@@ -153,8 +164,8 @@
         </div>
     </div>
 
-    <!-- TUTORIAL MODALS (1 per section), from bootstramp, Toggle between modals section -->
-    <div class="modal fade" id="tutorial-1" tabindex="-1" aria-hidden="true">
+    <!--* third top button: TUTORIAL MODALS (1 per section), from bootstramp, Toggle between modals section -->
+    <div class="modal fade" id="tutorial-1" tabindex="-1" aria-hidden="true">  <!--~ objective section: how the player can win-->
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -171,7 +182,7 @@
             </div>
         </div>
     </div>
-
+    <!--~ controls-->
     <div class="modal fade" id="tutorial-2" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -195,7 +206,7 @@
             </div>
         </div>
     </div>
-
+    <!--~ characters with unique characteristics defined -->
     <div class="modal fade" id="tutorial-3" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -217,7 +228,7 @@
             </div>
         </div>
     </div>
-
+    <!--~ lives: explain how players can buy more upgrades-->
     <div class="modal fade" id="tutorial-4" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -238,7 +249,7 @@
             </div>
         </div>
     </div>
-
+    <!--~ fame explanation, how the player can increase their fame and buy things-->
     <div class="modal fade" id="tutorial-5" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -257,7 +268,7 @@
             </div>
         </div>
     </div>
-
+    <!--~ card events, what to expect in each event to help them plan their strategy-->
     <div class="modal fade" id="tutorial-6" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -279,7 +290,7 @@
             </div>
         </div>
     </div>
-
+    <!--~ list of power up cards: shown as a way to show to player what to expect and how they can combine each card-->
     <div class="modal fade" id="tutorial-7" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -305,7 +316,7 @@
             </div>
         </div>
     </div>
-
+    <!--~ list of punishments cards: each punishment has their own description-->
     <div class="modal fade" id="tutorial-8" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -330,7 +341,7 @@
             </div>
         </div>
     </div>
-
+    <!--~ Level explained, a general description of enemies, cards and hazards-->
     <div class="modal fade" id="tutorial-9" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -351,7 +362,7 @@
             </div>
         </div>
     </div>
-
+    <!--~ hazards: we explain the damage and on which levels will be hazards-->
     <div class="modal fade" id="tutorial-10" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -372,7 +383,7 @@
         </div>
     </div>
 
-    <!-- CREDITS MODAL -->
+    <!--* CREDITS MODAL -->
     <div class="modal fade" id="creditsModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
@@ -413,44 +424,33 @@
         </div>
     </div>
 
-    <!-- Filtro SVG para deuteranopia -->
-<svg style="display:none">
-    <defs>
-        <filter id="deuteranopia">
-            <feColorMatrix type="matrix" values="
-                0.8  0.2  0    0 0
-                0.2  0.8  0    0 0
-                0    0.14 0.86 0 0
-                0    0    0    1 0"/>
-        </filter>
-    </defs>
-</svg>
-
+    <!--* handles menu toggles, ambient music, and fetches player statistics from the API to render data visualization charts -->
     <script type="module">
-    function toggleDescription() {
+    function toggleDescription() {  //~ toggles the visibility of the description section
         const content = document.querySelector('.descriptionContent');
-        content.style.display =
-            content.style.display === 'block' ? 'none' : 'block';
+        content.style.display = content.style.display === 'block' ? 'none' : 'block';
     }
-
-    function toggleStats() {
+    //~ toggles the visibility of the stats section
+    function toggleStats() { 
         const content = document.getElementById("statsContent");
         content.style.display =
             content.style.display === "block" ? "none" : "block";
     }
 
+    //~ expose functions to the global window object for HTML event access
     window.toggleStats = toggleStats;
     window.toggleDescription = toggleDescription;
 
-    function openStatsPage() {
+    function openStatsPage() {  //opens the detailed statistics page in a new browser tab
         window.open("stats.html", "_blank");
     }
     window.openStatsPage = openStatsPage;
 
-    // Música de fondo
+    //* ambient music
     const bgMusic = document.getElementById("bgMusic");
     bgMusic.volume = 0.4;
 
+    // reference for the Chart.js instance to allow refreshing
     document.addEventListener("click", () => {
         if (bgMusic.paused) {
             bgMusic.play();
@@ -459,6 +459,7 @@
 
     let winLossChartInstance = null;
 
+    // fetches player data and updates the Dashboard
     async function loadPlayerGlobalStats() {
         if (!window.loggedPlayer) return;
         const res = await fetch(`http://localhost:3000/player/stats/${window.loggedPlayer.player_id}`);
@@ -470,8 +471,9 @@
         document.getElementById("hist-avg-time").textContent = Number(data.avg_duration || 0).toFixed(1) + "s";
         document.getElementById("hist-best-score").textContent = data.best_score;
 
+        // destroy previous chart instance to prevent memory leaks or overlapping (debugged with IA)
         if (winLossChartInstance) winLossChartInstance.destroy();
-        const chartCtx = document.getElementById("winLossChart").getContext("2d");
+        const chartCtx = document.getElementById("winLossChart").getContext("2d");  //pie chart with chart.js
         winLossChartInstance = new Chart(chartCtx, {
             type: "pie",
             data: {
@@ -485,11 +487,12 @@
         });
     }
 
+    // trigger data load when the Bootstrap modal is opened
     document.getElementById("matchesHistorial").addEventListener("show.bs.modal", loadPlayerGlobalStats);
 
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  <!-- import chart.js to draw graphics-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="../Videojuego/client/main.js"></script>
+    <script type="module" src="../Videojuego/main.js"></script>  <!-- import main -->
 </body>
 </html>

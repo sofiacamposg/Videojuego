@@ -1,21 +1,35 @@
+<!--
+& Draw all the global stats web, includes:
+& their own css, global stats (graphics) and functions to handle chart.js
+
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    & pink: file description
+    * green: section title
+    ~ purple: general funtion description
+-->
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Global Statistics</title>
+    <title>Global Statistics</title>  <!--* initial config, importing bootstramp and chart.js-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
+    <!--* css style, we decided to put it here because we wanted a different style than the main html-->
+    <style>  
+        body { 
             margin: 0;
-            font-family: 'VT323', monospace;
-            background: url('./assets/portadaBase.png') no-repeat center center fixed;
+            font-family: 'VT323', monospace;  
+            /*~ all our assets were made by NanoBanana*/
+            background: url('./assets/portadaBase.png') no-repeat center center fixed;  
             background-size: cover;
             color: white;
         }
 
          .panel {
-            background: rgba(0,0,0,0.35); /*  más transparente */
-            backdrop-filter: blur(1px);   /* efecto vidrio (muy pro) */
+            background: rgba(0,0,0,0.35); /*~ tranparent style */
+            backdrop-filter: blur(1px);   /*~ glass effect */
             border: 2px solid #a5861e;
             box-shadow: 
                 0 0 5px #a5861e,
@@ -31,7 +45,7 @@
         }
 
         .stat-card {
-            background: rgba(0,0,0,0.25); /*  casi transparente */
+            background: rgba(0,0,0,0.25); /*~ transparent style, even more than panel one*/
             backdrop-filter: blur(4px);
             text-align: center;
             padding: 10px;
@@ -59,46 +73,38 @@
             border-radius: 10px;
         }
 
-        h1, h3, h4 {
+        h1, h3, h4 {  /*~ same style for all headers*/
             color: #a5861e;
             text-shadow: 0 0 10px #a5861e;
         }
 
     </style>
 </head>
-
+   <!--* global stats for admins, there are 7 number stats and 2 bars graphics-->
 <body class="bg-dark text-white">
-
     <div class="container mt-5 panel">
-
-    <div class="title"> ARENA STATS </div>
-
-    <!--  GLOBAL CARDS -->
+    <div class="title"> ARENA STATS </div>  
+    <!--~ 1 row, 4 columns-->
     <div class="row text-center mb-4">
-
         <div class="col-md-3 stat-card">
             <h4>Players</h4>
             <h2 id="players">-</h2>
         </div>
-
         <div class="col-md-3 stat-card">
             <h4>Matches</h4>
             <h2 id="matches">-</h2>
         </div>
-
         <div class="col-md-3 stat-card">
             <h4>Victories</h4>
             <h2 id="wins">-</h2>
         </div>
-
         <div class="col-md-3 stat-card">
             <h4>Defeats</h4>
             <h2 id="losses">-</h2>
         </div>
-
     </div>
 
-    <!--  EXTRA GLOBAL -->
+    <!--~  2 row, 3 columns -->
     <div class="row text-center mb-5">
         <div class="col-md-4">
             <h4>🏆 Best Score</h4>
@@ -114,50 +120,42 @@
         </div>
     </div>
 
-    <!--  EXTRA CHARTS -->
+    <!--~ 3 row, 2 bar graphics -->
     <div class="row mt-5">
-
         <div class="col-md-6 text-center">
             <h3>⚔️ MATCH RESULTS</h3>
             <canvas id="barChart"></canvas>
         </div>
-
         <div class="col-md-6 text-center">
             <h3>💀 DEATHS PER LEVEL</h3>
             <canvas id="deathsChart">-</canvas>
         </div>
-
     </div>
-
 </div>
-
+    <!--* handles api call and graphics creation-->
     <script>
-        //From log in scene
-        const player = JSON.parse(localStorage.getItem("player"));
-
-        if (!player) {
+        const player = JSON.parse(localStorage.getItem("player"));  //From log in scene
+        if (!player) {  //~ no admin register
             console.warn("Viewing stats without login");
         }
 
-        async function loadGlobalStats() {
-            const res = await fetch("http://localhost:3000/global/stats");
-            const data = await res.json();
-
+        async function loadGlobalStats() { //~ handle api call for global stats
+            const res = await fetch("http://localhost:3000/global/stats");  //bring the info
+            const data = await res.json();  //put it in a json
+            //organize all data in their respective id, hardcoded data for edge cases
             document.getElementById("players").textContent = data.players || 0;
             document.getElementById("matches").textContent = data.matches || 0;
             document.getElementById("wins").textContent = data.wins || 0;
             document.getElementById("losses").textContent = data.losses || 0;
-
             document.getElementById("global-best").textContent = data.best_score || 0;
             document.getElementById("global-avg-time").textContent = Number(data.avg_duration || 0).toFixed(1);
             document.getElementById("hearts_bought").textContent = data.total_hearts_bought;
-
+            //create bar chart, with hard coded data for edge cases
             createBarChart(data.wins || 0, data.losses || 0);
         }
 
-        function createBarChart(wins, losses) {
+        function createBarChart(wins, losses) {  //~create bar chart for wins and losses comparison
             const ctx = document.getElementById("barChart").getContext("2d");
-
             new Chart(ctx, {
                 type: "bar",
                 data: {
@@ -165,7 +163,7 @@
                     datasets: [{
                         label: "Matches",
                         data: [wins, losses],
-                        backgroundColor: ["#28a745", "#dc3545"]
+                        backgroundColor: ["#28a745", "#dc3545"]  //green for wins and red for losses 
                     }]
                 },
                 options: {
@@ -176,11 +174,11 @@
             });
         }
         
-        async function loadDeathsPerLevel() {
-            const res = await fetch("http://localhost:3000/stats/deaths-per-level");
-            const data = await res.json();
+        async function loadDeathsPerLevel() {  //api call to deatch per level, debugged with IA
+            const res = await fetch("http://localhost:3000/stats/deaths-per-level");  //bring the info
+            const data = await res.json();  //put it in a json
 
-            const deathsByLevel = { 1: 0, 2: 0, 3: 0 };
+            const deathsByLevel = { 1: 0, 2: 0, 3: 0 };  //hardoced data for edge cases
             data.forEach(d => deathsByLevel[d.level_reached] = d.deaths);
             const labels = ["Level 1", "Level 2", "Level 3"];
             const values = [deathsByLevel[1], deathsByLevel[2], deathsByLevel[3]];
@@ -193,7 +191,7 @@
                     datasets: [{
                         label: "Deaths",
                         data: values,
-                        backgroundColor: ["#dc3545", "#fd7e14", "#ffc107"]
+                        backgroundColor: ["#dc3545", "#fd7e14", "#ffc107"]  //different colors for each level
                     }]
                 },
                 options: {
@@ -202,11 +200,9 @@
                 }
             });
         }
-
+        //call both functions
         loadGlobalStats();
         loadDeathsPerLevel();
-
     </script>
-
 </body>
 </html>

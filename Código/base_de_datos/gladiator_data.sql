@@ -1,5 +1,16 @@
--- Gladiator Sample Database Data
+/* 
+& Gladiator game data, including: 
+& 10 tables (9 player, 1 admin)
 
+^ Note: We recommend installing the Colorful Comments extension to improve code readability 
+^ https://marketplace.visualstudio.com/items?itemName=ParthR2031.colorful-comments
+^ Color Legend:
+    --& pink: file description
+    --* green: section title
+    --~ purple: general funtion description
+*/
+
+--* === environment setup and config ===
 -- sets the character encoding to utf8mb4 so special characters and accents are stored correctly
 SET NAMES utf8mb4;
 -- saves the current unique checks setting and turns it off temporarily to avoid errors while loading the schema
@@ -13,7 +24,8 @@ SET @old_autocommit=@@autocommit;
 
 USE gladiator;
 
--- Insert archetypes catalog
+---* === catalogs ===
+--~ insert archetypes catalog
 SET AUTOCOMMIT = 0;
 INSERT INTO Archetype (name, hp_start, speed_start, damage_start) VALUES
 ('Warrior', 120, 5, 15),
@@ -21,7 +33,7 @@ INSERT INTO Archetype (name, hp_start, speed_start, damage_start) VALUES
 ('Heavy', 150, 3, 20);
 COMMIT;
 
--- Insert the 3 levels
+--~ insert the 3 levels
 SET AUTOCOMMIT = 0;
 INSERT INTO Level (level_number, target_time, condition_enemies, description) VALUES
 (1, 45000, 6, 'First level of the arena'),
@@ -29,7 +41,7 @@ INSERT INTO Level (level_number, target_time, condition_enemies, description) VA
 (3, 90000, 10, 'Final battle of the colosseum');
 COMMIT;
 
--- Insert Cards catalog 
+--~ insert Cards catalog 
 SET AUTOCOMMIT = 0;
 INSERT INTO Card (card_name, description, effect_type, duration_type, effect_from, effect_modifies, effect_operator, effect_reverse_operator, value_effect, reverse_value, duration) VALUES
 ('Favor of the People', 
@@ -108,7 +120,7 @@ INSERT INTO Card (card_name, description, effect_type, duration_type, effect_fro
 'player', 'doubleDeath', '=', '=', 1.0, 0.0, 0);
 COMMIT;
 
--- Insert Enemys catalog
+--~ insert Enemys catalog
 SET AUTOCOMMIT = 0;
 INSERT INTO Enemy (level_id, enemy_name, hp_start, speed_start, damage_start) VALUES
 (1, 'Lion', 500, 4, 20),
@@ -116,7 +128,8 @@ INSERT INTO Enemy (level_id, enemy_name, hp_start, speed_start, damage_start) VA
 (3, 'Boar', 650, 6, 15);
 COMMIT;
 
--- Dummy data for Player
+--* === dummy data ===
+--~ dummy data for Player (data created with IA)
 SET AUTOCOMMIT = 0;
 INSERT INTO Player (name, username, password, total_runs, total_losses, total_wins, galen, hearts) VALUES
 ('Sofia Campos', 'sofi123', 'hashed_password_1', 5, 2, 3, 2, 5),
@@ -150,10 +163,9 @@ INSERT INTO Player (name, username, password, total_runs, total_losses, total_wi
 ('Catalina Ibáñez', 'cata_i', 'hashed_password_29', 10, 3, 7, 1, 2),
 ('Héctor Paredes', 'hector_p', 'hashed_password_30', 4, 2, 2, 2, 2),
 ('test', 'test', 'test', 10, 8, 2, 1, 3);
-
 COMMIT;
 
--- Dummy data for MatchGame
+--~ dummy data for MatchGame
 SET AUTOCOMMIT = 0;
 INSERT INTO MatchGame (player_id, archetype_id, end_time, duration_seconds, level_reached, final_fame, life, result) VALUES
 (1, 1, NOW(), 180, 3, 120, 2, 'WIN'),
@@ -193,27 +205,27 @@ INSERT INTO MatchGame (player_id, archetype_id, end_time, duration_seconds, leve
 (28, 2, NOW(), 260, 3, 215, 4, 'WIN');
 COMMIT;
 
--- Dummy data for LevelCard
+--~ dummy data for LevelCard
 SET AUTOCOMMIT = 0;
 INSERT INTO LevelCard (player_id, card_id) VALUES
-(1,  1),
-(1,  3),
-(2,  2),
-(2,  5),
-(3,  4),
-(3,  7),
-(4,  1),
-(5,  6),
-(5,  8),
-(6,  2),
-(7,  3),
-(7,  9),
-(8,  4),
-(9,  5),
-(9,  10),
-(10, 6),
-(11, 7),
-(12, 8),
+(1, 1),
+(1, 3),
+(2, 2),
+(2, 5),
+(3, 4),
+(3, 7),
+(4, 1),
+(5, 6),
+(5, 8),
+(6, 2),
+(7, 3),
+(7, 9),
+(8,4),
+(9, 5),
+(9, 10),
+(10,6),
+(11,7),
+(12,8),
 (13, 9),
 (13, 11),
 (14, 10),
@@ -222,14 +234,13 @@ INSERT INTO LevelCard (player_id, card_id) VALUES
 (17, 13),
 (18, 2),
 (19, 14),
-(20, 15),
+(20,15),
 (21, 3),
 (22, 4),
 (23, 5);
 COMMIT;
 
--- Dummy data for SpecificLevel (30 rows across 13 matches)
--- enemy_id matches level_id: level 1 → Lion(1), level 2 → Tiger(2), level 3 → Boar(3)
+--~ dummy data for SpecificLevel (data created with IA)
 SET AUTOCOMMIT = 0;
 INSERT INTO SpecificLevel (match_id, level_id, enemy_id, finished, level_card_id, completion_time, remaining_hp, fame_gained) VALUES
 -- match 1 (WIN, level 3)
@@ -277,7 +288,7 @@ INSERT INTO SpecificLevel (match_id, level_id, enemy_id, finished, level_card_id
 (13, 3, 3, TRUE,  30,  63, 58,  67);
 COMMIT;
 
--- Dummy data for Deck
+--~ dummy data for Deck
 SET AUTOCOMMIT = 0;
 INSERT INTO Deck (specific_level_id, card_id, effect_duration) VALUES
 (1, 1, 30),
@@ -288,18 +299,15 @@ INSERT INTO Deck (specific_level_id, card_id, effect_duration) VALUES
 (6, 6, 0);
 COMMIT;
 
--- Dummy data for Statistics
+--~ dummy data for Statistics
 SET AUTOCOMMIT = 0;
 INSERT INTO Statistics ( name, username, password) VALUES
 ('Admin', 'admin', 'hashed_admin_password'),
 ('dani', 'dani', 'dani');
 COMMIT;
 
-SET AUTOCOMMIT = 0;
-
-COMMIT;
-
--- restores all the settings that were saved at the beginning
+--* === environment setup and config ===
+--~ restores all the settings that were saved at the beginning
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET SQL_MODE=@OLD_SQL_MODE;
